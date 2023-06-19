@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+
+	"github.com/opf/openproject-cli/cmd/list"
 )
 
 var rootCmd = &cobra.Command{
@@ -17,5 +19,5 @@ func Execute() error {
 }
 
 func init() {
-	rootCmd.AddCommand(testCmd)
+	rootCmd.AddCommand(testCmd, list.RootCmd)
 }
