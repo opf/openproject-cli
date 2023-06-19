@@ -1,9 +1,10 @@
 package list
 
 import (
-	"fmt"
-	
 	"github.com/spf13/cobra"
+
+	"github.com/opf/openproject-cli/components/printer"
+	"github.com/opf/openproject-cli/components/resources/projects"
 )
 
 var projectsCmd = &cobra.Command{
@@ -11,11 +12,10 @@ var projectsCmd = &cobra.Command{
 	Short: "Lists projects",
 	Long: `Get a list of visible projects.
 The list can get filtered further.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		count := 0
-		for count < 2 {
-			fmt.Printf("Project #%d\n", count)
-			count++
-		}
-	},
+	Run: execute,
+}
+
+func execute(cmd *cobra.Command, args []string) {
+	all := projects.All()
+	printer.Projects(all)
 }

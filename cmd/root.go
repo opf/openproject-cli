@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/opf/openproject-cli/cmd/list"
+	"github.com/opf/openproject-cli/components/requests"
 )
 
 var rootCmd = &cobra.Command{
@@ -19,5 +20,7 @@ func Execute() error {
 }
 
 func init() {
+	requests.Init("https://openproject.local")
+
 	rootCmd.AddCommand(testCmd, list.RootCmd)
 }
