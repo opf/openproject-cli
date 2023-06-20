@@ -12,13 +12,13 @@ import (
 const path = "api/v3/projects"
 
 func All() []*models.Project {
-	response := requests.Get(path)
+	_, response := requests.Get(path)
 	element := parser.Parse[ProjectCollectionDto](response)
 	return element.convert()
 }
 
 func Find(id int) *models.Project {
-	response := requests.Get(filepath.Join(path, strconv.Itoa(id)))
+	_, response := requests.Get(filepath.Join(path, strconv.Itoa(id)))
 	element := parser.Parse[ProjectDto](response)
 	return element.convert()
 }

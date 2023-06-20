@@ -1,10 +1,11 @@
 package cmd
 
 import (
-	"github.com/opf/openproject-cli/cmd/inspect"
 	"github.com/spf13/cobra"
 
+	"github.com/opf/openproject-cli/cmd/inspect"
 	"github.com/opf/openproject-cli/cmd/list"
+	"github.com/opf/openproject-cli/components/configuration"
 	"github.com/opf/openproject-cli/components/requests"
 )
 
@@ -21,7 +22,14 @@ func Execute() error {
 }
 
 func init() {
-	requests.Init("https://openproject.local")
+	host, token, err := configuration.ReadConfigFile()
+	if err == nil {
+		requests.Init(host, token)
+	}
 
-	rootCmd.AddCommand(testCmd, list.RootCmd, inspect.RootCmd)
+	rootCmd.AddCommand(
+		loginCmd,
+		list.RootCmd,
+		inspect.RootCmd,
+	)
 }
