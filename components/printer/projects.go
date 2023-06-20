@@ -2,25 +2,24 @@ package printer
 
 import (
 	"fmt"
-	
-	"github.com/opf/openproject-cli/components/resources/projects"
+	"github.com/opf/openproject-cli/models"
 )
 
-func Projects(v interface{})  {
-	list, ok := v.([]*projects.Project)
+func Projects(v interface{}) {
+	list, ok := v.([]*models.Project)
 	if ok {
 		for _, p := range list {
 			printProject(p)
 		}
 	}
-	
-	single, ok := v.(*projects.Project)
+
+	single, ok := v.(*models.Project)
 	if ok {
 		printProject(single)
 	}
 }
 
-func printProject(p *projects.Project)  {
+func printProject(p *models.Project) {
 	id := fmt.Sprintf("#%d", p.Id)
 	fmt.Printf("[%s] %s\n", red(id), cyan(p.Name))
 }

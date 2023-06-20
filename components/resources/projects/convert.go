@@ -1,7 +1,9 @@
 package projects
 
-func (dto *ProjectCollectionDto) convert() []*Project {
-	var projects = make([]*Project, len(dto.Embedded.Elements))
+import "github.com/opf/openproject-cli/models"
+
+func (dto *ProjectCollectionDto) convert() []*models.Project {
+	var projects = make([]*models.Project, len(dto.Embedded.Elements))
 
 	for idx, p := range dto.Embedded.Elements {
 		projects[idx] = p.convert()
@@ -10,8 +12,8 @@ func (dto *ProjectCollectionDto) convert() []*Project {
 	return projects
 }
 
-func (dto *ProjectDto) convert() *Project {
-	return &Project{
+func (dto *ProjectDto) convert() *models.Project {
+	return &models.Project{
 		Id:   dto.Id,
 		Name: dto.Name,
 	}

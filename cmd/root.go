@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/opf/openproject-cli/cmd/inspect"
 	"github.com/spf13/cobra"
 
 	"github.com/opf/openproject-cli/cmd/list"
@@ -22,5 +23,5 @@ func Execute() error {
 func init() {
 	requests.Init("https://openproject.local")
 
-	rootCmd.AddCommand(testCmd, list.RootCmd)
+	rootCmd.AddCommand(testCmd, list.RootCmd, inspect.RootCmd)
 }
