@@ -2,6 +2,7 @@ package printer
 
 import (
 	"fmt"
+
 	"github.com/opf/openproject-cli/models"
 )
 

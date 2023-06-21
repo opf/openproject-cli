@@ -12,10 +12,10 @@ var projectsCmd = &cobra.Command{
 	Short: "Lists projects",
 	Long: `Get a list of visible projects.
 The list can get filtered further.`,
-	Run: execute,
+	Run: listProjects,
 }
 
-func execute(cmd *cobra.Command, args []string) {
+func listProjects(cmd *cobra.Command, args []string) {
 	all := projects.All()
 	printer.Projects(all)
 }

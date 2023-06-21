@@ -12,5 +12,8 @@ The list can get filtered further.`,
 }
 
 func init() {
-	RootCmd.AddCommand(projectsCmd)
+	RootCmd.AddCommand(
+		projectsCmd,
+		notificationsCmd,
+	)
 }

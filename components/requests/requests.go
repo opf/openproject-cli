@@ -2,9 +2,10 @@ package requests
 
 import (
 	"io"
-	"log"
 	"net/http"
 	"net/url"
+
+	"github.com/opf/openproject-cli/components/printer"
 )
 
 var client *http.Client
@@ -17,35 +18,43 @@ func Init(hostUrl, tokenValue string) {
 	var err error
 	host, err = url.Parse(hostUrl)
 	if err != nil {
-		log.Fatalf("Invalid host url '%s'.", hostUrl)
+		printer.Error(err)
 	}
 
 	token = tokenValue
 }
 
-func Get(path string) (success bool, response []byte) {
+func Get(path string) (code int, body []byte) {
 	if client == nil {
-		log.Fatal("Cannot execute requests without initializing request client first. Run `op login`")
+		printer.ErrorText("Cannot execute requests without initializing request client first. Run `op login`")
 	}
 
 	requestUrl := *host
 	requestUrl.Path = path
-	request, _ := http.NewRequest("GET", requestUrl.String(), nil)
+	request, err := http.NewRequest("GET", requestUrl.String(), nil)
+	if err != nil {
+		printer.Error(err)
+	}
+
 	if len(token) > 0 {
 		request.SetBasicAuth("apikey", token)
 	}
 
 	resp, err := client.Do(request)
 	if err != nil {
-		log.Fatalf("Error execting request: %+v", err)
+		printer.Error(err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
-	body, _ := io.ReadAll(resp.Body)
-	return isSuccess(resp), body
+	body, err = io.ReadAll(resp.Body)
+	if err != nil {
+		printer.Error(err)
+	}
+
+	return resp.StatusCode, body
 }
 
-func isSuccess(resp *http.Response) bool {
-	return resp.StatusCode >= 200 && resp.StatusCode <= 299
+func IsSuccess(code int) bool {
+	return code >= 200 && code <= 299
 }

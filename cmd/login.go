@@ -3,7 +3,6 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 	"strings"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/opf/openproject-cli/components/configuration"
 	"github.com/opf/openproject-cli/components/parser"
+	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
 	"github.com/opf/openproject-cli/components/resources/config"
 )
@@ -94,8 +94,8 @@ func parseHostUrl() (ok bool, errMessage string, host *url.URL) {
 }
 
 func checkOpenProjectApi() bool {
-	ok, response := requests.Get(configPath)
-	if !ok {
+	status, response := requests.Get(configPath)
+	if !requests.IsSuccess(status) {
 		return false
 	}
 
@@ -118,6 +118,6 @@ func requestApiToken() (ok bool, token string) {
 func storeLoginData(host *url.URL, token string) {
 	err := configuration.WriteConfigFile(host.String(), token)
 	if err != nil {
-		log.Fatalf("Error while writing config file: %+v", err)
+		printer.Error(err)
 	}
 }
