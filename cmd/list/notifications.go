@@ -1,14 +1,17 @@
 package list
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 
+	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/resources/notifications"
-	"github.com/opf/openproject-cli/models/types"
 )
 
 var NotificationReason string
+
+var validReasons = []string{"", "assigned", "mentioned"}
 var notificationsCmd = &cobra.Command{
 	Use:   "notifications",
 	Short: "Lists notifications",
@@ -18,6 +21,10 @@ The list can get filtered further.`,
 }
 
 func listNotifications(_ *cobra.Command, _ []string) {
-	all := notifications.All(types.ParseReason(NotificationReason))
+	if !common.Contains(validReasons, NotificationReason) {
+		printer.ErrorText(fmt.Sprintf("Reason '%s' is invalid.", NotificationReason))
+	}
+
+	all := notifications.All(NotificationReason)
 	printer.Notifications(all)
 }

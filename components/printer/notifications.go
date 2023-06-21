@@ -6,9 +6,17 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
-func Notifications(notifications []*models.Notification) {
-	for _, notification := range notifications {
-		printNotification(notification)
+func Notifications(v interface{}) {
+	list, ok := v.([]*models.Notification)
+	if ok {
+		for _, n := range list {
+			printNotification(n)
+		}
+	}
+
+	single, ok := v.(*models.Notification)
+	if ok {
+		printNotification(single)
 	}
 }
 

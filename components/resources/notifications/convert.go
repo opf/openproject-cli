@@ -3,7 +3,6 @@ package notifications
 import (
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/models"
-	"github.com/opf/openproject-cli/models/types"
 )
 
 func (dto *NotificationCollectionDto) convert() []*models.Notification {
@@ -21,7 +20,7 @@ func (dto *NotificationDto) convert() *models.Notification {
 		Id:              dto.Id,
 		ResourceId:      parser.IdFromLink(dto.Links.Resource.Href),
 		ResourceSubject: dto.Links.Resource.Title,
-		Reason:          types.Reason(dto.Reason),
+		Reason:          dto.Reason,
 		Read:            dto.ReadIAN,
 		CreatedAt:       dto.CreatedAt,
 		UpdatedAt:       dto.UpdatedAt,

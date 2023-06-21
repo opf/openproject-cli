@@ -2,7 +2,6 @@ package requests
 
 import (
 	"fmt"
-	"github.com/opf/openproject-cli/models/types"
 	"net/url"
 	"strings"
 )
@@ -41,11 +40,11 @@ func (query Query) String() string {
 	return fmt.Sprintf("pageSize=%d%s", query.pageSize, filtersQuery)
 }
 
-func NewNotificationReasonFilter(reason types.Reason) Filter {
+func NewNotificationReasonFilter(reason string) Filter {
 	return Filter{
 		operator: "=",
 		name:     "reason",
-		values:   []string{string(reason)},
+		values:   []string{reason},
 	}
 }
 
