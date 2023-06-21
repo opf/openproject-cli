@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/opf/openproject-cli/components/requests"
-	"github.com/opf/openproject-cli/models/types"
 )
 
 func TestQuery_String_WithFilters(t *testing.T) {
@@ -12,7 +11,7 @@ func TestQuery_String_WithFilters(t *testing.T) {
 	
 	queryString := requests.NewQuery([]requests.Filter{
 		requests.NewNotificationReadFilter(false),
-		requests.NewNotificationReasonFilter(types.Assigned),
+		requests.NewNotificationReasonFilter("assigned"),
 	}).String()
 
 	if queryString != expectedString {
