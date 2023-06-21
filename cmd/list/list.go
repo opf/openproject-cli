@@ -12,6 +12,14 @@ The list can get filtered further.`,
 }
 
 func init() {
+	notificationsCmd.Flags().StringVarP(
+		&NotificationReason,
+		"reason",
+		"r",
+		"",
+		"The reason for the notification",
+	)
+
 	RootCmd.AddCommand(
 		projectsCmd,
 		notificationsCmd,

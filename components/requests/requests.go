@@ -24,13 +24,17 @@ func Init(hostUrl, tokenValue string) {
 	token = tokenValue
 }
 
-func Get(path string) (code int, body []byte) {
+func Get(path string, query *Query) (code int, body []byte) {
 	if client == nil {
 		printer.ErrorText("Cannot execute requests without initializing request client first. Run `op login`")
 	}
 
 	requestUrl := *host
 	requestUrl.Path = path
+	if query != nil {
+		requestUrl.RawQuery = query.String()
+	}
+
 	request, err := http.NewRequest("GET", requestUrl.String(), nil)
 	if err != nil {
 		printer.Error(err)

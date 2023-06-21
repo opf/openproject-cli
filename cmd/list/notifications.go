@@ -5,8 +5,10 @@ import (
 
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/resources/notifications"
+	"github.com/opf/openproject-cli/models/types"
 )
 
+var NotificationReason string
 var notificationsCmd = &cobra.Command{
 	Use:   "notifications",
 	Short: "Lists notifications",
@@ -15,7 +17,7 @@ The list can get filtered further.`,
 	Run: listNotifications,
 }
 
-func listNotifications(cmd *cobra.Command, args []string) {
-	all := notifications.All()
+func listNotifications(_ *cobra.Command, _ []string) {
+	all := notifications.All(types.ParseReason(NotificationReason))
 	printer.Notifications(all)
 }

@@ -13,7 +13,7 @@ import (
 const path = "api/v3/projects"
 
 func All() []*models.Project {
-	status, response := requests.Get(path)
+	status, response := requests.Get(path, nil)
 	if !requests.IsSuccess(status) {
 		printer.ResponseError(status, response)
 	}
@@ -23,7 +23,7 @@ func All() []*models.Project {
 }
 
 func Find(id int) *models.Project {
-	status, response := requests.Get(filepath.Join(path, strconv.Itoa(id)))
+	status, response := requests.Get(filepath.Join(path, strconv.Itoa(id)), nil)
 	if !requests.IsSuccess(status) {
 		printer.ResponseError(status, response)
 	}
