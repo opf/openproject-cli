@@ -16,7 +16,7 @@ func Project(project *models.Project) {
 	printProject(project)
 }
 
-func printProject(p *models.Project) {
-	id := fmt.Sprintf("#%d", p.Id)
-	fmt.Printf("[%s] %s\n", red(id), cyan(p.Name))
+func printProject(project *models.Project) {
+	id := fmt.Sprintf("#%d", project.Id)
+	fmt.Printf("[%s] %s\n", red(id), cyan(project.Name))
 }
