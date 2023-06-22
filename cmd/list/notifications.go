@@ -2,6 +2,7 @@ package list
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 
 	"github.com/opf/openproject-cli/components/common"
@@ -9,7 +10,7 @@ import (
 	"github.com/opf/openproject-cli/components/resources/notifications"
 )
 
-var NotificationReason string
+var notificationReason string
 
 var validReasons = []string{"", "assigned", "mentioned"}
 var notificationsCmd = &cobra.Command{
@@ -21,10 +22,10 @@ The list can get filtered further.`,
 }
 
 func listNotifications(_ *cobra.Command, _ []string) {
-	if !common.Contains(validReasons, NotificationReason) {
-		printer.ErrorText(fmt.Sprintf("Reason '%s' is invalid.", NotificationReason))
+	if !common.Contains(validReasons, notificationReason) {
+		printer.ErrorText(fmt.Sprintf("Reason '%s' is invalid.", notificationReason))
 	}
 
-	all := notifications.All(NotificationReason)
+	all := notifications.All(notificationReason)
 	printer.Notifications(all)
 }

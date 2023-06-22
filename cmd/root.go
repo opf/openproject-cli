@@ -5,6 +5,7 @@ import (
 
 	"github.com/opf/openproject-cli/cmd/inspect"
 	"github.com/opf/openproject-cli/cmd/list"
+	"github.com/opf/openproject-cli/cmd/update"
 	"github.com/opf/openproject-cli/components/configuration"
 	"github.com/opf/openproject-cli/components/requests"
 )
@@ -30,6 +31,7 @@ func init() {
 	rootCmd.AddCommand(
 		loginCmd,
 		list.RootCmd,
+		update.RootCmd,
 		inspect.RootCmd,
 	)
 }

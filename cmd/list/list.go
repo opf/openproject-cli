@@ -13,7 +13,7 @@ The list can get filtered further.`,
 
 func init() {
 	notificationsCmd.Flags().StringVarP(
-		&NotificationReason,
+		&notificationReason,
 		"reason",
 		"r",
 		"",
