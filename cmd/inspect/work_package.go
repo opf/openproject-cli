@@ -17,7 +17,7 @@ var inspectWorkPackageCmd = &cobra.Command{
 	Run:   inspectWorkPackage,
 }
 
-func inspectWorkPackage(cmd *cobra.Command, args []string) {
+func inspectWorkPackage(_ *cobra.Command, args []string) {
 	id, err := strconv.ParseInt(args[0], 10, 64)
 	if err != nil {
 		printer.ErrorText(fmt.Sprintf("'%s' is an invalid work package id. Must be a number.", args[0]))
