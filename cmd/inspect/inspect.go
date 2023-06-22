@@ -11,5 +11,5 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(inspectProjectCmd)
+	RootCmd.AddCommand(inspectProjectCmd, inspectWorkPackageCmd)
 }

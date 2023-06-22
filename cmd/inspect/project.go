@@ -14,10 +14,10 @@ var inspectProjectCmd = &cobra.Command{
 	Use:   "project [id]",
 	Short: "Show details about a project",
 	Long:  "Show detailed information of a project refereced by it's ID.",
-	Run:   execute,
+	Run:   inspectProject,
 }
 
-func execute(_ *cobra.Command, args []string) {
+func inspectProject(_ *cobra.Command, args []string) {
 	if len(args) != 1 {
 		printer.ErrorText(fmt.Sprintf("Expected 1 argument [id], but got %d", len(args)))
 	}
@@ -27,6 +27,5 @@ func execute(_ *cobra.Command, args []string) {
 		printer.ErrorText(fmt.Sprintf("'%s' is an invalid project id. Must be a number.", args[0]))
 	}
 
-	pro := projects.Find(id)
-	printer.Projects(pro)
+	printer.Project(projects.Find(id))
 }

@@ -6,18 +6,14 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
-func Projects(v interface{}) {
-	list, ok := v.([]*models.Project)
-	if ok {
-		for _, p := range list {
-			printProject(p)
-		}
+func Projects(projects []*models.Project) {
+	for _, p := range projects {
+		printProject(p)
 	}
+}
 
-	single, ok := v.(*models.Project)
-	if ok {
-		printProject(single)
-	}
+func Project(project *models.Project) {
+	printProject(project)
 }
 
 func printProject(p *models.Project) {
