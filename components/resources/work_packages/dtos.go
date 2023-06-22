@@ -1,18 +1,15 @@
 package work_packages
 
-type linkDto struct {
-	Href  string `json:"href"`
-	Title string `json:"title"`
-}
+import "github.com/opf/openproject-cli/components/resources"
 
-type linksDto struct {
-	Status   linkDto `json:"status"`
-	Assignee linkDto `json:"assignee"`
-	Type     linkDto `json:"type"`
+type workPackageLinksDto struct {
+	Status   resources.LinkDto `json:"status"`
+	Assignee resources.LinkDto `json:"assignee"`
+	Type     resources.LinkDto `json:"type"`
 }
 
 type WorkPackageDto struct {
-	Id      int64    `json:"id"`
-	Subject string   `json:"subject"`
-	Links   linksDto `json:"_links"`
+	Id      int64               `json:"id"`
+	Subject string              `json:"subject"`
+	Links   workPackageLinksDto `json:"_links"`
 }
