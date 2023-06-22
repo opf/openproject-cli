@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"os"
 
 	"github.com/opf/openproject-cli/cmd/inspect"
 	"github.com/opf/openproject-cli/cmd/list"
@@ -11,7 +12,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "op",
+	Use:   os.Args[0],
 	Short: "An easy-to-use CLI for the OpenProject APIv3",
 	Long: `OpenProject CLI is a fast, reliable and easy-to-use
 tool to manage your work packages, notifications and
