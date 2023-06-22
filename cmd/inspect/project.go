@@ -27,5 +27,5 @@ func inspectProject(_ *cobra.Command, args []string) {
 		printer.ErrorText(fmt.Sprintf("'%s' is an invalid project id. Must be a number.", args[0]))
 	}
 
-	printer.Project(projects.Find(id))
+	printer.Project(projects.Lookup(id))
 }
