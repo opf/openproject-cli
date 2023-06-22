@@ -1,9 +1,11 @@
 package requests
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/opf/openproject-cli/components/printer"
 )
@@ -25,6 +27,10 @@ func Init(hostUrl, tokenValue string) {
 }
 
 func Get(path string, query *Query) (code int, body []byte) {
+	return Do("GET", path, query, nil)
+}
+
+func Do(method string, path string, query *Query, reqBody []byte) (code int, body []byte) {
 	if client == nil {
 		printer.ErrorText("Cannot execute requests without initializing request client first. Run `op login`")
 	}
@@ -35,9 +41,17 @@ func Get(path string, query *Query) (code int, body []byte) {
 		requestUrl.RawQuery = query.String()
 	}
 
-	request, err := http.NewRequest("GET", requestUrl.String(), nil)
+	request, err := http.NewRequest(
+		strings.ToUpper(method),
+		requestUrl.String(),
+		bytes.NewReader(reqBody),
+	)
 	if err != nil {
 		printer.Error(err)
+	}
+
+	if reqBody != nil {
+		request.Header.Add("Content-Type", "application/json")
 	}
 
 	if len(token) > 0 {

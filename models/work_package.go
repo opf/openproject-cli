@@ -7,4 +7,5 @@ type WorkPackage struct {
 	Assignee    string
 	Status      string
 	Description string
+	LockVersion int
 }

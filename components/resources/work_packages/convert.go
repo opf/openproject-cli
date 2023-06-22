@@ -10,5 +10,6 @@ func (dto *WorkPackageDto) convert() *models.WorkPackage {
 		Assignee:    dto.Links.Assignee.Title,
 		Status:      dto.Links.Status.Title,
 		Description: dto.Description.Raw,
+		LockVersion: dto.LockVersion,
 	}
 }

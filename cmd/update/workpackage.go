@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/spf13/cobra"
+
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/resources/work_packages"
-	"github.com/spf13/cobra"
 )
 
 var actionFlag string
@@ -29,5 +30,7 @@ func updateWorkPackage(_ *cobra.Command, args []string) {
 		printer.ErrorText(fmt.Sprintf("'%s' is an invalid work package id. Must be a number.", args[0]))
 	}
 
-	work_packages.Update(id)
+	if len(actionFlag) > 0 {
+		work_packages.Update(id, actionFlag)
+	}
 }

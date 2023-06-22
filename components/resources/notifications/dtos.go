@@ -1,5 +1,7 @@
 package notifications
 
+import "github.com/opf/openproject-cli/components/resources"
+
 type NotificationDto struct {
 	Id        int64                `json:"id"`
 	Reason    string               `json:"reason"`
@@ -10,12 +12,7 @@ type NotificationDto struct {
 }
 
 type NotificationLinksDto struct {
-	Resource LinkDto `json:"resource"`
-}
-
-type LinkDto struct {
-	Href  string `json:"href"`
-	Title string `json:"title"`
+	Resource resources.LinkDto `json:"resource"`
 }
 
 type elements struct {

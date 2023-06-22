@@ -5,6 +5,14 @@ import (
 	"os"
 )
 
+func Info(msg string) {
+	fmt.Println(msg)
+}
+
+func Done() {
+	fmt.Println(green("DONE"))
+}
+
 func Error(err error) {
 	fmt.Printf("%s Program exited with error: %+v\n", red("[ERROR]"), err)
 	os.Exit(-1)
