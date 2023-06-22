@@ -18,9 +18,13 @@ var inspectProjectCmd = &cobra.Command{
 }
 
 func execute(_ *cobra.Command, args []string) {
+	if len(args) != 1 {
+		printer.ErrorText(fmt.Sprintf("Expected 1 argument [id], but got %d", len(args)))
+	}
+
 	id, err := strconv.ParseInt(args[0], 10, 64)
 	if err != nil {
-		printer.ErrorText(fmt.Sprintf("'%s' is an invalid work package id. Must be a number.", args[0]))
+		printer.ErrorText(fmt.Sprintf("'%s' is an invalid project id. Must be a number.", args[0]))
 	}
 
 	pro := projects.Find(id)
