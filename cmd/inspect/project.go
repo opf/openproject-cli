@@ -1,6 +1,7 @@
 package inspect
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -16,8 +17,12 @@ var inspectProjectCmd = &cobra.Command{
 	Run:   execute,
 }
 
-func execute(cmd *cobra.Command, args []string) {
-	id, _ := strconv.Atoi(args[0])
-	all := projects.Find(id)
-	printer.Projects(all)
+func execute(_ *cobra.Command, args []string) {
+	id, err := strconv.ParseInt(args[0], 10, 64)
+	if err != nil {
+		printer.ErrorText(fmt.Sprintf("'%s' is an invalid work package id. Must be a number.", args[0]))
+	}
+
+	pro := projects.Find(id)
+	printer.Projects(pro)
 }

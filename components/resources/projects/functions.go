@@ -22,8 +22,8 @@ func All() []*models.Project {
 	return element.convert()
 }
 
-func Find(id int) *models.Project {
-	status, response := requests.Get(filepath.Join(path, strconv.Itoa(id)), nil)
+func Find(id int64) *models.Project {
+	status, response := requests.Get(filepath.Join(path, strconv.FormatInt(id, 10)), nil)
 	if !requests.IsSuccess(status) {
 		printer.ResponseError(status, response)
 	}
