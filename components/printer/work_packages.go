@@ -2,6 +2,7 @@ package printer
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/opf/openproject-cli/models"
@@ -15,11 +16,41 @@ func WorkPackages(workPackages []*models.WorkPackage) {
 }
 
 func WorkPackage(workPackage *models.WorkPackage) {
-	id := fmt.Sprintf("#%d", workPackage.Id)
-	fmt.Printf("[%s] %s\n\n", red(id), cyan(workPackage.Subject))
+	printHeadline(workPackage, idLength(workPackage.Id), len(workPackage.Type))
+	printAttributes(workPackage)
+	fmt.Println()
+	printDescription(workPackage)
+}
 
+func idLength(id int64) int {
+	return len(strconv.FormatInt(id, 10)) + 1
+}
+
+func printHeadline(workPackage *models.WorkPackage, maxIdLength, maxTypeLength int) {
+	diff := maxIdLength - idLength(workPackage.Id)
+	idStr := fmt.Sprintf("%s#%d", indent(diff), workPackage.Id)
+
+	diff = maxTypeLength - len(workPackage.Type)
+	typeStr := strings.ToUpper(workPackage.Type) + indent(diff)
+
+	fmt.Printf("%s %s %s\n",
+		red(idStr),
+		green(typeStr),
+		cyan(workPackage.Subject))
+}
+
+func printAttributes(workPackage *models.WorkPackage) {
+	fmt.Printf("[%s]\n", yellow(workPackage.Status))
+
+	assigneeStr := workPackage.Assignee
+	if len(assigneeStr) == 0 {
+		assigneeStr = "-"
+	}
+	fmt.Printf("Assignee: %s\n", assigneeStr)
+}
+
+func printDescription(workPackage *models.WorkPackage) {
 	lines := splitIntoLines(workPackage.Description, 80)
-
 	for _, line := range lines {
 		fmt.Printf("%s\n", line)
 	}

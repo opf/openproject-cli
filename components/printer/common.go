@@ -39,3 +39,10 @@ func ResponseError(status int, body []byte) {
 	)
 	os.Exit(-1)
 }
+
+func indent(spaces int) (res string) {
+	for len(res) < spaces {
+		res += " "
+	}
+	return res
+}

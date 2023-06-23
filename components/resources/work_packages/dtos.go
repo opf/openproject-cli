@@ -6,10 +6,10 @@ import (
 )
 
 type workPackageLinksDto struct {
-	Self          res.LinkDto    `json:"self"`
-	Status        res.LinkDto    `json:"status"`
-	Assignee      res.LinkDto    `json:"assignee"`
-	Type          res.LinkDto    `json:"type"`
+	Self          *res.LinkDto    `json:"self"`
+	Status        *res.LinkDto    `json:"status"`
+	Assignee      *res.LinkDto    `json:"assignee"`
+	Type          *res.LinkDto    `json:"type"`
 	CustomActions []*res.LinkDto `json:"customActions"`
 }
 
@@ -20,9 +20,9 @@ type workPackageDescription struct {
 type WorkPackageDto struct {
 	Id          int64                  `json:"id"`
 	Subject     string                 `json:"subject"`
-	Links       workPackageLinksDto    `json:"_links"`
-	Description workPackageDescription `json:"description"`
-	Embeddded   embeddedDto            `json:"_embedded"`
+	Links       *workPackageLinksDto    `json:"_links"`
+	Description *workPackageDescription `json:"description"`
+	Embeddded   *embeddedDto            `json:"_embedded"`
 	LockVersion int                    `json:"lockVersion"`
 }
 
