@@ -26,6 +26,5 @@ func listNotifications(_ *cobra.Command, _ []string) {
 		printer.ErrorText(fmt.Sprintf("Reason '%s' is invalid.", notificationReason))
 	}
 
-	all := notifications.All(notificationReason)
-	printer.Notifications(all)
+	printer.Notifications(notifications.All(notificationReason))
 }

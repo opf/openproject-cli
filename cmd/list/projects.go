@@ -16,6 +16,5 @@ The list can get filtered further.`,
 }
 
 func listProjects(cmd *cobra.Command, args []string) {
-	all := projects.All()
-	printer.Projects(all)
+	printer.Projects(projects.All())
 }
