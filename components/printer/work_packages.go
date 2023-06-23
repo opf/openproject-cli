@@ -62,7 +62,7 @@ func printHeadline(workPackage *models.WorkPackage, maxIdLength, maxStatusLength
 func printAttributes(workPackage *models.WorkPackage) {
 	fmt.Printf("[%s]\n", yellow(workPackage.Status))
 
-	assigneeStr := workPackage.Assignee
+	assigneeStr := workPackage.Assignee.Name
 	if len(assigneeStr) == 0 {
 		assigneeStr = "-"
 	}

@@ -7,7 +7,7 @@ func (dto *WorkPackageDto) convert() *models.WorkPackage {
 		Id:          dto.Id,
 		Subject:     dto.Subject,
 		Type:        dto.Links.Type.Title,
-		Assignee:    dto.Links.Assignee.Title,
+		Assignee:    models.Principal{Name: dto.Links.Assignee.Title},
 		Status:      dto.Links.Status.Title,
 		Description: dto.Description.Raw,
 		LockVersion: dto.LockVersion,

@@ -12,17 +12,17 @@ type Query struct {
 }
 
 type Filter struct {
-	operator string
-	name     string
-	values   []string
+	Operator string
+	Name     string
+	Values   []string
 }
 
 func (filter Filter) String() string {
 	return fmt.Sprintf(
 		"{\"%s\":{\"operator\":\"%s\",\"values\":[\"%s\"]}}",
-		filter.name,
-		filter.operator,
-		strings.Join(filter.values, "\",\""),
+		filter.Name,
+		filter.Operator,
+		strings.Join(filter.Values, "\",\""),
 	)
 }
 
@@ -42,9 +42,9 @@ func (query Query) String() string {
 
 func NewNotificationReasonFilter(reason string) Filter {
 	return Filter{
-		operator: "=",
-		name:     "reason",
-		values:   []string{reason},
+		Operator: "=",
+		Name:     "reason",
+		Values:   []string{reason},
 	}
 }
 
@@ -57,9 +57,9 @@ func NewNotificationReadFilter(read bool) Filter {
 	}
 
 	return Filter{
-		operator: "=",
-		name:     "readIAN",
-		values:   []string{bStr},
+		Operator: "=",
+		Name:     "readIAN",
+		Values:   []string{bStr},
 	}
 }
 

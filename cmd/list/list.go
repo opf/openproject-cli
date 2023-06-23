@@ -20,6 +20,14 @@ func init() {
 		"The reason for the notification",
 	)
 
+	workPackagesCmd.Flags().StringVarP(
+		&assignee,
+		"assignee",
+		"a",
+		"",
+		"Assignee of the work package",
+	)
+
 	RootCmd.AddCommand(
 		projectsCmd,
 		notificationsCmd,

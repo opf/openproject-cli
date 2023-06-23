@@ -1,10 +1,14 @@
 package list
 
 import (
+	"github.com/spf13/cobra"
+
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/resources/work_packages"
-	"github.com/spf13/cobra"
+	"github.com/opf/openproject-cli/models"
 )
+
+var assignee string
 
 var workPackagesCmd = &cobra.Command{
 	Use:   "workpackages",
@@ -13,6 +17,12 @@ var workPackagesCmd = &cobra.Command{
 	Run:   listWorkPackages,
 }
 
-func listWorkPackages(cmd *cobra.Command, args []string) {
-	printer.WorkPackages(work_packages.All())
+func listWorkPackages(_ *cobra.Command, _ []string) {
+	var principal *models.Principal
+
+	if assignee != "" {
+		principal = &models.Principal{Name: assignee}
+	}
+
+	printer.WorkPackages(work_packages.All(principal))
 }
