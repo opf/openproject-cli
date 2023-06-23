@@ -46,7 +46,7 @@ func login(cmd *cobra.Command, args []string) {
 			continue
 		}
 
-		requests.Init(host.String(), "")
+		requests.Init(host, "")
 		ok = checkOpenProjectApi()
 		if !ok {
 			fmt.Println(noOpInstanceError)

@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"github.com/opf/openproject-cli/components/printer"
+	"github.com/opf/openproject-cli/components/routes"
 	"github.com/spf13/cobra"
+	"net/url"
 	"os"
 
 	"github.com/opf/openproject-cli/cmd/inspect"
@@ -25,9 +28,17 @@ func Execute() error {
 
 func init() {
 	host, token, err := configuration.ReadConfigFile()
-	if err == nil {
-		requests.Init(host, token)
+	if err != nil {
+		printer.Error(err)
 	}
+
+	parse, err := url.Parse(host)
+	if err != nil {
+		printer.Error(err)
+	}
+
+	requests.Init(parse, token)
+	routes.Init(parse)
 
 	rootCmd.AddCommand(
 		loginCmd,

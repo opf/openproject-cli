@@ -14,15 +14,9 @@ var client *http.Client
 var host *url.URL
 var token string
 
-func Init(hostUrl, tokenValue string) {
+func Init(hostUrl *url.URL, tokenValue string) {
 	client = &http.Client{}
-
-	var err error
-	host, err = url.Parse(hostUrl)
-	if err != nil {
-		printer.Error(err)
-	}
-
+	host = hostUrl
 	token = tokenValue
 }
 
