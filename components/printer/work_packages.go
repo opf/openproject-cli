@@ -7,6 +7,13 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
+func WorkPackages(workPackages []*models.WorkPackage) {
+	for _, workPackage := range workPackages {
+		id := fmt.Sprintf("#%d", workPackage.Id)
+		fmt.Printf("[%s] %s\n", red(id), cyan(workPackage.Subject))
+	}
+}
+
 func WorkPackage(workPackage *models.WorkPackage) {
 	id := fmt.Sprintf("#%d", workPackage.Id)
 	fmt.Printf("[%s] %s\n\n", red(id), cyan(workPackage.Subject))

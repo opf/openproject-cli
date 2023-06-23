@@ -23,5 +23,6 @@ func init() {
 	RootCmd.AddCommand(
 		projectsCmd,
 		notificationsCmd,
+		workPackagesCmd,
 	)
 }

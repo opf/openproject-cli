@@ -13,3 +13,13 @@ func (dto *WorkPackageDto) convert() *models.WorkPackage {
 		LockVersion: dto.LockVersion,
 	}
 }
+
+func (dto *WorkPackageCollectionDto) convert() []*models.WorkPackage {
+	var workPackages = make([]*models.WorkPackage, len(dto.Embedded.Elements))
+
+	for idx, p := range dto.Embedded.Elements {
+		workPackages[idx] = p.convert()
+	}
+
+	return workPackages
+}

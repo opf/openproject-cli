@@ -29,3 +29,12 @@ type WorkPackageDto struct {
 type embeddedDto struct {
 	CustomActions []*custom_actions.CustomActionDto `json:"customActions"`
 }
+
+type elements struct {
+	Elements []*WorkPackageDto `json:"elements"`
+}
+
+type WorkPackageCollectionDto struct {
+	Embedded elements `json:"_embedded"`
+	Type     string   `json:"_type"`
+}

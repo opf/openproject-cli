@@ -22,6 +22,10 @@ func Lookup(id int64) *models.WorkPackage {
 	return fetch(id).convert()
 }
 
+func All() []*models.WorkPackage {
+	return fetchAll().convert()
+}
+
 func Update(id int64, action string) {
 	workPackage := fetch(id)
 
@@ -97,4 +101,14 @@ func fetch(id int64) *WorkPackageDto {
 
 	workPackage := parser.Parse[WorkPackageDto](response)
 	return &workPackage
+}
+
+func fetchAll() *WorkPackageCollectionDto {
+	status, response := requests.Get(path, nil)
+	if !requests.IsSuccess(status) {
+		printer.ResponseError(status, response)
+	}
+
+	element := parser.Parse[WorkPackageCollectionDto](response)
+	return &element
 }
