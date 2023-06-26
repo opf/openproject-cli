@@ -34,7 +34,7 @@ func inspectProject(_ *cobra.Command, args []string) {
 	project := projects.Lookup(id)
 
 	if shouldOpenProjectInBrowser {
-		err := launch.Browser(routes.ProjectUrl(project))
+		err = launch.Browser(routes.ProjectUrl(project))
 
 		if err != nil {
 			printer.ErrorText(fmt.Sprintf("Error opening browser: %s", err))

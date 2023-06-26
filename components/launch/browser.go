@@ -1,13 +1,14 @@
 package launch
 
 import (
-	"github.com/opf/openproject-cli/components/printer"
 	"net/url"
 	"os/exec"
 	"runtime"
+
+	"github.com/opf/openproject-cli/components/printer"
 )
 
-func Browser(url url.URL) error {
+func Browser(url *url.URL) error {
 	var command *exec.Cmd
 
 	switch runtime.GOOS {
