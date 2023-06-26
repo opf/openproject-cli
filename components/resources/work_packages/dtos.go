@@ -40,3 +40,7 @@ type WorkPackageCollectionDto struct {
 	Embedded elements `json:"_embedded"`
 	Type     string   `json:"_type"`
 }
+
+type CreateWorkPackageDto struct {
+	Subject string `json:"subject"`
+}

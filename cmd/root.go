@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/opf/openproject-cli/cmd/create"
 	"net/url"
 	"os"
 
@@ -49,5 +50,6 @@ func init() {
 		list.RootCmd,
 		update.RootCmd,
 		inspect.RootCmd,
+		create.RootCmd,
 	)
 }

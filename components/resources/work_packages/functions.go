@@ -25,7 +25,8 @@ const (
 	Attach
 )
 
-const path = "api/v3/work_packages"
+const apiPath = "api/v3"
+const workPackagesPath = apiPath + "/work_packages"
 
 func Lookup(id int64) *models.WorkPackage {
 	return fetch(id).convert()
@@ -40,13 +41,34 @@ func All(principal *models.Principal) []*models.WorkPackage {
 
 	query := requests.NewQuery(filters)
 
-	status, response := requests.Get(path, &query)
+	status, response := requests.Get(workPackagesPath, &query)
 	if !requests.IsSuccess(status) {
 		printer.ResponseError(status, response)
 	}
 
-	element := parser.Parse[WorkPackageCollectionDto](response)
-	return element.convert()
+	workPackageCollection := parser.Parse[WorkPackageCollectionDto](response)
+	return workPackageCollection.convert()
+}
+
+func Create(projectId int64, subject string) *models.WorkPackage {
+	data, err := json.Marshal(CreateWorkPackageDto{Subject: subject})
+	if err != nil {
+		printer.Error(err)
+	}
+
+	requestData := requests.RequestBody{ContentType: "application/json", Body: bytes.NewReader(data)}
+
+	status, response := requests.Post(
+		filepath.Join(apiPath, "projects", strconv.FormatInt(projectId, 10), "work_packages"),
+		&requestData,
+	)
+	if !requests.IsSuccess(status) {
+		printer.ResponseError(status, response)
+	}
+
+	workPackage := parser.Parse[WorkPackageDto](response)
+
+	return workPackage.convert()
 }
 
 func Update(id int64, opts map[UpdateOption]string) {
@@ -85,7 +107,7 @@ func upload(dto *WorkPackageDto, path string) {
 }
 
 func fetch(id int64) *WorkPackageDto {
-	status, response := requests.Get(filepath.Join(path, strconv.FormatInt(id, 10)), nil)
+	status, response := requests.Get(filepath.Join(workPackagesPath, strconv.FormatInt(id, 10)), nil)
 	if !requests.IsSuccess(status) {
 		printer.ResponseError(status, response)
 	}
