@@ -14,5 +14,5 @@ func CustomActions(actions []*models.CustomAction) {
 
 func printCustomAction(action *models.CustomAction) {
 	id := fmt.Sprintf("#%d", action.Id)
-	fmt.Printf("[%s] %s\n", red(id), cyan(action.Name))
+	activePrinter.Printf("[%s] %s\n", red(id), cyan(action.Name))
 }

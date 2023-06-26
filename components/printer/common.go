@@ -1,25 +1,22 @@
 package printer
 
-import (
-	"fmt"
-	"os"
-)
+import "os"
 
 func Info(msg string) {
-	fmt.Println(msg)
+	activePrinter.Println(msg)
 }
 
 func Done() {
-	fmt.Println(green("DONE"))
+	activePrinter.Println(green("DONE"))
 }
 
 func Error(err error) {
-	fmt.Printf("%s Program exited with error: %+v\n", red("[ERROR]"), err)
+	activePrinter.Printf("%s Program exited with error: %+v\n", red("[ERROR]"), err)
 	os.Exit(-1)
 }
 
 func ErrorText(msg string) {
-	fmt.Printf("%s %s\n", red("[ERROR]"), msg)
+	activePrinter.Printf("%s %s\n", red("[ERROR]"), msg)
 	os.Exit(-1)
 }
 
@@ -31,7 +28,7 @@ func ResponseError(status int, body []byte) {
 		bodyRepresentation = string(body)
 	}
 
-	fmt.Printf(
+	activePrinter.Printf(
 		"%s Bad response from server: (%d)\n\n%s\n",
 		red("[ERROR]"),
 		status,

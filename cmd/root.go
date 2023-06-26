@@ -27,6 +27,9 @@ func Execute() error {
 }
 
 func init() {
+	activePrinter := &printer.ConsolePrinter{}
+	printer.Init(activePrinter)
+
 	host, token, err := configuration.ReadConfigFile()
 	if err != nil {
 		printer.Error(err)

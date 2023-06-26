@@ -28,9 +28,9 @@ func WorkPackages(workPackages []*models.WorkPackage) {
 func WorkPackage(workPackage *models.WorkPackage) {
 	printHeadline(workPackage, idLength(workPackage.Id), 0, len(workPackage.Type))
 	printAttributes(workPackage)
-	fmt.Println()
+	activePrinter.Println()
 	printOpenLink(workPackage)
-	fmt.Println()
+	activePrinter.Println()
 	printDescription(workPackage)
 }
 
@@ -56,27 +56,27 @@ func printHeadline(workPackage *models.WorkPackage, maxIdLength, maxStatusLength
 	}
 
 	parts = append(parts, cyan(workPackage.Subject))
-	fmt.Println(strings.Join(parts, " "))
+	activePrinter.Println(strings.Join(parts, " "))
 }
 
 func printAttributes(workPackage *models.WorkPackage) {
-	fmt.Printf("[%s]\n", yellow(workPackage.Status))
+	activePrinter.Printf("[%s]\n", yellow(workPackage.Status))
 
 	assigneeStr := workPackage.Assignee.Name
 	if len(assigneeStr) == 0 {
 		assigneeStr = "-"
 	}
-	fmt.Printf("Assignee: %s\n", assigneeStr)
+	activePrinter.Printf("Assignee: %s\n", assigneeStr)
 }
 
 func printOpenLink(workPackage *models.WorkPackage) {
-	fmt.Printf("Open: %s\n", routes.WorkPackage(workPackage))
+	activePrinter.Printf("Open: %s\n", routes.WorkPackage(workPackage))
 }
 
 func printDescription(workPackage *models.WorkPackage) {
 	lines := splitIntoLines(workPackage.Description, 80)
 	for _, line := range lines {
-		fmt.Printf("%s\n", line)
+		activePrinter.Printf("%s\n", line)
 	}
 }
 
