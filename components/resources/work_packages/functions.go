@@ -35,7 +35,7 @@ func All(principal *models.Principal) []*models.WorkPackage {
 	var filters []requests.Filter
 
 	if principal != nil {
-		filters = append(filters, AssigneeFilter(*principal))
+		filters = append(filters, AssigneeFilter(principal))
 	}
 
 	query := requests.NewQuery(filters)

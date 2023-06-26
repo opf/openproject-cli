@@ -5,7 +5,7 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
-func AssigneeFilter(principal models.Principal) requests.Filter {
+func AssigneeFilter(principal *models.Principal) requests.Filter {
 	return requests.Filter{
 		Operator: "=",
 		Name:     "assignee",
