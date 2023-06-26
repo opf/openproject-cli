@@ -19,6 +19,12 @@ func init() {
 		"",
 		"Executes a custom action on a work package",
 	)
+	workPackageCmd.Flags().StringVar(
+		&attachFlag,
+		"attach",
+		"",
+		"Attach a file to the work package",
+	)
 
 	RootCmd.AddCommand(workPackageCmd)
 }

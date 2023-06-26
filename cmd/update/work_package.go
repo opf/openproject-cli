@@ -10,13 +10,16 @@ import (
 	"github.com/opf/openproject-cli/components/resources/work_packages"
 )
 
-var actionFlag string
+var (
+	actionFlag string
+	attachFlag string
+)
 
 var workPackageCmd = &cobra.Command{
 	Use:   "workpackage [id]",
 	Short: "Updates the work package",
-	Long: `Get a list of unread notifications.
-The list can get filtered further.`,
+	Long: `Update a work package. Each update
+provided by a flag is executed on its own.`,
 	Run: updateWorkPackage,
 }
 
@@ -30,7 +33,13 @@ func updateWorkPackage(_ *cobra.Command, args []string) {
 		printer.ErrorText(fmt.Sprintf("'%s' is an invalid work package id. Must be a number.", args[0]))
 	}
 
+	var opts = make(map[work_packages.UpdateOption]string)
 	if len(actionFlag) > 0 {
-		work_packages.Update(id, actionFlag)
+		opts[work_packages.Action] = actionFlag
 	}
+	if len(attachFlag) > 0 {
+		opts[work_packages.Attach] = attachFlag
+	}
+
+	work_packages.Update(id, opts)
 }

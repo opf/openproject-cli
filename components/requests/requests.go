@@ -1,7 +1,6 @@
 package requests
 
 import (
-	"bytes"
 	"io"
 	"net/http"
 	"net/url"
@@ -14,6 +13,11 @@ var client *http.Client
 var host *url.URL
 var token string
 
+type RequestBody struct {
+	ContentType string
+	Body        io.Reader
+}
+
 func Init(hostUrl *url.URL, tokenValue string) {
 	client = &http.Client{}
 	host = hostUrl
@@ -24,7 +28,7 @@ func Get(path string, query *Query) (code int, body []byte) {
 	return Do("GET", path, query, nil)
 }
 
-func Do(method string, path string, query *Query, reqBody []byte) (code int, body []byte) {
+func Do(method string, path string, query *Query, reqBody *RequestBody) (status int, response []byte) {
 	if client == nil {
 		printer.ErrorText("Cannot execute requests without initializing request client first. Run `op login`")
 	}
@@ -35,17 +39,22 @@ func Do(method string, path string, query *Query, reqBody []byte) (code int, bod
 		requestUrl.RawQuery = query.String()
 	}
 
+	var body io.Reader
+	if reqBody != nil {
+		body = reqBody.Body
+	}
+
 	request, err := http.NewRequest(
 		strings.ToUpper(method),
 		requestUrl.String(),
-		bytes.NewReader(reqBody),
+		body,
 	)
 	if err != nil {
 		printer.Error(err)
 	}
 
 	if reqBody != nil {
-		request.Header.Add("Content-Type", "application/json")
+		request.Header.Add("Content-Type", reqBody.ContentType)
 	}
 
 	if len(token) > 0 {
@@ -59,12 +68,12 @@ func Do(method string, path string, query *Query, reqBody []byte) (code int, bod
 
 	defer func() { _ = resp.Body.Close() }()
 
-	body, err = io.ReadAll(resp.Body)
+	response, err = io.ReadAll(resp.Body)
 	if err != nil {
 		printer.Error(err)
 	}
 
-	return resp.StatusCode, body
+	return resp.StatusCode, response
 }
 
 func IsSuccess(code int) bool {

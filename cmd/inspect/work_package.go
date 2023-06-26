@@ -30,7 +30,7 @@ func inspectWorkPackage(_ *cobra.Command, args []string) {
 	workPackage := work_packages.Lookup(id)
 
 	if shouldOpenWorkPackageInBrowser {
-		err := launch.Browser(routes.WorkPackageUrl(workPackage))
+		err = launch.Browser(routes.WorkPackageUrl(workPackage))
 
 		if err != nil {
 			printer.ErrorText(fmt.Sprintf("Error opening browser: %s", err))
