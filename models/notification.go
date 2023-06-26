@@ -1,8 +1,8 @@
 package models
 
 type Notification struct {
-	Id              int64
-	ResourceId      int64
+	Id              uint64
+	ResourceId      uint64
 	ResourceSubject string
 	Reason          string
 	Read            bool

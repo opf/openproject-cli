@@ -9,7 +9,7 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
-	createWorkPackageCmd.Flags().Int64VarP(
+	createWorkPackageCmd.Flags().Uint64VarP(
 		&projectId,
 		"project",
 		"p",

@@ -34,8 +34,8 @@ func WorkPackage(workPackage *models.WorkPackage) {
 	printDescription(workPackage)
 }
 
-func idLength(id int64) int {
-	return len(strconv.FormatInt(id, 10)) + 1
+func idLength(id uint64) int {
+	return len(strconv.FormatUint(id, 10)) + 1
 }
 
 func printHeadline(workPackage *models.WorkPackage, maxIdLength, maxStatusLength, maxTypeLength int) {

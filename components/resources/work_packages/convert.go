@@ -4,7 +4,7 @@ import "github.com/opf/openproject-cli/models"
 
 func (dto *WorkPackageDto) convert() *models.WorkPackage {
 	return &models.WorkPackage{
-		Id:          dto.Id,
+		Id:          uint64(dto.Id),
 		Subject:     dto.Subject,
 		Type:        dto.Links.Type.Title,
 		Assignee:    models.Principal{Name: dto.Links.Assignee.Title},

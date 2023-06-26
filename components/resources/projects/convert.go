@@ -14,7 +14,7 @@ func (dto *ProjectCollectionDto) convert() []*models.Project {
 
 func (dto *ProjectDto) convert() *models.Project {
 	return &models.Project{
-		Id:   dto.Id,
+		Id:   uint64(dto.Id),
 		Name: dto.Name,
 	}
 }

@@ -17,7 +17,7 @@ func (dto *NotificationCollectionDto) convert() []*models.Notification {
 
 func (dto *NotificationDto) convert() *models.Notification {
 	return &models.Notification{
-		Id:              dto.Id,
+		Id:              uint64(dto.Id),
 		ResourceId:      parser.IdFromLink(dto.Links.Resource.Href),
 		ResourceSubject: dto.Links.Resource.Title,
 		Reason:          dto.Reason,

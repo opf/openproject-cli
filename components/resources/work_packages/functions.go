@@ -50,7 +50,7 @@ func All(principal *models.Principal) []*models.WorkPackage {
 	return workPackageCollection.convert()
 }
 
-func Create(projectId int64, subject string) *models.WorkPackage {
+func Create(projectId uint64, subject string) *models.WorkPackage {
 	data, err := json.Marshal(CreateWorkPackageDto{Subject: subject})
 	if err != nil {
 		printer.Error(err)
@@ -59,7 +59,7 @@ func Create(projectId int64, subject string) *models.WorkPackage {
 	requestData := requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(data)}
 
 	status, response := requests.Post(
-		filepath.Join(apiPath, "projects", strconv.FormatInt(projectId, 10), "work_packages"),
+		filepath.Join(apiPath, "projects", strconv.FormatUint(projectId, 10), "work_packages"),
 		&requestData,
 	)
 	if !requests.IsSuccess(status) {
@@ -140,7 +140,7 @@ func action(workPackage *WorkPackageDto, action string) {
 
 func findAction(actionInput string, availableActions []*actions.CustomActionDto) *actions.CustomActionDto {
 	var actionAsId = false
-	actionId, err := strconv.ParseInt(actionInput, 10, 64)
+	actionId, err := strconv.ParseUint(actionInput, 10, 64)
 	if err == nil {
 		actionAsId = true
 	}

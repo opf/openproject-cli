@@ -11,7 +11,7 @@ import (
 	"github.com/opf/openproject-cli/components/printer"
 )
 
-var projectId int64
+var projectId uint64
 var shouldOpenWorkPackageInBrowser bool
 
 var createWorkPackageCmd = &cobra.Command{

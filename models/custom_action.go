@@ -1,6 +1,6 @@
 package models
 
 type CustomAction struct {
-	Id   int64
+	Id   uint64
 	Name string
 }

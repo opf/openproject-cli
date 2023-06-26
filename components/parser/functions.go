@@ -17,9 +17,9 @@ func Parse[T any](body []byte) (element T) {
 	return
 }
 
-func IdFromLink(href string) int64 {
+func IdFromLink(href string) uint64 {
 	split := strings.Split(href, "/")
-	i, err := strconv.ParseInt(split[len(split)-1], 10, 64)
+	i, err := strconv.ParseUint(split[len(split)-1], 10, 64)
 	if err != nil {
 		printer.Error(err)
 	}
