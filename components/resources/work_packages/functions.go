@@ -56,7 +56,7 @@ func Create(projectId int64, subject string) *models.WorkPackage {
 		printer.Error(err)
 	}
 
-	requestData := requests.RequestBody{ContentType: "application/json", Body: bytes.NewReader(data)}
+	requestData := requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(data)}
 
 	status, response := requests.Post(
 		filepath.Join(apiPath, "projects", strconv.FormatInt(projectId, 10), "work_packages"),
@@ -97,7 +97,7 @@ func upload(dto *WorkPackageDto, path string) {
 
 	printer.Info(fmt.Sprintf("Uploading '%s' to work package ...", filepath.Base(path)))
 
-	body := &requests.RequestBody{ContentType: contentType, Body: reader}
+	body := &requests.RequestData{ContentType: contentType, Body: reader}
 	status, response := requests.Do(link.Method, link.Href, nil, body)
 	if !requests.IsSuccess(status) {
 		printer.ResponseError(status, response)
@@ -163,17 +163,17 @@ func findAction(actionInput string, availableActions []*actions.CustomActionDto)
 func executeAction(workPackage *WorkPackageDto, action *actions.CustomActionDto) {
 	printer.Info(fmt.Sprintf("Executing action '%s' on work package [#%d] ...", action.Name, workPackage.Id))
 
-	reqBody := &actions.CustomActionExecuteDto{
+	requestBody := &actions.CustomActionExecuteDto{
 		LockVersion: workPackage.LockVersion,
 		Links:       &actions.ExecuteLinksDto{WorkPackage: &resources.LinkDto{Href: workPackage.Links.Self.Href}},
 	}
 
-	b, err := json.Marshal(reqBody)
+	b, err := json.Marshal(requestBody)
 	if err != nil {
 		printer.Error(err)
 	}
 
-	body := &requests.RequestBody{ContentType: "application/json", Body: bytes.NewReader(b)}
+	body := &requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(b)}
 	status, response := requests.Do(action.Links.Execute.Method, action.Links.Execute.Href, nil, body)
 	if !requests.IsSuccess(status) {
 		printer.ResponseError(status, response)

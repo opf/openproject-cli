@@ -13,7 +13,7 @@ var client *http.Client
 var host *url.URL
 var token string
 
-type RequestBody struct {
+type RequestData struct {
 	ContentType string
 	Body        io.Reader
 }
@@ -28,10 +28,10 @@ func Get(path string, query *Query) (code int, body []byte) {
 	return Do("GET", path, query, nil)
 }
 
-func Post(path string, requestBody *RequestBody) (code int, responseBody []byte) {
-	return Do("POST", path, nil, requestBody)
+func Post(path string, requestData *RequestData) (code int, responseBody []byte) {
+	return Do("POST", path, nil, requestData)
 }
-func Do(method string, path string, query *Query, reqBody *RequestBody) (status int, response []byte) {
+func Do(method string, path string, query *Query, requestData *RequestData) (status int, response []byte) {
 	if client == nil {
 		printer.ErrorText("Cannot execute requests without initializing request client first. Run `op login`")
 	}
@@ -43,8 +43,8 @@ func Do(method string, path string, query *Query, reqBody *RequestBody) (status 
 	}
 
 	var body io.Reader
-	if reqBody != nil {
-		body = reqBody.Body
+	if requestData != nil {
+		body = requestData.Body
 	}
 
 	request, err := http.NewRequest(
@@ -56,8 +56,8 @@ func Do(method string, path string, query *Query, reqBody *RequestBody) (status 
 		printer.Error(err)
 	}
 
-	if reqBody != nil {
-		request.Header.Add("Content-Type", reqBody.ContentType)
+	if requestData != nil {
+		request.Header.Add("Content-Type", requestData.ContentType)
 	}
 
 	if len(token) > 0 {
