@@ -70,7 +70,7 @@ func printAttributes(workPackage *models.WorkPackage) {
 }
 
 func printOpenLink(workPackage *models.WorkPackage) {
-	activePrinter.Printf("Open: %s\n", routes.WorkPackage(workPackage))
+	activePrinter.Printf("Open: %s\n", routes.WorkPackageUrl(workPackage))
 }
 
 func printDescription(workPackage *models.WorkPackage) {

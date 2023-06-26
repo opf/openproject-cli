@@ -1,8 +1,6 @@
 package list
 
-import (
-	"github.com/spf13/cobra"
-)
+import "github.com/spf13/cobra"
 
 var RootCmd = &cobra.Command{
 	Use:   "list [resource]",
@@ -25,7 +23,7 @@ func init() {
 		"assignee",
 		"a",
 		"",
-		"Assignee of the work package",
+		"Assignee of the work package (can be name, ID or 'me')",
 	)
 
 	RootCmd.AddCommand(

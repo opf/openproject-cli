@@ -13,7 +13,7 @@ var assignee string
 var workPackagesCmd = &cobra.Command{
 	Use:   "workpackages",
 	Short: "Lists work packages",
-	Long:  "Get a list of visible work packages.",
+	Long:  "Get a list of visible work packages. Filter flags can be applied.",
 	Run:   listWorkPackages,
 }
 

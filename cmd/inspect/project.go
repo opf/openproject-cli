@@ -6,9 +6,13 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/opf/openproject-cli/components/launch"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/resources/projects"
+	"github.com/opf/openproject-cli/components/routes"
 )
+
+var shouldOpenProjectInBrowser bool
 
 var inspectProjectCmd = &cobra.Command{
 	Use:   "project [id]",
@@ -27,5 +31,15 @@ func inspectProject(_ *cobra.Command, args []string) {
 		printer.ErrorText(fmt.Sprintf("'%s' is an invalid project id. Must be a number.", args[0]))
 	}
 
-	printer.Project(projects.Lookup(id))
+	project := projects.Lookup(id)
+
+	if shouldOpenProjectInBrowser {
+		err := launch.Browser(routes.ProjectUrl(project))
+
+		if err != nil {
+			printer.ErrorText(fmt.Sprintf("Error opening browser: %s", err))
+		}
+	} else {
+		printer.Project(project)
+	}
 }

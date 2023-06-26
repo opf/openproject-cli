@@ -1,17 +1,18 @@
 package cmd
 
 import (
-	"github.com/opf/openproject-cli/components/printer"
-	"github.com/opf/openproject-cli/components/routes"
-	"github.com/spf13/cobra"
 	"net/url"
 	"os"
+
+	"github.com/spf13/cobra"
 
 	"github.com/opf/openproject-cli/cmd/inspect"
 	"github.com/opf/openproject-cli/cmd/list"
 	"github.com/opf/openproject-cli/cmd/update"
 	"github.com/opf/openproject-cli/components/configuration"
+	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
+	"github.com/opf/openproject-cli/components/routes"
 )
 
 var rootCmd = &cobra.Command{

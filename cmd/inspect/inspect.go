@@ -1,8 +1,6 @@
 package inspect
 
-import (
-	"github.com/spf13/cobra"
-)
+import "github.com/spf13/cobra"
 
 var RootCmd = &cobra.Command{
 	Use:   "inspect [type] [id]",
@@ -11,5 +9,21 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
+	inspectProjectCmd.Flags().BoolVarP(
+		&shouldOpenProjectInBrowser,
+		"open",
+		"o",
+		false,
+		"Open the project in the default browser",
+	)
+
+	inspectWorkPackageCmd.Flags().BoolVarP(
+		&shouldOpenWorkPackageInBrowser,
+		"open",
+		"o",
+		false,
+		"Open the work package in the default browser",
+	)
+
 	RootCmd.AddCommand(inspectProjectCmd, inspectWorkPackageCmd)
 }
