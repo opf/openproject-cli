@@ -58,7 +58,7 @@ func login(cmd *cobra.Command, args []string) {
 	}
 
 	for {
-		fmt.Print("OpenProject API Token: ")
+		fmt.Printf("OpenProject API Token (Visit %s/my/access_token to generate one): ", hostUrl)
 		ok, t := requestApiToken()
 		if !ok {
 			fmt.Println(tokenInputError)
@@ -81,6 +81,7 @@ func parseHostUrl() (ok bool, errMessage string, host *url.URL) {
 	}
 
 	input = strings.Replace(input, "\n", "", -1)
+	input = strings.TrimSuffix(input, "/")
 	parsed, err := url.Parse(input)
 	if err != nil {
 		return false, urlInputError, nil

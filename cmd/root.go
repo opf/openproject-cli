@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"github.com/opf/openproject-cli/cmd/create"
 	"net/url"
 	"os"
+
+	"github.com/opf/openproject-cli/cmd/create"
 
 	"github.com/spf13/cobra"
 
