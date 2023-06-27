@@ -14,34 +14,34 @@ const (
 	reset    = "\033[0m"
 )
 
-func black(s string) string {
+func Black(s string) string {
 	return fmt.Sprintf("%s%s%s", cBlack, s, reset)
 }
 
-func red(s string) string {
+func Red(s string) string {
 	return fmt.Sprintf("%s%s%s", cRed, s, reset)
 }
 
-func green(s string) string {
+func Green(s string) string {
 	return fmt.Sprintf("%s%s%s", cGreen, s, reset)
 }
 
-func yellow(s string) string {
+func Yellow(s string) string {
 	return fmt.Sprintf("%s%s%s", cYellow, s, reset)
 }
 
-func blue(s string) string {
+func Blue(s string) string {
 	return fmt.Sprintf("%s%s%s", cBlue, s, reset)
 }
 
-func magenta(s string) string {
+func Magenta(s string) string {
 	return fmt.Sprintf("%s%s%s", cMagenta, s, reset)
 }
 
-func cyan(s string) string {
+func Cyan(s string) string {
 	return fmt.Sprintf("%s%s%s", cCyan, s, reset)
 }
 
-func white(s string) string {
+func White(s string) string {
 	return fmt.Sprintf("%s%s%s", cWhite, s, reset)
 }

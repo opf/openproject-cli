@@ -43,24 +43,24 @@ func printHeadline(workPackage *models.WorkPackage, maxIdLength, maxStatusLength
 
 	diff := maxIdLength - idLength(workPackage.Id)
 	idStr := fmt.Sprintf("%s#%d", indent(diff), workPackage.Id)
-	parts = append(parts, red(idStr))
+	parts = append(parts, Red(idStr))
 
 	diff = maxTypeLength - len(workPackage.Type)
 	typeStr := strings.ToUpper(workPackage.Type) + indent(diff)
-	parts = append(parts, green(typeStr))
+	parts = append(parts, Green(typeStr))
 
 	if maxStatusLength > 0 {
 		diff = maxStatusLength - len(workPackage.Status)
-		statusStr := fmt.Sprintf("[%s]%s", yellow(workPackage.Status), indent(diff))
+		statusStr := fmt.Sprintf("[%s]%s", Yellow(workPackage.Status), indent(diff))
 		parts = append(parts, statusStr)
 	}
 
-	parts = append(parts, cyan(workPackage.Subject))
+	parts = append(parts, Cyan(workPackage.Subject))
 	activePrinter.Println(strings.Join(parts, " "))
 }
 
 func printAttributes(workPackage *models.WorkPackage) {
-	activePrinter.Printf("[%s]\n", yellow(workPackage.Status))
+	activePrinter.Printf("[%s]\n", Yellow(workPackage.Status))
 
 	assigneeStr := workPackage.Assignee.Name
 	if len(assigneeStr) == 0 {

@@ -1,9 +1,12 @@
 package printer_test
 
 import (
+	"fmt"
 	"os"
+	"strconv"
 	"testing"
 
+	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/models"
 )
@@ -20,7 +23,7 @@ func TestMain(m *testing.M) {
 func TestProject(t *testing.T) {
 	testingPrinter.Reset()
 
-	expected := "[\033[31m#42\033[0m] \033[36mExample\033[0m\n"
+	expected := fmt.Sprintf("[%s] %s\n", printer.Red("#42"), printer.Cyan("Example"))
 
 	project := models.Project{Id: 42, Name: "Example"}
 
@@ -34,15 +37,20 @@ func TestProject(t *testing.T) {
 func TestProjects(t *testing.T) {
 	testingPrinter.Reset()
 
-	expected := "[\033[31m#42\033[0m] \033[36mFoo\033[0m\n" +
-		"[\033[31m#45\033[0m] \033[36mBar\033[0m\n" +
-		"[\033[31m#123\033[0m] \033[36mBaz\033[0m\n"
-
 	projects := []*models.Project{
 		{Id: 42, Name: "Foo"},
 		{Id: 45, Name: "Bar"},
 		{Id: 123, Name: "Baz"},
 	}
+
+	expected := common.Reduce[*models.Project, string](
+		projects,
+		func(state string, project *models.Project) string {
+			idString := "#" + strconv.FormatUint(project.Id, 10)
+
+			return state + fmt.Sprintf("[%s] %s\n", printer.Red(idString), printer.Cyan(project.Name))
+		},
+		"")
 
 	printer.Projects(projects)
 

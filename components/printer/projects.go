@@ -18,5 +18,5 @@ func Project(project *models.Project) {
 
 func printProject(project *models.Project) {
 	id := fmt.Sprintf("#%d", project.Id)
-	activePrinter.Printf("[%s] %s\n", red(id), cyan(project.Name))
+	activePrinter.Printf("[%s] %s\n", Red(id), Cyan(project.Name))
 }

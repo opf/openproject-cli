@@ -7,16 +7,16 @@ func Info(msg string) {
 }
 
 func Done() {
-	activePrinter.Println(green("DONE"))
+	activePrinter.Println(Green("DONE"))
 }
 
 func Error(err error) {
-	activePrinter.Printf("%s Program exited with error: %+v\n", red("[ERROR]"), err)
+	activePrinter.Printf("%s Program exited with error: %+v\n", Red("[ERROR]"), err)
 	os.Exit(-1)
 }
 
 func ErrorText(msg string) {
-	activePrinter.Printf("%s %s\n", red("[ERROR]"), msg)
+	activePrinter.Printf("%s %s\n", Red("[ERROR]"), msg)
 	os.Exit(-1)
 }
 
@@ -30,7 +30,7 @@ func ResponseError(status int, body []byte) {
 
 	activePrinter.Printf(
 		"%s Bad response from server: (%d)\n\n%s\n",
-		red("[ERROR]"),
+		Red("[ERROR]"),
 		status,
 		bodyRepresentation,
 	)
