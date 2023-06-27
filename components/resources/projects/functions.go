@@ -7,6 +7,7 @@ import (
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
+	"github.com/opf/openproject-cli/dtos"
 	"github.com/opf/openproject-cli/models"
 )
 
@@ -18,8 +19,8 @@ func All() []*models.Project {
 		printer.ResponseError(status, response)
 	}
 
-	element := parser.Parse[ProjectCollectionDto](response)
-	return element.convert()
+	element := parser.Parse[dtos.ProjectCollectionDto](response)
+	return element.Convert()
 }
 
 func Lookup(id int64) *models.Project {
@@ -28,6 +29,6 @@ func Lookup(id int64) *models.Project {
 		printer.ResponseError(status, response)
 	}
 
-	element := parser.Parse[ProjectDto](response)
-	return element.convert()
+	element := parser.Parse[dtos.ProjectDto](response)
+	return element.Convert()
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
+	"github.com/opf/openproject-cli/dtos"
 	"github.com/opf/openproject-cli/models"
 )
 
@@ -15,8 +16,8 @@ func All(reason string) []*models.Notification {
 		printer.ResponseError(status, response)
 	}
 
-	element := parser.Parse[NotificationCollectionDto](response)
-	return element.convert()
+	element := parser.Parse[dtos.NotificationCollectionDto](response)
+	return element.Convert()
 }
 
 func generateQuery(reason string) *requests.Query {

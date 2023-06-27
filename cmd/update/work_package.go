@@ -11,8 +11,10 @@ import (
 )
 
 var (
-	actionFlag string
-	attachFlag string
+	actionFlag   string
+	attachFlag   string
+	subjectFlag  string
+	typeFlag     string
 )
 
 var workPackageCmd = &cobra.Command{
@@ -33,13 +35,23 @@ func updateWorkPackage(_ *cobra.Command, args []string) {
 		printer.ErrorText(fmt.Sprintf("'%s' is an invalid work package id. Must be a number.", args[0]))
 	}
 
-	var opts = make(map[work_packages.UpdateOption]string)
+	work_packages.Update(id, updateOptions())
+}
+
+func updateOptions() map[work_packages.UpdateOption]string {
+	var options = make(map[work_packages.UpdateOption]string)
 	if len(actionFlag) > 0 {
-		opts[work_packages.Action] = actionFlag
+		options[work_packages.Action] = actionFlag
 	}
 	if len(attachFlag) > 0 {
-		opts[work_packages.Attach] = attachFlag
+		options[work_packages.Attach] = attachFlag
+	}
+	if len(subjectFlag) > 0 {
+		options[work_packages.Subject] = subjectFlag
+	}
+	if len(typeFlag) > 0 {
+		options[work_packages.Type] = typeFlag
 	}
 
-	work_packages.Update(id, opts)
+	return options
 }

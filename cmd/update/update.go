@@ -12,6 +12,12 @@ flags.`,
 }
 
 func init() {
+	addWorkPackageFlags()
+
+	RootCmd.AddCommand(workPackageCmd)
+}
+
+func addWorkPackageFlags() {
 	workPackageCmd.Flags().StringVarP(
 		&actionFlag,
 		"action",
@@ -25,6 +31,16 @@ func init() {
 		"",
 		"Attach a file to the work package",
 	)
-
-	RootCmd.AddCommand(workPackageCmd)
+	workPackageCmd.Flags().StringVar(
+		&subjectFlag,
+		"subject",
+		"",
+		"Change the subject of the work package",
+	)
+	workPackageCmd.Flags().StringVar(
+		&typeFlag,
+		"type",
+		"t",
+		"Change the work package type",
+	)
 }

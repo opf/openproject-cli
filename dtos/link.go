@@ -1,4 +1,4 @@
-package resources
+package dtos
 
 type LinkDto struct {
 	Href   string `json:"href"`

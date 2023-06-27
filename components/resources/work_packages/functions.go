@@ -12,9 +12,9 @@ import (
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
-	"github.com/opf/openproject-cli/components/resources"
-	actions "github.com/opf/openproject-cli/components/resources/custom_actions"
+	workPackageTypes "github.com/opf/openproject-cli/components/resources/work_packages/types"
 	workPackageUpload "github.com/opf/openproject-cli/components/resources/work_packages/upload"
+	"github.com/opf/openproject-cli/dtos"
 	"github.com/opf/openproject-cli/models"
 )
 
@@ -23,13 +23,15 @@ type UpdateOption int
 const (
 	Action UpdateOption = iota
 	Attach
+	Subject
+	Type
 )
 
 const apiPath = "api/v3"
 const workPackagesPath = apiPath + "/work_packages"
 
 func Lookup(id int64) *models.WorkPackage {
-	return fetch(id).convert()
+	return fetch(id).Convert()
 }
 
 func All(principal *models.Principal) []*models.WorkPackage {
@@ -46,12 +48,12 @@ func All(principal *models.Principal) []*models.WorkPackage {
 		printer.ResponseError(status, response)
 	}
 
-	workPackageCollection := parser.Parse[WorkPackageCollectionDto](response)
-	return workPackageCollection.convert()
+	workPackageCollection := parser.Parse[dtos.WorkPackageCollectionDto](response)
+	return workPackageCollection.Convert()
 }
 
 func Create(projectId uint64, subject string) *models.WorkPackage {
-	data, err := json.Marshal(CreateWorkPackageDto{Subject: subject})
+	data, err := json.Marshal(dtos.CreateWorkPackageDto{Subject: subject})
 	if err != nil {
 		printer.Error(err)
 	}
@@ -59,16 +61,16 @@ func Create(projectId uint64, subject string) *models.WorkPackage {
 	requestData := requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(data)}
 
 	status, response := requests.Post(
-		filepath.Join(apiPath, "projects", strconv.FormatUint(projectId, 10), "work_packages"),
+		filepath.Join(apiPath, "projects", strconv.FormatUint(projectId, 10), "dtos"),
 		&requestData,
 	)
 	if !requests.IsSuccess(status) {
 		printer.ResponseError(status, response)
 	}
 
-	workPackage := parser.Parse[WorkPackageDto](response)
+	workPackage := parser.Parse[dtos.WorkPackageDto](response)
 
-	return workPackage.convert()
+	return workPackage.Convert()
 }
 
 func Update(id int64, opts map[UpdateOption]string) {
@@ -80,11 +82,77 @@ func Update(id int64, opts map[UpdateOption]string) {
 			action(workPackage, value)
 		case Attach:
 			upload(workPackage, value)
+		case Subject:
+			subject(workPackage, value)
+		case Type:
+			workPackageType(workPackage, value)
 		}
 	}
 }
 
-func upload(dto *WorkPackageDto, path string) {
+func fetch(id int64) *dtos.WorkPackageDto {
+	status, response := requests.Get(filepath.Join(workPackagesPath, strconv.FormatInt(id, 10)), nil)
+	if !requests.IsSuccess(status) {
+		printer.ResponseError(status, response)
+	}
+
+	workPackage := parser.Parse[dtos.WorkPackageDto](response)
+	return &workPackage
+}
+
+func workPackageType(workPackage *dtos.WorkPackageDto, input string) {
+	availableTypes := workPackageTypes.AvailableTypes(workPackage)
+
+	status, response := requests.Get(workPackage.Links.Project.Href, nil)
+	if !requests.IsSuccess(status) {
+		printer.ResponseError(status, response)
+	}
+
+	foundType := findType(input, availableTypes)
+	if foundType == nil {
+		printer.Info(fmt.Sprintf(
+			"No unique available type from input '%s' found for project [#%d]. Please use one of the types listed below.",
+			input,
+			parser.IdFromLink(workPackage.Links.Project.Href),
+		))
+		//		availableActions := common.Reduce(
+		//			workPackage.Embedded.CustomActions,
+		//			func(acc []*models.CustomAction, dto *dtos.CustomActionDto) []*models.CustomAction {
+		//				return append(acc, dto.Convert())
+		//			},
+		//			[]*models.CustomAction{},
+		//		)
+		//		printer.CustomActions(availableActions)
+		return
+	}
+
+	printer.ErrorText("not yet implemented")
+}
+
+func findType(input string, availableTypes []*models.Type) *models.Type {
+	return nil
+}
+
+func subject(dto *dtos.WorkPackageDto, subject string) {
+	patch := dtos.WorkPackageDto{
+		Subject:     subject,
+		LockVersion: dto.LockVersion,
+	}
+
+	marshal, err := json.Marshal(patch)
+	if err != nil {
+		printer.Error(err)
+	}
+
+	status, response := requests.Patch(dto.Links.Self.Href, &requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(marshal)})
+	if !requests.IsSuccess(status) {
+		printer.ResponseError(status, response)
+	} else {
+		printer.Done()
+	}
+}
+
+func upload(dto *dtos.WorkPackageDto, path string) {
 	if dto.Links.PrepareAttachment != nil {
 		printer.ErrorText(fmt.Sprintf("Uploads to fog storages are currently not supported. :("))
 	}
@@ -106,17 +174,7 @@ func upload(dto *WorkPackageDto, path string) {
 	}
 }
 
-func fetch(id int64) *WorkPackageDto {
-	status, response := requests.Get(filepath.Join(workPackagesPath, strconv.FormatInt(id, 10)), nil)
-	if !requests.IsSuccess(status) {
-		printer.ResponseError(status, response)
-	}
-
-	workPackage := parser.Parse[WorkPackageDto](response)
-	return &workPackage
-}
-
-func action(workPackage *WorkPackageDto, action string) {
+func action(workPackage *dtos.WorkPackageDto, action string) {
 	foundAction := findAction(action, workPackage.Embedded.CustomActions)
 	if foundAction == nil {
 		printer.Info(fmt.Sprintf(
@@ -126,7 +184,7 @@ func action(workPackage *WorkPackageDto, action string) {
 		))
 		availableActions := common.Reduce(
 			workPackage.Embedded.CustomActions,
-			func(acc []*models.CustomAction, dto *actions.CustomActionDto) []*models.CustomAction {
+			func(acc []*models.CustomAction, dto *dtos.CustomActionDto) []*models.CustomAction {
 				return append(acc, dto.Convert())
 			},
 			[]*models.CustomAction{},
@@ -138,14 +196,14 @@ func action(workPackage *WorkPackageDto, action string) {
 	executeAction(workPackage, foundAction)
 }
 
-func findAction(actionInput string, availableActions []*actions.CustomActionDto) *actions.CustomActionDto {
+func findAction(actionInput string, availableActions []*dtos.CustomActionDto) *dtos.CustomActionDto {
 	var actionAsId = false
 	actionId, err := strconv.ParseUint(actionInput, 10, 64)
 	if err == nil {
 		actionAsId = true
 	}
 
-	var found []*actions.CustomActionDto
+	var found []*dtos.CustomActionDto
 	for _, act := range availableActions {
 		if actionAsId && parser.IdFromLink(act.Links.Self.Href) == actionId ||
 			!actionAsId && strings.ToLower(actionInput) == strings.ToLower(act.Name) {
@@ -160,12 +218,12 @@ func findAction(actionInput string, availableActions []*actions.CustomActionDto)
 	return nil
 }
 
-func executeAction(workPackage *WorkPackageDto, action *actions.CustomActionDto) {
+func executeAction(workPackage *dtos.WorkPackageDto, action *dtos.CustomActionDto) {
 	printer.Info(fmt.Sprintf("Executing action '%s' on work package [#%d] ...", action.Name, workPackage.Id))
 
-	requestBody := &actions.CustomActionExecuteDto{
+	requestBody := &dtos.CustomActionExecuteDto{
 		LockVersion: workPackage.LockVersion,
-		Links:       &actions.ExecuteLinksDto{WorkPackage: &resources.LinkDto{Href: workPackage.Links.Self.Href}},
+		Links:       &dtos.ExecuteLinksDto{WorkPackage: &dtos.LinkDto{Href: workPackage.Links.Self.Href}},
 	}
 
 	b, err := json.Marshal(requestBody)

@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"github.com/opf/openproject-cli/dtos"
 	"net/url"
 	"os"
 	"strings"
@@ -13,7 +14,6 @@ import (
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
-	"github.com/opf/openproject-cli/components/resources/config"
 )
 
 var loginCmd = &cobra.Command{
@@ -99,7 +99,7 @@ func checkOpenProjectApi() bool {
 		return false
 	}
 
-	c := parser.Parse[config.ConfigDto](response)
+	c := parser.Parse[dtos.ConfigDto](response)
 
 	return c.Type == "Root" && len(c.InstanceName) > 0
 }

@@ -31,6 +31,11 @@ func Get(path string, query *Query) (code int, body []byte) {
 func Post(path string, requestData *RequestData) (code int, responseBody []byte) {
 	return Do("POST", path, nil, requestData)
 }
+
+func Patch(path string, requestBody *RequestData) (status int, response []byte) {
+	return Do("PATCH", path, nil, requestBody)
+}
+
 func Do(method string, path string, query *Query, requestData *RequestData) (status int, response []byte) {
 	if client == nil {
 		printer.ErrorText("Cannot execute requests without initializing request client first. Run `op login`")
