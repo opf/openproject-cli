@@ -10,6 +10,29 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
+func TestNotification(t *testing.T) {
+	testingPrinter.Reset()
+
+	notification := &models.Notification{
+		Id:              42,
+		ResourceId:      15,
+		ResourceSubject: "Subject 1",
+		Reason:          "Comment created",
+		Read:            false,
+		CreatedAt:       "",
+		UpdatedAt:       "",
+	}
+
+	idString := "#" + strconv.FormatUint(notification.ResourceId, 10)
+	expected := fmt.Sprintf("[%s] %s (%s)\n", printer.Red(idString), printer.Cyan(notification.ResourceSubject), notification.Reason)
+
+	printer.Notifications(notification)
+
+	if testingPrinter.Result != expected {
+		t.Errorf("\nExpected:\n%sbut got:\n%s", expected, testingPrinter.Result)
+	}
+}
+
 func TestNotifications(t *testing.T) {
 	testingPrinter.Reset()
 

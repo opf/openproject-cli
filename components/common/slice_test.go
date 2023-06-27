@@ -12,6 +12,11 @@ func TestContains(t *testing.T) {
 	if !common.Contains(haystack, needle) {
 		t.Errorf("Expected %v to contain %d, but does not", haystack, needle)
 	}
+
+	needle = 42
+	if common.Contains(haystack, needle) {
+		t.Errorf("Expected %v to not contain %d, but does", haystack, needle)
+	}
 }
 
 func TestReduce(t *testing.T) {
