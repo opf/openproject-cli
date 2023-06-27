@@ -12,7 +12,6 @@ import (
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
-	workPackageTypes "github.com/opf/openproject-cli/components/resources/work_packages/types"
 	workPackageUpload "github.com/opf/openproject-cli/components/resources/work_packages/upload"
 	"github.com/opf/openproject-cli/dtos"
 	"github.com/opf/openproject-cli/models"
@@ -74,20 +73,20 @@ func Create(projectId uint64, subject string) *models.WorkPackage {
 }
 
 func Update(id int64, opts map[UpdateOption]string) {
-	workPackage := fetch(id)
-
 	for updateOpt, value := range opts {
 		switch updateOpt {
 		case Action:
-			action(workPackage, value)
+			action(fetch(id), value)
 		case Attach:
-			upload(workPackage, value)
+			upload(fetch(id), value)
 		case Subject:
-			subject(workPackage, value)
+			subject(fetch(id), value)
 		case Type:
-			workPackageType(workPackage, value)
+			workPackageType(fetch(id), value)
 		}
 	}
+
+	printer.WorkPackage(fetch(id).Convert())
 }
 
 func fetch(id int64) *dtos.WorkPackageDto {
@@ -101,39 +100,49 @@ func fetch(id int64) *dtos.WorkPackageDto {
 }
 
 func workPackageType(workPackage *dtos.WorkPackageDto, input string) {
-	availableTypes := workPackageTypes.AvailableTypes(workPackage)
-
-	status, response := requests.Get(workPackage.Links.Project.Href, nil)
-	if !requests.IsSuccess(status) {
-		printer.ResponseError(status, response)
-	}
-
-	foundType := findType(input, availableTypes)
+	types := availableTypes(workPackage)
+	foundType := findType(input, types)
 	if foundType == nil {
 		printer.Info(fmt.Sprintf(
 			"No unique available type from input '%s' found for project [#%d]. Please use one of the types listed below.",
 			input,
 			parser.IdFromLink(workPackage.Links.Project.Href),
 		))
-		//		availableActions := common.Reduce(
-		//			workPackage.Embedded.CustomActions,
-		//			func(acc []*models.CustomAction, dto *dtos.CustomActionDto) []*models.CustomAction {
-		//				return append(acc, dto.Convert())
-		//			},
-		//			[]*models.CustomAction{},
-		//		)
-		//		printer.CustomActions(availableActions)
+
+		printer.Types(common.Reduce(types,
+			func(acc []*models.Type, dto *dtos.TypeDto) []*models.Type {
+				return append(acc, dto.Convert())
+			}, []*models.Type{}))
 		return
 	}
 
-	printer.ErrorText("not yet implemented")
+	updateType(workPackage, foundType)
 }
 
-func findType(input string, availableTypes []*models.Type) *models.Type {
-	return nil
+func updateType(workPackage *dtos.WorkPackageDto, t *dtos.TypeDto) {
+	printer.Info(fmt.Sprintf("Updating work package type to %s ...", printer.Yellow(t.Name)))
+
+	patch := dtos.WorkPackageDto{
+		LockVersion: workPackage.LockVersion,
+		Links:       &dtos.WorkPackageLinksDto{Type: t.Links.Self},
+	}
+
+	marshal, err := json.Marshal(patch)
+	if err != nil {
+		printer.Error(err)
+	}
+
+	status, response := requests.Patch(workPackage.Links.Self.Href, &requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(marshal)})
+	if !requests.IsSuccess(status) {
+		printer.ResponseError(status, response)
+	} else {
+		printer.Done()
+	}
 }
 
 func subject(dto *dtos.WorkPackageDto, subject string) {
+	printer.Info(fmt.Sprintf("Updating work package subject to %s ...", printer.Cyan(subject)))
+
 	patch := dtos.WorkPackageDto{
 		Subject:     subject,
 		LockVersion: dto.LockVersion,
@@ -157,13 +166,12 @@ func upload(dto *dtos.WorkPackageDto, path string) {
 		printer.ErrorText(fmt.Sprintf("Uploads to fog storages are currently not supported. :("))
 	}
 
+	printer.Info(fmt.Sprintf("Uploading %s to work package ...", printer.Yellow(filepath.Base(path))))
 	link := dto.Links.AddAttachment
 	reader, contentType, err := workPackageUpload.BodyReader(path)
 	if err != nil {
 		printer.Error(err)
 	}
-
-	printer.Info(fmt.Sprintf("Uploading '%s' to work package ...", filepath.Base(path)))
 
 	body := &requests.RequestData{ContentType: contentType, Body: reader}
 	status, response := requests.Do(link.Method, link.Href, nil, body)

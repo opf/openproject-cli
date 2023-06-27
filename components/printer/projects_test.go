@@ -16,7 +16,7 @@ func TestProject(t *testing.T) {
 	project := models.Project{Id: 42, Name: "Example"}
 
 	idString := "#" + strconv.FormatUint(project.Id, 10)
-	expected := fmt.Sprintf("[%s] %s\n", printer.Red(idString), printer.Cyan(project.Name))
+	expected := fmt.Sprintf("%s %s\n", printer.Red(idString), printer.Cyan(project.Name))
 
 	printer.Project(&project)
 
@@ -39,7 +39,7 @@ func TestProjects(t *testing.T) {
 		func(state string, project *models.Project) string {
 			idString := "#" + strconv.FormatUint(project.Id, 10)
 
-			return state + fmt.Sprintf("[%s] %s\n", printer.Red(idString), printer.Cyan(project.Name))
+			return state + fmt.Sprintf("%s %s\n", printer.Red(idString), printer.Cyan(project.Name))
 		},
 		"")
 

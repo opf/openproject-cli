@@ -2,9 +2,14 @@ package dtos
 
 import "github.com/opf/openproject-cli/models"
 
+type typeLinks struct {
+	Self *LinkDto `json:"self"`
+}
+
 type TypeDto struct {
-	Id   int64  `json:"id"`
-	Name string `json:"name"`
+	Id    int64      `json:"id"`
+	Name  string     `json:"name"`
+	Links *typeLinks `json:"_links"`
 }
 
 type typeElements struct {

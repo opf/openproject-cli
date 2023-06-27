@@ -4,15 +4,15 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
-type workPackageLinksDto struct {
-	Self              *LinkDto   `json:"self"`
-	AddAttachment     *LinkDto   `json:"addAttachment"`
-	Status            *LinkDto   `json:"status"`
-	Project           *LinkDto   `json:"project"`
-	Assignee          *LinkDto   `json:"assignee"`
-	Type              *LinkDto   `json:"type"`
-	CustomActions     []*LinkDto `json:"customActions"`
-	PrepareAttachment *LinkDto   `json:"prepareAttachment"`
+type WorkPackageLinksDto struct {
+	Self              *LinkDto   `json:"self,omitempty"`
+	AddAttachment     *LinkDto   `json:"addAttachment,omitempty"`
+	Status            *LinkDto   `json:"status,omitempty"`
+	Project           *LinkDto   `json:"project,omitempty"`
+	Assignee          *LinkDto   `json:"assignee,omitempty"`
+	Type              *LinkDto   `json:"type,omitempty"`
+	CustomActions     []*LinkDto `json:"customActions,omitempty"`
+	PrepareAttachment *LinkDto   `json:"prepareAttachment,omitempty"`
 }
 
 type workPackageDescription struct {
@@ -22,7 +22,7 @@ type workPackageDescription struct {
 type WorkPackageDto struct {
 	Id          int64                   `json:"id,omitempty"`
 	Subject     string                  `json:"subject,omitempty"`
-	Links       *workPackageLinksDto    `json:"_links,omitempty"`
+	Links       *WorkPackageLinksDto    `json:"_links,omitempty"`
 	Description *workPackageDescription `json:"description,omitempty"`
 	Embedded    *embeddedDto            `json:"_embedded,omitempty"`
 	LockVersion int                     `json:"lockVersion,omitempty"`
