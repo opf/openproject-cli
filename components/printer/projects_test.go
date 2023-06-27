@@ -2,7 +2,6 @@ package printer_test
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"testing"
 
@@ -11,21 +10,13 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
-var testingPrinter = &printer.TestingPrinter{}
-
-func TestMain(m *testing.M) {
-	printer.Init(testingPrinter)
-
-	code := m.Run()
-	os.Exit(code)
-}
-
 func TestProject(t *testing.T) {
 	testingPrinter.Reset()
 
-	expected := fmt.Sprintf("[%s] %s\n", printer.Red("#42"), printer.Cyan("Example"))
-
 	project := models.Project{Id: 42, Name: "Example"}
+
+	idString := "#" + strconv.FormatUint(project.Id, 10)
+	expected := fmt.Sprintf("[%s] %s\n", printer.Red(idString), printer.Cyan(project.Name))
 
 	printer.Project(&project)
 
