@@ -2,11 +2,12 @@ package printer_test
 
 import (
 	"fmt"
+	"strconv"
+	"testing"
+
 	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/models"
-	"strconv"
-	"testing"
 )
 
 func TestNotifications(t *testing.T) {
