@@ -7,13 +7,17 @@ type TestingPrinter struct {
 }
 
 func (printer *TestingPrinter) Printf(format string, a ...any) (n int, err error) {
-	printer.Result = fmt.Sprintf(format, a...)
+	printer.Result += fmt.Sprintf(format, a...)
 
 	return len(printer.Result), nil
 }
 
 func (printer *TestingPrinter) Println(a ...any) (n int, err error) {
-	printer.Result = fmt.Sprintln(a...)
+	printer.Result += fmt.Sprintln(a...)
 
 	return len(printer.Result), nil
+}
+
+func (printer *TestingPrinter) Reset() {
+	printer.Result = ""
 }

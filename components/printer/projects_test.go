@@ -1,6 +1,7 @@
 package printer_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/opf/openproject-cli/components/printer"
@@ -9,27 +10,33 @@ import (
 
 var testingPrinter = &printer.TestingPrinter{}
 
-func TestMain(_ *testing.M) {
+func TestMain(m *testing.M) {
 	printer.Init(testingPrinter)
+
+	code := m.Run()
+	os.Exit(code)
 }
 
-func TestProject_Prints_A_Project(t *testing.T) {
-	expected := "[#1] Demo project"
+func TestProject(t *testing.T) {
+	testingPrinter.Reset()
+
+	expected := "[\033[31m#42\033[0m] \033[36mExample\033[0m\n"
 
 	project := models.Project{Id: 42, Name: "Example"}
 
 	printer.Project(&project)
 
 	if testingPrinter.Result != expected {
-		t.Fatalf("Expected %s, but got %s", expected, testingPrinter.Result)
+		t.Errorf("Expected %s, but got %s", expected, testingPrinter.Result)
 	}
 }
 
-func TestProjects_Prints_An_Array_Of_Projects(t *testing.T) {
-	expected :=
-		`[#42] Foo
-[#45] Bar
-[#123] Baz`
+func TestProjects(t *testing.T) {
+	testingPrinter.Reset()
+
+	expected := "[\033[31m#42\033[0m] \033[36mFoo\033[0m\n" +
+		"[\033[31m#45\033[0m] \033[36mBar\033[0m\n" +
+		"[\033[31m#123\033[0m] \033[36mBaz\033[0m\n"
 
 	projects := []*models.Project{
 		{Id: 42, Name: "Foo"},
@@ -40,6 +47,6 @@ func TestProjects_Prints_An_Array_Of_Projects(t *testing.T) {
 	printer.Projects(projects)
 
 	if testingPrinter.Result != expected {
-		t.Fatalf("Expected %s, but got %s", expected, testingPrinter.Result)
+		t.Errorf("Expected %s, but got %s", expected, testingPrinter.Result)
 	}
 }
