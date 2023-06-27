@@ -13,6 +13,7 @@ import (
 
 var projectId uint64
 var shouldOpenWorkPackageInBrowser bool
+var workPackageType string
 
 var createWorkPackageCmd = &cobra.Command{
 	Use:   "workpackage [subject]",

@@ -11,10 +11,10 @@ import (
 )
 
 var (
-	actionFlag   string
-	attachFlag   string
-	subjectFlag  string
-	typeFlag     string
+	actionFlag  string
+	attachFlag  string
+	subjectFlag string
+	typeFlag    string
 )
 
 var workPackageCmd = &cobra.Command{

@@ -26,5 +26,13 @@ func init() {
 		"Open the created work package in the default browser",
 	)
 
+	createWorkPackageCmd.Flags().StringVarP(
+		&workPackageType,
+		"type",
+		"t",
+		"",
+		"Change the work package type",
+	)
+
 	RootCmd.AddCommand(createWorkPackageCmd)
 }

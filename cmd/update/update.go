@@ -37,10 +37,11 @@ func addWorkPackageFlags() {
 		"",
 		"Change the subject of the work package",
 	)
-	workPackageCmd.Flags().StringVar(
+	workPackageCmd.Flags().StringVarP(
 		&typeFlag,
 		"type",
 		"t",
+		"",
 		"Change the work package type",
 	)
 }
