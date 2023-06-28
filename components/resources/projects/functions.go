@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/opf/openproject-cli/components/parser"
-	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
 	"github.com/opf/openproject-cli/dtos"
 	"github.com/opf/openproject-cli/models"
@@ -13,22 +12,22 @@ import (
 
 const path = "api/v3/projects"
 
-func All() []*models.Project {
-	status, response := requests.Get(path, nil)
-	if !requests.IsSuccess(status) {
-		printer.ResponseError(status, response)
+func All() ([]*models.Project, error) {
+	response, err := requests.Get(path, nil)
+	if err != nil {
+		return nil, err
 	}
 
 	element := parser.Parse[dtos.ProjectCollectionDto](response)
-	return element.Convert()
+	return element.Convert(), nil
 }
 
-func Lookup(id uint64) *models.Project {
-	status, response := requests.Get(filepath.Join(path, strconv.FormatUint(id, 10)), nil)
-	if !requests.IsSuccess(status) {
-		printer.ResponseError(status, response)
+func Lookup(id uint64) (*models.Project, error) {
+	response, err := requests.Get(filepath.Join(path, strconv.FormatUint(id, 10)), nil)
+	if err != nil {
+		return nil, err
 	}
 
 	element := parser.Parse[dtos.ProjectDto](response)
-	return element.Convert()
+	return element.Convert(), nil
 }

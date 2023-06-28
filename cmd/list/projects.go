@@ -15,6 +15,10 @@ The list can get filtered further.`,
 	Run: listProjects,
 }
 
-func listProjects(cmd *cobra.Command, args []string) {
-	printer.Projects(projects.All())
+func listProjects(_ *cobra.Command, _ []string) {
+	if all, err := projects.All(); err == nil {
+		printer.Projects(all)
+	} else {
+		printer.Error(err)
+	}
 }

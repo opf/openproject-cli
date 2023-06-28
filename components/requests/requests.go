@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/opf/openproject-cli/components/printer"
+	"github.com/opf/openproject-cli/components/errors"
 )
 
 var client *http.Client
@@ -24,21 +24,21 @@ func Init(hostUrl *url.URL, tokenValue string) {
 	token = tokenValue
 }
 
-func Get(path string, query *Query) (code int, body []byte) {
+func Get(path string, query *Query) (responseBody []byte, err error) {
 	return Do("GET", path, query, nil)
 }
 
-func Post(path string, requestData *RequestData) (code int, responseBody []byte) {
+func Post(path string, requestData *RequestData) (responseBody []byte, err error) {
 	return Do("POST", path, nil, requestData)
 }
 
-func Patch(path string, requestBody *RequestData) (status int, response []byte) {
+func Patch(path string, requestBody *RequestData) (responseBody []byte, err error) {
 	return Do("PATCH", path, nil, requestBody)
 }
 
-func Do(method string, path string, query *Query, requestData *RequestData) (status int, response []byte) {
+func Do(method string, path string, query *Query, requestData *RequestData) (responseBody []byte, err error) {
 	if client == nil {
-		printer.ErrorText("Cannot execute requests without initializing request client first. Run `op login`")
+		return  nil, errors.Custom("Cannot execute requests without initializing request client first. Run `op login`")
 	}
 
 	requestUrl := *host
@@ -58,7 +58,7 @@ func Do(method string, path string, query *Query, requestData *RequestData) (sta
 		body,
 	)
 	if err != nil {
-		printer.Error(err)
+		return  nil, err
 	}
 
 	if requestData != nil {
@@ -71,19 +71,23 @@ func Do(method string, path string, query *Query, requestData *RequestData) (sta
 
 	resp, err := client.Do(request)
 	if err != nil {
-		printer.Error(err)
+		return  nil, err
 	}
+
 
 	defer func() { _ = resp.Body.Close() }()
-
-	response, err = io.ReadAll(resp.Body)
+	response, err := io.ReadAll(resp.Body)
 	if err != nil {
-		printer.Error(err)
+		return  nil, err
 	}
 
-	return resp.StatusCode, response
+	if !isSuccess(resp.StatusCode) {
+		return nil, errors.NewResponseError(resp.StatusCode, response)
+	}
+
+	return response, nil
 }
 
-func IsSuccess(code int) bool {
+func isSuccess(code int) bool {
 	return code >= 200 && code <= 299
 }

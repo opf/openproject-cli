@@ -25,16 +25,20 @@ var createWorkPackageCmd = &cobra.Command{
 func createWorkPackage(_ *cobra.Command, args []string) {
 	if len(args) != 1 {
 		printer.ErrorText(fmt.Sprintf("Expected 1 argument [subject], but got %d", len(args)))
+		return
 	}
 
 	subject := args[0]
-
-	workPackage := work_packages.Create(projectId, subject)
+	workPackage, err := work_packages.Create(projectId, subject)
+	if err != nil {
+		printer.Error(err)
+		return
+	}
 
 	if shouldOpenWorkPackageInBrowser {
-		err := launch.Browser(routes.WorkPackageUrl(workPackage))
+		err = launch.Browser(routes.WorkPackageUrl(workPackage))
 		if err != nil {
-			printer.ErrorText(fmt.Sprintf("Error opening browser: %s", err))
+			printer.ErrorText(fmt.Sprintf("Error opening browser: %+v", err))
 		}
 	} else {
 		printer.WorkPackage(workPackage)

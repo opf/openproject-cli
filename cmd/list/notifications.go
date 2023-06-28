@@ -24,7 +24,12 @@ The list can get filtered further.`,
 func listNotifications(_ *cobra.Command, _ []string) {
 	if !common.Contains(validReasons, notificationReason) {
 		printer.ErrorText(fmt.Sprintf("Reason '%s' is invalid.", notificationReason))
+		return
 	}
 
-	printer.Notifications(notifications.All(notificationReason))
+	if all, err := notifications.All(notificationReason); err == nil {
+		printer.Notifications(all)
+	} else {
+		printer.Error(err)
+	}
 }

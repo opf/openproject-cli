@@ -30,7 +30,11 @@ func listWorkPackages(_ *cobra.Command, _ []string) {
 		printer.ErrorText("Version flag (--version) can only be used in conjunction with project flag (-p or --project).")
 	}
 
-	printer.WorkPackages(work_packages.All(filterOptions()))
+	if all, err := work_packages.All(filterOptions()); err == nil {
+		printer.WorkPackages(all)
+	} else {
+		printer.Error(err)
+	}
 }
 
 func filterOptions() *map[work_packages.FilterOption]string {

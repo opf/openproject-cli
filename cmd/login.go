@@ -95,8 +95,8 @@ func parseHostUrl() (ok bool, errMessage string, host *url.URL) {
 }
 
 func checkOpenProjectApi() bool {
-	status, response := requests.Get(configPath, nil)
-	if !requests.IsSuccess(status) {
+	response, err := requests.Get(configPath, nil)
+	if err != nil {
 		return false
 	}
 

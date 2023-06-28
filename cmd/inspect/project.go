@@ -24,20 +24,25 @@ var inspectProjectCmd = &cobra.Command{
 func inspectProject(_ *cobra.Command, args []string) {
 	if len(args) != 1 {
 		printer.ErrorText(fmt.Sprintf("Expected 1 argument [id], but got %d", len(args)))
+		return
 	}
 
 	id, err := strconv.ParseUint(args[0], 10, 64)
 	if err != nil {
 		printer.ErrorText(fmt.Sprintf("'%s' is an invalid project id. Must be a number.", args[0]))
+		return
 	}
 
-	project := projects.Lookup(id)
+	project, err := projects.Lookup(id)
+	if err != nil {
+		printer.Error(err)
+		return
+	}
 
 	if shouldOpenProjectInBrowser {
 		err = launch.Browser(routes.ProjectUrl(project))
-
 		if err != nil {
-			printer.ErrorText(fmt.Sprintf("Error opening browser: %s", err))
+			printer.ErrorText(fmt.Sprintf("Error opening browser: %+v", err))
 		}
 	} else {
 		printer.Project(project)

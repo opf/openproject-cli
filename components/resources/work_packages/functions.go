@@ -37,11 +37,16 @@ const (
 const apiPath = "api/v3"
 const workPackagesPath = apiPath + "/work_packages"
 
-func Lookup(id int64) *models.WorkPackage {
-	return fetch(id).Convert()
+func Lookup(id int64) (*models.WorkPackage, error) {
+	workPackage, err := fetch(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return workPackage.Convert(), nil
 }
 
-func All(filterOptions *map[FilterOption]string) []*models.WorkPackage {
+func All(filterOptions *map[FilterOption]string) ([]*models.WorkPackage, error) {
 	var filters []requests.Filter
 	var projectId *string
 
@@ -64,84 +69,102 @@ func All(filterOptions *map[FilterOption]string) []*models.WorkPackage {
 		requestUrl = filepath.Join(apiPath, "projects", *projectId, "work_packages")
 	}
 
-	status, response := requests.Get(requestUrl, &query)
-	if !requests.IsSuccess(status) {
-		printer.ResponseError(status, response)
+	response, err := requests.Get(requestUrl, &query)
+	if err != nil {
+		return nil, err
 	}
 
 	workPackageCollection := parser.Parse[dtos.WorkPackageCollectionDto](response)
-	return workPackageCollection.Convert()
+	return workPackageCollection.Convert(), nil
 }
 
-func Create(projectId uint64, subject string) *models.WorkPackage {
+func Create(projectId uint64, subject string) (*models.WorkPackage, error) {
 	data, err := json.Marshal(dtos.CreateWorkPackageDto{Subject: subject})
 	if err != nil {
-		printer.Error(err)
+		return nil, err
 	}
 
 	requestData := requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(data)}
 
-	status, response := requests.Post(
+	response, err := requests.Post(
 		filepath.Join(apiPath, "projects", strconv.FormatUint(projectId, 10), "dtos"),
 		&requestData,
 	)
-	if !requests.IsSuccess(status) {
-		printer.ResponseError(status, response)
+	if err != nil {
+		return nil, err
 	}
 
 	workPackage := parser.Parse[dtos.WorkPackageDto](response)
-
-	return workPackage.Convert()
+	return workPackage.Convert(), nil
 }
 
-func Update(id int64, options map[UpdateOption]string) {
+func Update(id int64, options map[UpdateOption]string) (*models.WorkPackage, error) {
 	for updateOpt, value := range options {
+		workPackage, err := fetch(id)
+		if err != nil {
+			return nil, err
+		}
+
 		switch updateOpt {
 		case Action:
-			action(fetch(id), value)
+			err = action(workPackage, value)
 		case Attach:
-			upload(fetch(id), value)
+			err = upload(workPackage, value)
 		case Subject:
-			subject(fetch(id), value)
+			err = subject(workPackage, value)
 		case Type:
-			workPackageType(fetch(id), value)
+			err = workPackageType(workPackage, value)
+		}
+
+		if err != nil {
+			printer.Error(err)
 		}
 	}
 
-	printer.WorkPackage(fetch(id).Convert())
+	workPackage, err := fetch(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return workPackage.Convert(), nil
 }
 
-func fetch(id int64) *dtos.WorkPackageDto {
-	status, response := requests.Get(filepath.Join(workPackagesPath, strconv.FormatInt(id, 10)), nil)
-	if !requests.IsSuccess(status) {
-		printer.ResponseError(status, response)
+func fetch(id int64) (*dtos.WorkPackageDto, error) {
+	response, err := requests.Get(filepath.Join(workPackagesPath, strconv.FormatInt(id, 10)), nil)
+	if err != nil {
+		return nil, err
 	}
 
 	workPackage := parser.Parse[dtos.WorkPackageDto](response)
-	return &workPackage
+	return &workPackage, nil
 }
 
-func workPackageType(workPackage *dtos.WorkPackageDto, input string) {
-	types := availableTypes(workPackage)
+func workPackageType(workPackage *dtos.WorkPackageDto, input string) error {
+	types, err := availableTypes(workPackage)
+	if err != nil {
+		return err
+	}
+
 	foundType := findType(input, types)
 	if foundType == nil {
+		printer.ErrorText("Failed to update work package type.")
 		printer.Info(fmt.Sprintf(
-			"No unique available type from input '%s' found for project [#%d]. Please use one of the types listed below.",
-			input,
-			parser.IdFromLink(workPackage.Links.Project.Href),
+			"No unique available type from input %s found for project %s. Please use one of the types listed below.",
+			printer.Cyan(input),
+			printer.Red(fmt.Sprintf("#%d", parser.IdFromLink(workPackage.Links.Project.Href))),
 		))
 
 		printer.Types(common.Reduce(types,
 			func(acc []*models.Type, dto *dtos.TypeDto) []*models.Type {
 				return append(acc, dto.Convert())
 			}, []*models.Type{}))
-		return
+		return nil
 	}
 
-	updateType(workPackage, foundType)
+	return updateType(workPackage, foundType)
 }
 
-func updateType(workPackage *dtos.WorkPackageDto, t *dtos.TypeDto) {
+func updateType(workPackage *dtos.WorkPackageDto, t *dtos.TypeDto) error {
 	printer.Info(fmt.Sprintf("Updating work package type to %s ...", printer.Yellow(t.Name)))
 
 	patch := dtos.WorkPackageDto{
@@ -151,18 +174,19 @@ func updateType(workPackage *dtos.WorkPackageDto, t *dtos.TypeDto) {
 
 	marshal, err := json.Marshal(patch)
 	if err != nil {
-		printer.Error(err)
+		return err
 	}
 
-	status, response := requests.Patch(workPackage.Links.Self.Href, &requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(marshal)})
-	if !requests.IsSuccess(status) {
-		printer.ResponseError(status, response)
-	} else {
-		printer.Done()
+	_, err = requests.Patch(workPackage.Links.Self.Href, &requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(marshal)})
+	if err != nil {
+		return err
 	}
+
+	printer.Done()
+	return nil
 }
 
-func subject(dto *dtos.WorkPackageDto, subject string) {
+func subject(dto *dtos.WorkPackageDto, subject string) error {
 	printer.Info(fmt.Sprintf("Updating work package subject to %s ...", printer.Cyan(subject)))
 
 	patch := dtos.WorkPackageDto{
@@ -172,18 +196,19 @@ func subject(dto *dtos.WorkPackageDto, subject string) {
 
 	marshal, err := json.Marshal(patch)
 	if err != nil {
-		printer.Error(err)
+		return err
 	}
 
-	status, response := requests.Patch(dto.Links.Self.Href, &requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(marshal)})
-	if !requests.IsSuccess(status) {
-		printer.ResponseError(status, response)
-	} else {
-		printer.Done()
+	_, err = requests.Patch(dto.Links.Self.Href, &requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(marshal)})
+	if err != nil {
+		return err
 	}
+
+	printer.Done()
+	return nil
 }
 
-func upload(dto *dtos.WorkPackageDto, path string) {
+func upload(dto *dtos.WorkPackageDto, path string) error {
 	if dto.Links.PrepareAttachment != nil {
 		printer.ErrorText(fmt.Sprintf("Uploads to fog storages are currently not supported. :("))
 	}
@@ -192,25 +217,27 @@ func upload(dto *dtos.WorkPackageDto, path string) {
 	link := dto.Links.AddAttachment
 	reader, contentType, err := workPackageUpload.BodyReader(path)
 	if err != nil {
-		printer.Error(err)
+		return err
 	}
 
 	body := &requests.RequestData{ContentType: contentType, Body: reader}
-	status, response := requests.Do(link.Method, link.Href, nil, body)
-	if !requests.IsSuccess(status) {
-		printer.ResponseError(status, response)
-	} else {
-		printer.Done()
+	_, err = requests.Do(link.Method, link.Href, nil, body)
+	if err != nil {
+		return err
 	}
+
+	printer.Done()
+	return nil
 }
 
-func action(workPackage *dtos.WorkPackageDto, action string) {
+func action(workPackage *dtos.WorkPackageDto, action string) error {
 	foundAction := findAction(action, workPackage.Embedded.CustomActions)
 	if foundAction == nil {
+		printer.ErrorText("Failed to execute work package custom action.")
 		printer.Info(fmt.Sprintf(
-			"No unique available action from input '%s' found for work package [#%d]. Please use one of the actions listed below.",
-			action,
-			workPackage.Id,
+			"No unique available action from input %s found for work package %s. Please use one of the actions listed below.",
+			printer.Cyan(action),
+			printer.Red(fmt.Sprintf("#%d", workPackage.Id)),
 		))
 		availableActions := common.Reduce(
 			workPackage.Embedded.CustomActions,
@@ -220,10 +247,10 @@ func action(workPackage *dtos.WorkPackageDto, action string) {
 			[]*models.CustomAction{},
 		)
 		printer.CustomActions(availableActions)
-		return
+		return nil
 	}
 
-	executeAction(workPackage, foundAction)
+	return executeAction(workPackage, foundAction)
 }
 
 func findAction(actionInput string, availableActions []*dtos.CustomActionDto) *dtos.CustomActionDto {
@@ -248,7 +275,7 @@ func findAction(actionInput string, availableActions []*dtos.CustomActionDto) *d
 	return nil
 }
 
-func executeAction(workPackage *dtos.WorkPackageDto, action *dtos.CustomActionDto) {
+func executeAction(workPackage *dtos.WorkPackageDto, action *dtos.CustomActionDto) error {
 	printer.Info(fmt.Sprintf("Executing action '%s' on work package [#%d] ...", action.Name, workPackage.Id))
 
 	requestBody := &dtos.CustomActionExecuteDto{
@@ -258,14 +285,15 @@ func executeAction(workPackage *dtos.WorkPackageDto, action *dtos.CustomActionDt
 
 	b, err := json.Marshal(requestBody)
 	if err != nil {
-		printer.Error(err)
+		return err
 	}
 
 	body := &requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(b)}
-	status, response := requests.Do(action.Links.Execute.Method, action.Links.Execute.Href, nil, body)
-	if !requests.IsSuccess(status) {
-		printer.ResponseError(status, response)
-	} else {
-		printer.Done()
+	_, err = requests.Do(action.Links.Execute.Method, action.Links.Execute.Href, nil, body)
+	if err != nil {
+		return err
 	}
+
+	printer.Done()
+	return nil
 }

@@ -5,24 +5,23 @@ import (
 	"strings"
 
 	"github.com/opf/openproject-cli/components/parser"
-	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
 	"github.com/opf/openproject-cli/dtos"
 )
 
-func availableTypes(workPackage *dtos.WorkPackageDto) []*dtos.TypeDto {
-	status, response := requests.Get(workPackage.Links.Project.Href, nil)
-	if !requests.IsSuccess(status) {
-		printer.ResponseError(status, response)
+func availableTypes(workPackage *dtos.WorkPackageDto) ([]*dtos.TypeDto, error) {
+	response, err :=requests.Get(workPackage.Links.Project.Href, nil)
+	if err != nil {
+		return nil, err
 	}
 
 	project := parser.Parse[dtos.ProjectDto](response)
-	status, response = requests.Get(project.Links.Types.Href, nil)
-	if !requests.IsSuccess(status) {
-		printer.ResponseError(status, response)
+	response, err = requests.Get(project.Links.Types.Href, nil)
+	if err != nil {
+		return nil, err
 	}
 
-	return parser.Parse[dtos.TypeCollectionDto](response).Embedded.Elements
+	return parser.Parse[dtos.TypeCollectionDto](response).Embedded.Elements, nil
 }
 
 func findType(input string, availableTypes []*dtos.TypeDto) *dtos.TypeDto {
