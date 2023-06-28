@@ -12,3 +12,11 @@ func AssigneeFilter(principal *models.Principal) requests.Filter {
 		Values:   []string{principal.Name},
 	}
 }
+
+func VersionFilter(version string) requests.Filter {
+	return requests.Filter{
+		Operator: "=",
+		Name:     "version",
+		Values:   []string{version},
+	}
+}

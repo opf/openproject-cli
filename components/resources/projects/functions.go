@@ -23,8 +23,8 @@ func All() []*models.Project {
 	return element.Convert()
 }
 
-func Lookup(id int64) *models.Project {
-	status, response := requests.Get(filepath.Join(path, strconv.FormatInt(id, 10)), nil)
+func Lookup(id uint64) *models.Project {
+	status, response := requests.Get(filepath.Join(path, strconv.FormatUint(id, 10)), nil)
 	if !requests.IsSuccess(status) {
 		printer.ResponseError(status, response)
 	}

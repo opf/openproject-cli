@@ -34,3 +34,16 @@ func TestReduce(t *testing.T) {
 		t.Errorf("Expected %v to sum up to %d, but is actually %d", list, sum, result)
 	}
 }
+
+func TestFilter(t *testing.T) {
+	list := []int{23, 245, 54, 132, 4325}
+	filter := func(value int) bool {
+		return value%2 == 0
+	}
+
+	result := common.Filter(list, filter)
+
+	if !common.Contains(result, list[2]) || !common.Contains(result, list[3]) {
+		t.Errorf("Expected %v to contain %d and %d, but does not", list, list[2], list[3])
+	}
+}

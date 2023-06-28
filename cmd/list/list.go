@@ -26,6 +26,19 @@ func init() {
 		"Assignee of the work package (can be name, ID or 'me')",
 	)
 
+	workPackagesCmd.Flags().Uint64VarP(
+		&project,
+		"project",
+		"p",
+		0,
+		"Show only work packages within the specified project")
+
+	workPackagesCmd.Flags().StringVar(
+		&version,
+		"version",
+		"",
+		"Show only work packages having the specified version")
+
 	RootCmd.AddCommand(
 		projectsCmd,
 		notificationsCmd,

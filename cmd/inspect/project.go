@@ -26,7 +26,7 @@ func inspectProject(_ *cobra.Command, args []string) {
 		printer.ErrorText(fmt.Sprintf("Expected 1 argument [id], but got %d", len(args)))
 	}
 
-	id, err := strconv.ParseInt(args[0], 10, 64)
+	id, err := strconv.ParseUint(args[0], 10, 64)
 	if err != nil {
 		printer.ErrorText(fmt.Sprintf("'%s' is an invalid project id. Must be a number.", args[0]))
 	}

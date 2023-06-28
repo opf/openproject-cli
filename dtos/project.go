@@ -9,7 +9,8 @@ type ProjectDto struct {
 }
 
 type projectLinks struct {
-	Types *LinkDto `json:"types"`
+	Types    *LinkDto `json:"types"`
+	Versions *LinkDto `json:"versions"`
 }
 
 type projectElements struct {

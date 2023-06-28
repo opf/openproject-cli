@@ -26,6 +26,14 @@ const (
 	Type
 )
 
+type FilterOption int
+
+const (
+	Assignee FilterOption = iota
+	Version
+	Project
+)
+
 const apiPath = "api/v3"
 const workPackagesPath = apiPath + "/work_packages"
 
@@ -33,16 +41,30 @@ func Lookup(id int64) *models.WorkPackage {
 	return fetch(id).Convert()
 }
 
-func All(principal *models.Principal) []*models.WorkPackage {
+func All(filterOptions *map[FilterOption]string) []*models.WorkPackage {
 	var filters []requests.Filter
+	var projectId *string
 
-	if principal != nil {
-		filters = append(filters, AssigneeFilter(principal))
+	for updateOpt, value := range *filterOptions {
+		switch updateOpt {
+		case Assignee:
+			filters = append(filters, AssigneeFilter(&models.Principal{Name: value}))
+		case Version:
+			filters = append(filters, VersionFilter(value))
+		case Project:
+			projectId = &value
+		}
 	}
 
 	query := requests.NewQuery(filters)
 
-	status, response := requests.Get(workPackagesPath, &query)
+	requestUrl := workPackagesPath
+
+	if projectId != nil {
+		requestUrl = filepath.Join(apiPath, "projects", *projectId, "work_packages")
+	}
+
+	status, response := requests.Get(requestUrl, &query)
 	if !requests.IsSuccess(status) {
 		printer.ResponseError(status, response)
 	}
@@ -72,8 +94,8 @@ func Create(projectId uint64, subject string) *models.WorkPackage {
 	return workPackage.Convert()
 }
 
-func Update(id int64, opts map[UpdateOption]string) {
-	for updateOpt, value := range opts {
+func Update(id int64, options map[UpdateOption]string) {
+	for updateOpt, value := range options {
 		switch updateOpt {
 		case Action:
 			action(fetch(id), value)
