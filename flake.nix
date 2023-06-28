@@ -34,24 +34,5 @@
             ];
           };
         });
-
-      packages = eachSystem (system:
-        let
-          pkgs = nixpkgsFor.${system};
-        in
-        {
-        });
-
-      nixosConfigurations =
-        let
-          system = "x86_64-linux";
-          pkgs = nixpkgsFor.${system};
-        in
-        {
-          test-vm = nixpkgs.lib.nixosSystem {
-            inherit system pkgs;
-            modules = [./test-vm/configuration.nix];
-          };
-        };
     };
 }
