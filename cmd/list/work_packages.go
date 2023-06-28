@@ -14,7 +14,7 @@ import (
 )
 
 var assignee string
-var project uint64
+var projectId uint64
 var version string
 
 var workPackagesCmd = &cobra.Command{
@@ -26,8 +26,8 @@ var workPackagesCmd = &cobra.Command{
 }
 
 func listWorkPackages(_ *cobra.Command, _ []string) {
-	if len(version) != 0 && project == 0 {
-		printer.ErrorText("Version flag (--version) can only be used in conjunction with project flag (-p or --project).")
+	if len(version) != 0 && projectId == 0 {
+		printer.ErrorText("Version flag (--version) can only be used in conjunction with projectId flag (-p or --projectId).")
 	}
 
 	if all, err := work_packages.All(filterOptions()); err == nil {
@@ -40,8 +40,8 @@ func listWorkPackages(_ *cobra.Command, _ []string) {
 func filterOptions() *map[work_packages.FilterOption]string {
 	options := make(map[work_packages.FilterOption]string)
 
-	if project > 0 {
-		options[work_packages.Project] = strconv.FormatUint(project, 10)
+	if projectId > 0 {
+		options[work_packages.Project] = strconv.FormatUint(projectId, 10)
 	}
 
 	if len(assignee) > 0 {
@@ -56,12 +56,15 @@ func filterOptions() *map[work_packages.FilterOption]string {
 }
 
 func validatedVersionId(version string) string {
-	project := projects.Lookup(project)
-	if project == nil {
-		printer.ErrorText(fmt.Sprintf("Project with ID (%d) not found.", project.Id))
+	project, err := projects.Lookup(projectId)
+	if err != nil {
+		printer.Error(err)
 	}
 
-	versions := projects.AvailableVersions(project.Id)
+	versions, err := projects.AvailableVersions(project.Id)
+	if err != nil {
+		printer.Error(err)
+	}
 
 	filteredVersions := common.Filter(versions, func(v *models.Version) bool {
 		return v.Name == version
@@ -69,7 +72,7 @@ func validatedVersionId(version string) string {
 
 	if len(filteredVersions) != 1 {
 		printer.Info(fmt.Sprintf(
-			"No unique available version from input '%s' found for project [#%d]. Please use one of the versions listed below.",
+			"No unique available version from input '%s' found for projectId [#%d]. Please use one of the versions listed below.",
 			version,
 			project.Id,
 		))
