@@ -34,5 +34,23 @@
             ];
           };
         });
+
+      packages = eachSystem (system:
+        let
+          pkgs = nixpkgsFor.${system};
+        in
+        {
+          openproject-cli = pkgs.buildGoModule {
+            pname = "openproject-cli";
+            version = "0.0.0";
+            src = ./.;
+            vendorHash = "sha256-JFvC9V0xS8SZSdLsOtpyTrFzXjYAOaPQaJHdcnJzK3s="; 
+            meta = with pkgs.lib; {
+              description = "Simple command-line interface to OpenProject";
+              homepage = "https://github.com/opf/openproject-cli";
+              licenses = licenses.gpl3;
+            };
+          };
+        });
     };
 }
