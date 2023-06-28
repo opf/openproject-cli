@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/opf/openproject-cli/components/paths"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/parser"
+	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
 	workPackageUpload "github.com/opf/openproject-cli/components/resources/work_packages/upload"
@@ -26,6 +25,13 @@ const (
 	Subject
 	Type
 )
+
+var patchableUpdates = []UpdateOption{Subject, Type}
+
+var patchMap = map[UpdateOption]func(patch, workPackage *dtos.WorkPackageDto, input string) (string, error){
+	Type:    typePatch,
+	Subject: subjectPatch,
+}
 
 type FilterOption int
 
@@ -94,29 +100,37 @@ func Create(projectId uint64, subject string) (*models.WorkPackage, error) {
 }
 
 func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, error) {
-	for updateOpt, value := range options {
-		workPackage, err := fetch(id)
+	workPackage, err := fetch(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if customAction, ok := options[Action]; ok {
+		err = action(workPackage, customAction)
 		if err != nil {
-			return nil, err
+			printer.Error(err)
+		} else {
+			// reload work package to get new lock version
+			workPackage, err = fetch(id)
+			if err != nil {
+				return nil, err
+			}
 		}
+	}
 
-		switch updateOpt {
-		case Action:
-			err = action(workPackage, value)
-		case Attach:
-			err = upload(workPackage, value)
-		case Subject:
-			err = subject(workPackage, value)
-		case Type:
-			err = workPackageType(workPackage, value)
-		}
+	err = patch(workPackage, options)
+	if err != nil {
+		printer.Error(err)
+	}
 
+	if file, ok := options[Attach]; ok {
+		err = upload(workPackage, file)
 		if err != nil {
 			printer.Error(err)
 		}
 	}
 
-	workPackage, err := fetch(id)
+	workPackage, err = fetch(id)
 	if err != nil {
 		return nil, err
 	}
@@ -124,20 +138,55 @@ func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, er
 	return workPackage.Convert(), nil
 }
 
-func fetch(id uint64) (*dtos.WorkPackageDto, error) {
-	response, err := requests.Get(paths.WorkPackage(id), nil)
-	if err != nil {
-		return nil, err
+func patch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) error {
+	var patchNeeded = false
+	patchDto := dtos.WorkPackageDto{LockVersion: workPackage.LockVersion}
+	var updateString string
+
+	for option, value := range options {
+		if !common.Contains(patchableUpdates, option) {
+			continue
+		}
+
+		patchNeeded = true
+		updateStringLine, err := patchMap[option](&patchDto, workPackage, value)
+		if err != nil {
+			return err
+		}
+
+		if len(updateStringLine) > 0 {
+			if len(updateString) > 0 {
+				updateString += "\n"
+			}
+			updateString += fmt.Sprintf("\t%s", updateStringLine)
+		}
 	}
 
-	workPackage := parser.Parse[dtos.WorkPackageDto](response)
-	return &workPackage, nil
-}
+	if !patchNeeded {
+		return nil
+	}
 
-func workPackageType(workPackage *dtos.WorkPackageDto, input string) error {
-	types, err := availableTypes(workPackage)
+	printer.Info(fmt.Sprintf("Updating work package with patch ..."))
+	printer.Info(updateString)
+
+	marshal, err := json.Marshal(patchDto)
 	if err != nil {
 		return err
+	}
+
+	_, err = requests.Patch(workPackage.Links.Self.Href, &requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(marshal)})
+	if err != nil {
+		return err
+	}
+
+	printer.Done()
+	return nil
+}
+
+func typePatch(patch, workPackage *dtos.WorkPackageDto, input string) (string, error) {
+	types, err := availableTypes(workPackage)
+	if err != nil {
+		return "", err
 	}
 
 	foundType := findType(input, types)
@@ -153,54 +202,30 @@ func workPackageType(workPackage *dtos.WorkPackageDto, input string) error {
 			func(acc []*models.Type, dto *dtos.TypeDto) []*models.Type {
 				return append(acc, dto.Convert())
 			}, []*models.Type{}))
-		return nil
+		return "", nil
 	}
 
-	return updateType(workPackage, foundType)
+	if patch.Links == nil {
+		patch.Links = &dtos.WorkPackageLinksDto{}
+	}
+
+	patch.Links.Type = foundType.Links.Self
+	return fmt.Sprintf("Type -> %s", foundType.Name), nil
 }
 
-func updateType(workPackage *dtos.WorkPackageDto, t *dtos.TypeDto) error {
-	printer.Info(fmt.Sprintf("Updating work package type to %s ...", printer.Yellow(t.Name)))
-
-	patch := dtos.WorkPackageDto{
-		LockVersion: workPackage.LockVersion,
-		Links:       &dtos.WorkPackageLinksDto{Type: t.Links.Self},
-	}
-
-	marshal, err := json.Marshal(patch)
-	if err != nil {
-		return err
-	}
-
-	_, err = requests.Patch(workPackage.Links.Self.Href, &requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(marshal)})
-	if err != nil {
-		return err
-	}
-
-	printer.Done()
-	return nil
+func subjectPatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
+	patch.Subject = input
+	return fmt.Sprintf("Subject -> %s", input), nil
 }
 
-func subject(dto *dtos.WorkPackageDto, subject string) error {
-	printer.Info(fmt.Sprintf("Updating work package subject to %s ...", printer.Cyan(subject)))
-
-	patch := dtos.WorkPackageDto{
-		Subject:     subject,
-		LockVersion: dto.LockVersion,
-	}
-
-	marshal, err := json.Marshal(patch)
+func fetch(id uint64) (*dtos.WorkPackageDto, error) {
+	response, err := requests.Get(paths.WorkPackage(id), nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = requests.Patch(dto.Links.Self.Href, &requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(marshal)})
-	if err != nil {
-		return err
-	}
-
-	printer.Done()
-	return nil
+	workPackage := parser.Parse[dtos.WorkPackageDto](response)
+	return &workPackage, nil
 }
 
 func upload(dto *dtos.WorkPackageDto, path string) error {
@@ -217,74 +242,6 @@ func upload(dto *dtos.WorkPackageDto, path string) error {
 
 	body := &requests.RequestData{ContentType: contentType, Body: reader}
 	_, err = requests.Do(link.Method, link.Href, nil, body)
-	if err != nil {
-		return err
-	}
-
-	printer.Done()
-	return nil
-}
-
-func action(workPackage *dtos.WorkPackageDto, action string) error {
-	foundAction := findAction(action, workPackage.Embedded.CustomActions)
-	if foundAction == nil {
-		printer.ErrorText("Failed to execute work package custom action.")
-		printer.Info(fmt.Sprintf(
-			"No unique available action from input %s found for work package %s. Please use one of the actions listed below.",
-			printer.Cyan(action),
-			printer.Red(fmt.Sprintf("#%d", workPackage.Id)),
-		))
-		availableActions := common.Reduce(
-			workPackage.Embedded.CustomActions,
-			func(acc []*models.CustomAction, dto *dtos.CustomActionDto) []*models.CustomAction {
-				return append(acc, dto.Convert())
-			},
-			[]*models.CustomAction{},
-		)
-		printer.CustomActions(availableActions)
-		return nil
-	}
-
-	return executeAction(workPackage, foundAction)
-}
-
-func findAction(actionInput string, availableActions []*dtos.CustomActionDto) *dtos.CustomActionDto {
-	var actionAsId = false
-	actionId, err := strconv.ParseUint(actionInput, 10, 64)
-	if err == nil {
-		actionAsId = true
-	}
-
-	var found []*dtos.CustomActionDto
-	for _, act := range availableActions {
-		if actionAsId && parser.IdFromLink(act.Links.Self.Href) == actionId ||
-			!actionAsId && strings.ToLower(actionInput) == strings.ToLower(act.Name) {
-			found = append(found, act)
-		}
-	}
-
-	if len(found) == 1 {
-		return found[0]
-	}
-
-	return nil
-}
-
-func executeAction(workPackage *dtos.WorkPackageDto, action *dtos.CustomActionDto) error {
-	printer.Info(fmt.Sprintf("Executing action '%s' on work package [#%d] ...", action.Name, workPackage.Id))
-
-	requestBody := &dtos.CustomActionExecuteDto{
-		LockVersion: workPackage.LockVersion,
-		Links:       &dtos.ExecuteLinksDto{WorkPackage: &dtos.LinkDto{Href: workPackage.Links.Self.Href}},
-	}
-
-	b, err := json.Marshal(requestBody)
-	if err != nil {
-		return err
-	}
-
-	body := &requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(b)}
-	_, err = requests.Do(action.Links.Execute.Method, action.Links.Execute.Href, nil, body)
 	if err != nil {
 		return err
 	}

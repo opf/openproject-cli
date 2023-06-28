@@ -3,7 +3,6 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"github.com/opf/openproject-cli/components/paths"
 	"net/url"
 	"os"
 	"strings"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/opf/openproject-cli/components/configuration"
 	"github.com/opf/openproject-cli/components/parser"
+	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
 	"github.com/opf/openproject-cli/dtos"

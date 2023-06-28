@@ -32,7 +32,7 @@ func TestCustomActions(t *testing.T) {
 		actions,
 		func(state string, action *models.CustomAction) string {
 			idString := "#" + strconv.FormatUint(action.Id, 10)
-			return state + fmt.Sprintf("[%s] %s\n", printer.Red(idString), printer.Cyan(action.Name))
+			return state + fmt.Sprintf("%s %s\n", printer.Red(idString), printer.Cyan(action.Name))
 		},
 		"")
 
