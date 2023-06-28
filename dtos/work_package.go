@@ -15,17 +15,13 @@ type WorkPackageLinksDto struct {
 	PrepareAttachment *LinkDto   `json:"prepareAttachment,omitempty"`
 }
 
-type workPackageDescription struct {
-	Raw string `json:"raw"`
-}
-
 type WorkPackageDto struct {
-	Id          int64                   `json:"id,omitempty"`
-	Subject     string                  `json:"subject,omitempty"`
-	Links       *WorkPackageLinksDto    `json:"_links,omitempty"`
-	Description *workPackageDescription `json:"description,omitempty"`
-	Embedded    *embeddedDto            `json:"_embedded,omitempty"`
-	LockVersion int                     `json:"lockVersion"`
+	Id          int64                `json:"id,omitempty"`
+	Subject     string               `json:"subject,omitempty"`
+	Links       *WorkPackageLinksDto `json:"_links,omitempty"`
+	Description *LongTextDto         `json:"description,omitempty"`
+	Embedded    *embeddedDto         `json:"_embedded,omitempty"`
+	LockVersion int                  `json:"lockVersion,omitempty"`
 }
 
 type embeddedDto struct {

@@ -44,5 +44,6 @@ func init() {
 		projectsCmd,
 		notificationsCmd,
 		workPackagesCmd,
+		activitiesCmd,
 	)
 }
