@@ -28,14 +28,15 @@ func init() {
 
 	workPackagesCmd.Flags().Uint64VarP(
 		&projectId,
-		"projectId",
+		"project-id",
 		"p",
 		0,
 		"Show only work packages within the specified projectId")
 
-	workPackagesCmd.Flags().StringVar(
+	workPackagesCmd.Flags().StringVarP(
 		&version,
 		"version",
+		"v",
 		"",
 		"Show only work packages having the specified version")
 
