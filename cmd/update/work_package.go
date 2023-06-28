@@ -31,7 +31,7 @@ func updateWorkPackage(_ *cobra.Command, args []string) {
 		return
 	}
 
-	id, err := strconv.ParseInt(args[0], 10, 64)
+	id, err := strconv.ParseUint(args[0], 10, 64)
 	if err != nil {
 		printer.ErrorText(fmt.Sprintf("'%s' is an invalid work package id. Must be a number.", args[0]))
 		return

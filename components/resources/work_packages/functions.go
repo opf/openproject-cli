@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/opf/openproject-cli/components/paths"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -34,10 +35,7 @@ const (
 	Project
 )
 
-const apiPath = "api/v3"
-const workPackagesPath = apiPath + "/work_packages"
-
-func Lookup(id int64) (*models.WorkPackage, error) {
+func Lookup(id uint64) (*models.WorkPackage, error) {
 	workPackage, err := fetch(id)
 	if err != nil {
 		return nil, err
@@ -48,7 +46,7 @@ func Lookup(id int64) (*models.WorkPackage, error) {
 
 func All(filterOptions *map[FilterOption]string) ([]*models.WorkPackage, error) {
 	var filters []requests.Filter
-	var projectId *string
+	var projectId *uint64
 
 	for updateOpt, value := range *filterOptions {
 		switch updateOpt {
@@ -57,16 +55,17 @@ func All(filterOptions *map[FilterOption]string) ([]*models.WorkPackage, error) 
 		case Version:
 			filters = append(filters, VersionFilter(value))
 		case Project:
-			projectId = &value
+			n, _ := strconv.ParseUint(value, 10, 64)
+			projectId = &n
 		}
 	}
 
 	query := requests.NewQuery(filters)
 
-	requestUrl := workPackagesPath
+	requestUrl := paths.WorkPackages()
 
 	if projectId != nil {
-		requestUrl = filepath.Join(apiPath, "projects", *projectId, "work_packages")
+		requestUrl = paths.ProjectWorkPackages(*projectId)
 	}
 
 	response, err := requests.Get(requestUrl, &query)
@@ -85,11 +84,7 @@ func Create(projectId uint64, subject string) (*models.WorkPackage, error) {
 	}
 
 	requestData := requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(data)}
-
-	response, err := requests.Post(
-		filepath.Join(apiPath, "projects", strconv.FormatUint(projectId, 10), "dtos"),
-		&requestData,
-	)
+	response, err := requests.Post(paths.ProjectWorkPackages(projectId), &requestData)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +93,7 @@ func Create(projectId uint64, subject string) (*models.WorkPackage, error) {
 	return workPackage.Convert(), nil
 }
 
-func Update(id int64, options map[UpdateOption]string) (*models.WorkPackage, error) {
+func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, error) {
 	for updateOpt, value := range options {
 		workPackage, err := fetch(id)
 		if err != nil {
@@ -129,8 +124,8 @@ func Update(id int64, options map[UpdateOption]string) (*models.WorkPackage, err
 	return workPackage.Convert(), nil
 }
 
-func fetch(id int64) (*dtos.WorkPackageDto, error) {
-	response, err := requests.Get(filepath.Join(workPackagesPath, strconv.FormatInt(id, 10)), nil)
+func fetch(id uint64) (*dtos.WorkPackageDto, error) {
+	response, err := requests.Get(paths.WorkPackage(id), nil)
 	if err != nil {
 		return nil, err
 	}

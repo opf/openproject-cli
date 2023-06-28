@@ -2,15 +2,14 @@ package notifications
 
 import (
 	"github.com/opf/openproject-cli/components/parser"
+	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/requests"
 	"github.com/opf/openproject-cli/dtos"
 	"github.com/opf/openproject-cli/models"
 )
 
-const path = "api/v3/notifications"
-
 func All(reason string) ([]*models.Notification, error) {
-	response, err := requests.Get(path, generateQuery(reason))
+	response, err := requests.Get(paths.Notifications(), generateQuery(reason))
 	if err != nil {
 		return nil, err
 	}

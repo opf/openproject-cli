@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"github.com/opf/openproject-cli/components/paths"
 	"net/url"
 	"os"
 	"strings"
@@ -31,7 +32,6 @@ const (
 	missingSchemeError = "URL scheme is missing, please define a complete URL."
 	noOpInstanceError  = "URL does not point to a valid OpenProject instance."
 	tokenInputError    = "There was a problem parsing the token input. Please try again."
-	configPath         = "api/v3"
 )
 
 func login(cmd *cobra.Command, args []string) {
@@ -95,7 +95,7 @@ func parseHostUrl() (ok bool, errMessage string, host *url.URL) {
 }
 
 func checkOpenProjectApi() bool {
-	response, err := requests.Get(configPath, nil)
+	response, err := requests.Get(paths.Root(), nil)
 	if err != nil {
 		return false
 	}
