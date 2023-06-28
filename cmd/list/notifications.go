@@ -12,7 +12,7 @@ import (
 
 var notificationReason string
 
-var validReasons = []string{"", "assigned", "mentioned"}
+var validReasons = []string{"", "assigned", "mentioned", "responsible", "watched", "dateAlert"}
 var notificationsCmd = &cobra.Command{
 	Use:   "notifications",
 	Short: "Lists notifications",
