@@ -11,10 +11,11 @@ import (
 var assignee string
 
 var workPackagesCmd = &cobra.Command{
-	Use:   "workpackages",
-	Short: "Lists work packages",
-	Long:  "Get a list of visible work packages. Filter flags can be applied.",
-	Run:   listWorkPackages,
+	Use:     "workpackages",
+	Aliases: []string{"wps"},
+	Short:   "Lists work packages",
+	Long:    "Get a list of visible work packages. Filter flags can be applied.",
+	Run:     listWorkPackages,
 }
 
 func listWorkPackages(_ *cobra.Command, _ []string) {

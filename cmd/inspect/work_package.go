@@ -15,10 +15,11 @@ import (
 var shouldOpenWorkPackageInBrowser bool
 
 var inspectWorkPackageCmd = &cobra.Command{
-	Use:   "workpackage [id]",
-	Short: "Show details about a work package",
-	Long:  "Show detailed information of a work package refereced by it's ID.",
-	Run:   inspectWorkPackage,
+	Use:     "workpackage [id]",
+	Aliases: []string{"wp"},
+	Short:   "Show details about a work package",
+	Long:    "Show detailed information of a work package refereced by it's ID.",
+	Run:     inspectWorkPackage,
 }
 
 func inspectWorkPackage(_ *cobra.Command, args []string) {
