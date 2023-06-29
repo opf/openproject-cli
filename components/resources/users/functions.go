@@ -22,9 +22,9 @@ func ByIds(ids []uint64) []*models.User {
 
 	requestUrl := usersPath
 
-	status, response := requests.Get(requestUrl, &query)
-	if !requests.IsSuccess(status) {
-		printer.ResponseError(status, response)
+	response, err := requests.Get(requestUrl, &query)
+	if err != nil {
+		printer.Error(err)
 	}
 
 	userCollection := parser.Parse[dtos.UserCollectionDto](response)

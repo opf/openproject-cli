@@ -1,10 +1,8 @@
 package work_packages
 
 import (
-	"path/filepath"
-	"strconv"
-
 	"github.com/opf/openproject-cli/components/parser"
+	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
 	"github.com/opf/openproject-cli/dtos"
@@ -12,9 +10,9 @@ import (
 )
 
 func Activities(id uint64) (activites []*models.Activity, err error) {
-	status, response := requests.Get(filepath.Join(workPackagesPath, strconv.FormatUint(id, 10), "activities"), nil)
-	if !requests.IsSuccess(status) {
-		printer.ResponseError(status, response)
+	response, err := requests.Get(paths.WorkPackageActivities(id), nil)
+	if err != nil {
+		printer.Error(err)
 	}
 
 	activitiesDto := parser.Parse[dtos.ActivityCollectionDto](response)

@@ -33,3 +33,7 @@ func WorkPackage(id uint64) string {
 func WorkPackages() string {
 	return Root() + "/work_packages"
 }
+
+func WorkPackageActivities(id uint64) string {
+	return WorkPackage(id) + "/activities"
+}
