@@ -4,84 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"path/filepath"
-	"strconv"
 
 	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/parser"
-	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
-	workPackageUpload "github.com/opf/openproject-cli/components/resources/work_packages/upload"
 	"github.com/opf/openproject-cli/dtos"
 	"github.com/opf/openproject-cli/models"
 )
-
-type UpdateOption int
-
-const (
-	UpdateAction UpdateOption = iota
-	UpdateAttach
-	UpdateSubject
-	UpdateType
-)
-
-var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType}
-
-var patchMap = map[UpdateOption]func(patch, workPackage *dtos.WorkPackageDto, input string) (string, error){
-	UpdateType:    typePatch,
-	UpdateSubject: subjectPatch,
-}
-
-type FilterOption int
-
-const (
-	Assignee FilterOption = iota
-	Version
-	Project
-)
-
-func Lookup(id uint64) (*models.WorkPackage, error) {
-	workPackage, err := fetch(id)
-	if err != nil {
-		return nil, err
-	}
-
-	return workPackage.Convert(), nil
-}
-
-func All(filterOptions *map[FilterOption]string) ([]*models.WorkPackage, error) {
-	var filters []requests.Filter
-	var projectId *uint64
-
-	for updateOpt, value := range *filterOptions {
-		switch updateOpt {
-		case Assignee:
-			filters = append(filters, AssigneeFilter(&models.Principal{Name: value}))
-		case Version:
-			filters = append(filters, VersionFilter(value))
-		case Project:
-			n, _ := strconv.ParseUint(value, 10, 64)
-			projectId = &n
-		}
-	}
-
-	query := requests.NewQuery(filters)
-
-	requestUrl := paths.WorkPackages()
-
-	if projectId != nil {
-		requestUrl = paths.ProjectWorkPackages(*projectId)
-	}
-
-	response, err := requests.Get(requestUrl, &query)
-	if err != nil {
-		return nil, err
-	}
-
-	workPackageCollection := parser.Parse[dtos.WorkPackageCollectionDto](response)
-	return workPackageCollection.Convert(), nil
-}
 
 func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, error) {
 	workPackage, err := fetch(id)
@@ -198,36 +128,4 @@ func typePatch(patch, workPackage *dtos.WorkPackageDto, input string) (string, e
 func subjectPatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
 	patch.Subject = input
 	return fmt.Sprintf("UpdateSubject -> %s", input), nil
-}
-
-func fetch(id uint64) (*dtos.WorkPackageDto, error) {
-	response, err := requests.Get(paths.WorkPackage(id), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	workPackage := parser.Parse[dtos.WorkPackageDto](response)
-	return &workPackage, nil
-}
-
-func upload(dto *dtos.WorkPackageDto, path string) error {
-	if dto.Links.PrepareAttachment != nil {
-		printer.ErrorText(fmt.Sprintf("Uploads to fog storages are currently not supported. :("))
-	}
-
-	printer.Info(fmt.Sprintf("Uploading %s to work package ...", printer.Yellow(filepath.Base(path))))
-	link := dto.Links.AddAttachment
-	reader, contentType, err := workPackageUpload.BodyReader(path)
-	if err != nil {
-		return err
-	}
-
-	body := &requests.RequestData{ContentType: contentType, Body: reader}
-	_, err = requests.Do(link.Method, link.Href, nil, body)
-	if err != nil {
-		return err
-	}
-
-	printer.Done()
-	return nil
 }
