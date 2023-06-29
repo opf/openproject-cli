@@ -9,8 +9,8 @@ import (
 	"github.com/opf/openproject-cli/dtos"
 )
 
-func availableTypes(workPackage *dtos.WorkPackageDto) ([]*dtos.TypeDto, error) {
-	response, err :=requests.Get(workPackage.Links.Project.Href, nil)
+func availableTypes(projectLink *dtos.LinkDto) (dtos.TypeDtos, error) {
+	response, err := requests.Get(projectLink.Href, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func availableTypes(workPackage *dtos.WorkPackageDto) ([]*dtos.TypeDto, error) {
 	return parser.Parse[dtos.TypeCollectionDto](response).Embedded.Elements, nil
 }
 
-func findType(input string, availableTypes []*dtos.TypeDto) *dtos.TypeDto {
+func findType(input string, availableTypes dtos.TypeDtos) *dtos.TypeDto {
 	var typeAsId = false
 	typeId, err := strconv.ParseUint(input, 10, 64)
 	if err == nil {

@@ -48,16 +48,16 @@ func updateWorkPackage(_ *cobra.Command, args []string) {
 func updateOptions() map[work_packages.UpdateOption]string {
 	var options = make(map[work_packages.UpdateOption]string)
 	if len(actionFlag) > 0 {
-		options[work_packages.Action] = actionFlag
+		options[work_packages.UpdateAction] = actionFlag
 	}
 	if len(attachFlag) > 0 {
-		options[work_packages.Attach] = attachFlag
+		options[work_packages.UpdateAttach] = attachFlag
 	}
 	if len(subjectFlag) > 0 {
-		options[work_packages.Subject] = subjectFlag
+		options[work_packages.UpdateSubject] = subjectFlag
 	}
 	if len(typeFlag) > 0 {
-		options[work_packages.Type] = typeFlag
+		options[work_packages.UpdateType] = typeFlag
 	}
 
 	return options

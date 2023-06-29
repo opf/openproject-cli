@@ -28,8 +28,6 @@ type WorkPackageDto struct {
 	LockVersion int                     `json:"lockVersion"`
 }
 
-
-
 type embeddedDto struct {
 	CustomActions []*CustomActionDto `json:"customActions"`
 }

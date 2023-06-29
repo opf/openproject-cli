@@ -20,17 +20,17 @@ import (
 type UpdateOption int
 
 const (
-	Action UpdateOption = iota
-	Attach
-	Subject
-	Type
+	UpdateAction UpdateOption = iota
+	UpdateAttach
+	UpdateSubject
+	UpdateType
 )
 
-var patchableUpdates = []UpdateOption{Subject, Type}
+var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType}
 
 var patchMap = map[UpdateOption]func(patch, workPackage *dtos.WorkPackageDto, input string) (string, error){
-	Type:    typePatch,
-	Subject: subjectPatch,
+	UpdateType:    typePatch,
+	UpdateSubject: subjectPatch,
 }
 
 type FilterOption int
@@ -83,29 +83,13 @@ func All(filterOptions *map[FilterOption]string) ([]*models.WorkPackage, error) 
 	return workPackageCollection.Convert(), nil
 }
 
-func Create(projectId uint64, subject string) (*models.WorkPackage, error) {
-	data, err := json.Marshal(dtos.CreateWorkPackageDto{Subject: subject})
-	if err != nil {
-		return nil, err
-	}
-
-	requestData := requests.RequestData{ContentType: "application/json", Body: bytes.NewReader(data)}
-	response, err := requests.Post(paths.ProjectWorkPackages(projectId), &requestData)
-	if err != nil {
-		return nil, err
-	}
-
-	workPackage := parser.Parse[dtos.WorkPackageDto](response)
-	return workPackage.Convert(), nil
-}
-
 func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, error) {
 	workPackage, err := fetch(id)
 	if err != nil {
 		return nil, err
 	}
 
-	if customAction, ok := options[Action]; ok {
+	if customAction, ok := options[UpdateAction]; ok {
 		err = action(workPackage, customAction)
 		if err != nil {
 			printer.Error(err)
@@ -123,7 +107,7 @@ func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, er
 		printer.Error(err)
 	}
 
-	if file, ok := options[Attach]; ok {
+	if file, ok := options[UpdateAttach]; ok {
 		err = upload(workPackage, file)
 		if err != nil {
 			printer.Error(err)
@@ -184,7 +168,7 @@ func patch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) er
 }
 
 func typePatch(patch, workPackage *dtos.WorkPackageDto, input string) (string, error) {
-	types, err := availableTypes(workPackage)
+	types, err := availableTypes(workPackage.Links.Project)
 	if err != nil {
 		return "", err
 	}
@@ -198,10 +182,8 @@ func typePatch(patch, workPackage *dtos.WorkPackageDto, input string) (string, e
 			printer.Red(fmt.Sprintf("#%d", parser.IdFromLink(workPackage.Links.Project.Href))),
 		))
 
-		printer.Types(common.Reduce(types,
-			func(acc []*models.Type, dto *dtos.TypeDto) []*models.Type {
-				return append(acc, dto.Convert())
-			}, []*models.Type{}))
+		printer.Types(types.Convert())
+
 		return "", nil
 	}
 
@@ -210,12 +192,12 @@ func typePatch(patch, workPackage *dtos.WorkPackageDto, input string) (string, e
 	}
 
 	patch.Links.Type = foundType.Links.Self
-	return fmt.Sprintf("Type -> %s", foundType.Name), nil
+	return fmt.Sprintf("UpdateType -> %s", foundType.Name), nil
 }
 
 func subjectPatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
 	patch.Subject = input
-	return fmt.Sprintf("Subject -> %s", input), nil
+	return fmt.Sprintf("UpdateSubject -> %s", input), nil
 }
 
 func fetch(id uint64) (*dtos.WorkPackageDto, error) {

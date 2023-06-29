@@ -27,7 +27,7 @@ func init() {
 	)
 
 	createWorkPackageCmd.Flags().StringVarP(
-		&workPackageType,
+		&typeFlag,
 		"type",
 		"t",
 		"",

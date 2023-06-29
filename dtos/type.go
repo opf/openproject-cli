@@ -1,6 +1,9 @@
 package dtos
 
-import "github.com/opf/openproject-cli/models"
+import (
+	"github.com/opf/openproject-cli/components/common"
+	"github.com/opf/openproject-cli/models"
+)
 
 type typeLinks struct {
 	Self *LinkDto `json:"self"`
@@ -38,4 +41,13 @@ func (dto *TypeCollectionDto) Convert() []*models.Type {
 	}
 
 	return list
+}
+
+type TypeDtos []*TypeDto
+
+func (dtos TypeDtos) Convert() []*models.Type {
+	return common.Reduce(dtos,
+		func(acc []*models.Type, dto *TypeDto) []*models.Type {
+			return append(acc, dto.Convert())
+		}, []*models.Type{})
 }

@@ -2,18 +2,18 @@ package create
 
 import (
 	"fmt"
-	"github.com/opf/openproject-cli/components/launch"
-	"github.com/opf/openproject-cli/components/resources/work_packages"
-	"github.com/opf/openproject-cli/components/routes"
 
 	"github.com/spf13/cobra"
 
+	"github.com/opf/openproject-cli/components/launch"
 	"github.com/opf/openproject-cli/components/printer"
+	"github.com/opf/openproject-cli/components/resources/work_packages"
+	"github.com/opf/openproject-cli/components/routes"
 )
 
 var projectId uint64
 var shouldOpenWorkPackageInBrowser bool
-var workPackageType string
+var typeFlag string
 
 var createWorkPackageCmd = &cobra.Command{
 	Use:   "workpackage [subject]",
@@ -29,7 +29,7 @@ func createWorkPackage(_ *cobra.Command, args []string) {
 	}
 
 	subject := args[0]
-	workPackage, err := work_packages.Create(projectId, subject)
+	workPackage, err := work_packages.Create(projectId, createOptions(subject))
 	if err != nil {
 		printer.Error(err)
 		return
@@ -43,4 +43,16 @@ func createWorkPackage(_ *cobra.Command, args []string) {
 	} else {
 		printer.WorkPackage(workPackage)
 	}
+}
+
+func createOptions(subject string) map[work_packages.CreateOption]string {
+	var options = make(map[work_packages.CreateOption]string)
+
+	options[work_packages.CreateSubject] = subject
+
+	if len(typeFlag) > 0 {
+		options[work_packages.CreateType] = typeFlag
+	}
+
+	return options
 }
