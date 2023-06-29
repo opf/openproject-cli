@@ -34,7 +34,7 @@ func All(filterOptions *map[FilterOption]string) ([]*models.WorkPackage, error) 
 	for updateOpt, value := range *filterOptions {
 		switch updateOpt {
 		case Assignee:
-			filters = append(filters, AssigneeFilter(&models.Principal{Name: value}))
+			filters = append(filters, AssigneeFilter(value))
 		case Version:
 			filters = append(filters, VersionFilter(value))
 		case Project:

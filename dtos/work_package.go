@@ -52,7 +52,7 @@ func (dto *WorkPackageDto) Convert() *models.WorkPackage {
 		Id:          uint64(dto.Id),
 		Subject:     dto.Subject,
 		Type:        dto.Links.Type.Title,
-		Assignee:    models.Principal{Name: dto.Links.Assignee.Title},
+		Assignee:    dto.Links.Assignee.Title,
 		Status:      dto.Links.Status.Title,
 		Description: dto.Description.Raw,
 		LockVersion: dto.LockVersion,

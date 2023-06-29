@@ -17,7 +17,7 @@ func TestWorkPackage(t *testing.T) {
 		Id:       42,
 		Subject:  "Test",
 		Type:     "TASK",
-		Assignee: models.Principal{Name: "Aaron"},
+		Assignee: "Aaron",
 		Status:   "New",
 		Description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam non est sed nunc euismod luctus. Donec vehicula scelerisque efficitur. Nunc arcu ligula, dictum maximus consequat id, tincidunt vitae augue. Vestibulum ut tellus id nisi faucibus efficitur id eu tortor. Vestibulum sed vehicula turpis, sit amet eleifend massa. Proin eu quam justo. Nulla id libero sit amet turpis venenatis mollis. Quisque iaculis lectus non ligula faucibus, ut pellentesque velit sodales. Vivamus nibh est, molestie at laoreet nec, lacinia porttitor nisl. Nulla eget urna in enim porttitor tempus. Nullam velit nunc, ultrices eget molestie vitae, tincidunt vitae felis.
 
@@ -53,7 +53,7 @@ commodo enim ligula nec sem. Pellentesque nec tincidunt sapien.`
 	idString := "#" + strconv.FormatUint(workPackage.Id, 10)
 	expected += fmt.Sprintf("%s %s %s\n", printer.Red(idString), printer.Green(workPackage.Type), printer.Cyan(workPackage.Subject))
 	expected += fmt.Sprintf("[%s]\n", printer.Yellow(workPackage.Status))
-	expected += fmt.Sprintf("Assignee: %s\n\n", workPackage.Assignee.Name)
+	expected += fmt.Sprintf("Assignee: %s\n\n", workPackage.Assignee)
 	expected += fmt.Sprintf("Open: %s\n\n", routes.WorkPackageUrl(&workPackage))
 	expected += fmt.Sprintln(expectedDescription)
 
@@ -71,7 +71,7 @@ func TestWorkPackage_Assignee_With_Empty_String(t *testing.T) {
 		Id:          42,
 		Subject:     "Test",
 		Type:        "TASK",
-		Assignee:    models.Principal{Name: ""},
+		Assignee:    "",
 		Status:      "New",
 		Description: "This is an example.",
 		LockVersion: 0,
@@ -101,7 +101,7 @@ func TestWorkPackages(t *testing.T) {
 			Id:          42,
 			Subject:     "Test 1",
 			Type:        "PHASE",
-			Assignee:    models.Principal{Name: "Obi-Wan"},
+			Assignee:    "Obi-Wan",
 			Status:      "In progress",
 			Description: "This is one example.",
 			LockVersion: 0,
@@ -110,7 +110,7 @@ func TestWorkPackages(t *testing.T) {
 			Id:          43,
 			Subject:     "Test 2",
 			Type:        "TASK",
-			Assignee:    models.Principal{Name: "Anakin"},
+			Assignee:    "Anakin",
 			Status:      "New",
 			Description: "This is another example.",
 			LockVersion: 0,
