@@ -25,7 +25,7 @@ type WorkPackageDto struct {
 	Links       *WorkPackageLinksDto    `json:"_links,omitempty"`
 	Description *workPackageDescription `json:"description,omitempty"`
 	Embedded    *embeddedDto            `json:"_embedded,omitempty"`
-	LockVersion int                     `json:"lockVersion,omitempty"`
+	LockVersion int                     `json:"lockVersion"`
 }
 
 
