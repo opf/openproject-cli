@@ -72,9 +72,9 @@ func validatedVersionId(version string) string {
 
 	if len(filteredVersions) != 1 {
 		printer.Info(fmt.Sprintf(
-			"No unique available version from input '%s' found for projectId [#%d]. Please use one of the versions listed below.",
-			version,
-			project.Id,
+			"No unique available version from input %s found for projectId %s. Please use one of the versions listed below.",
+			printer.Cyan(version),
+			printer.Red(fmt.Sprintf("#%d", project.Id)),
 		))
 
 		printer.Versions(versions)

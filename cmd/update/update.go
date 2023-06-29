@@ -25,6 +25,12 @@ func addWorkPackageFlags() {
 		"",
 		"Executes a custom action on a work package",
 	)
+	workPackageCmd.Flags().Uint64Var(
+		&assigneeFlag,
+		"assignee",
+		0,
+		"Assign a user to the work package",
+	)
 	workPackageCmd.Flags().StringVar(
 		&attachFlag,
 		"attach",

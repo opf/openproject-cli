@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/parser"
+	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
 	"github.com/opf/openproject-cli/dtos"
@@ -16,17 +18,19 @@ import (
 type UpdateOption int
 
 const (
-	UpdateAction UpdateOption = iota
-	UpdateAttach
+	UpdateCustomAction UpdateOption = iota
+	UpdateAssignee
+	UpdateAttachment
 	UpdateSubject
 	UpdateType
 )
 
-var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType}
+var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType, UpdateAssignee}
 
 var patchMap = map[UpdateOption]func(patch, workPackage *dtos.WorkPackageDto, input string) (string, error){
-	UpdateType:    typePatch,
-	UpdateSubject: subjectPatch,
+	UpdateAssignee: assigneePatch,
+	UpdateType:     typePatch,
+	UpdateSubject:  subjectPatch,
 }
 
 func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, error) {
@@ -35,7 +39,7 @@ func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, er
 		return nil, err
 	}
 
-	if customAction, ok := options[UpdateAction]; ok {
+	if customAction, ok := options[UpdateCustomAction]; ok {
 		err = action(workPackage, customAction)
 		if err != nil {
 			printer.Error(err)
@@ -53,7 +57,7 @@ func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, er
 		printer.Error(err)
 	}
 
-	if file, ok := options[UpdateAttach]; ok {
+	if file, ok := options[UpdateAttachment]; ok {
 		err = upload(workPackage, file)
 		if err != nil {
 			printer.Error(err)
@@ -138,10 +142,21 @@ func typePatch(patch, workPackage *dtos.WorkPackageDto, input string) (string, e
 	}
 
 	patch.Links.Type = foundType.Links.Self
-	return fmt.Sprintf("UpdateType -> %s", foundType.Name), nil
+	return fmt.Sprintf("Type -> %s", foundType.Name), nil
 }
 
 func subjectPatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
 	patch.Subject = input
-	return fmt.Sprintf("UpdateSubject -> %s", input), nil
+	return fmt.Sprintf("Subject -> %s", input), nil
+}
+
+func assigneePatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
+	userId, _ := strconv.ParseUint(input, 10, 64)
+
+	if patch.Links == nil {
+		patch.Links = &dtos.WorkPackageLinksDto{}
+	}
+
+	patch.Links.Assignee = &dtos.LinkDto{Href: paths.User(userId)}
+	return fmt.Sprintf("Assignee -> %s", input), nil
 }

@@ -18,10 +18,10 @@ func Reduce[T, M any](slice []T, f func(M, T) M, initValue M) M {
 	return acc
 }
 
-func Filter[T any, M []T](slice M, f func(T) bool) M {
+func Filter[T any](slice []T, f func(T) bool) []T {
 	return Reduce(
 		slice,
-		func(state M, value T) M {
+		func(state []T, value T) []T {
 			if f(value) {
 				return append(state, value)
 			} else {

@@ -23,7 +23,15 @@ func ProjectWorkPackages(projectId uint64) string {
 }
 
 func Root() string {
-	return "api/v3"
+	return "/api/v3"
+}
+
+func User(id uint64) string {
+	return Users() + fmt.Sprintf("/%d", id)
+}
+
+func Users() string {
+	return Root() + "/users"
 }
 
 func WorkPackage(id uint64) string {

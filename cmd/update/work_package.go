@@ -11,10 +11,11 @@ import (
 )
 
 var (
-	actionFlag  string
-	attachFlag  string
-	subjectFlag string
-	typeFlag    string
+	actionFlag   string
+	assigneeFlag uint64
+	attachFlag   string
+	subjectFlag  string
+	typeFlag     string
 )
 
 var workPackageCmd = &cobra.Command{
@@ -48,10 +49,13 @@ func updateWorkPackage(_ *cobra.Command, args []string) {
 func updateOptions() map[work_packages.UpdateOption]string {
 	var options = make(map[work_packages.UpdateOption]string)
 	if len(actionFlag) > 0 {
-		options[work_packages.UpdateAction] = actionFlag
+		options[work_packages.UpdateCustomAction] = actionFlag
+	}
+	if assigneeFlag > 0 {
+		options[work_packages.UpdateAssignee] = strconv.FormatUint(assigneeFlag, 10)
 	}
 	if len(attachFlag) > 0 {
-		options[work_packages.UpdateAttach] = attachFlag
+		options[work_packages.UpdateAttachment] = attachFlag
 	}
 	if len(subjectFlag) > 0 {
 		options[work_packages.UpdateSubject] = subjectFlag
