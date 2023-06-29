@@ -10,22 +10,6 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
-type UpdateOption int
-
-const (
-	UpdateAction UpdateOption = iota
-	UpdateAttach
-	UpdateSubject
-	UpdateType
-)
-
-var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType}
-
-var patchMap = map[UpdateOption]func(patch, workPackage *dtos.WorkPackageDto, input string) (string, error){
-	UpdateType:    typePatch,
-	UpdateSubject: subjectPatch,
-}
-
 type FilterOption int
 
 const (

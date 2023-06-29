@@ -13,6 +13,22 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
+type UpdateOption int
+
+const (
+	UpdateAction UpdateOption = iota
+	UpdateAttach
+	UpdateSubject
+	UpdateType
+)
+
+var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType}
+
+var patchMap = map[UpdateOption]func(patch, workPackage *dtos.WorkPackageDto, input string) (string, error){
+	UpdateType:    typePatch,
+	UpdateSubject: subjectPatch,
+}
+
 func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, error) {
 	workPackage, err := fetch(id)
 	if err != nil {
