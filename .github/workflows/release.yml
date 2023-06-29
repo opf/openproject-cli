@@ -1,0 +1,57 @@
+name: Release
+
+on:
+    push:
+        tags:
+            - '*'
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Set up Go
+              uses: actions/setup-go@v3
+              with:
+                  go-version: '1.20.5'
+
+            - name: Set version
+              run: echo "version=${GITHUB_REF#refs/*/}" >> "$GITHUB_ENV"
+
+            - name: Build
+              run: go build -ldflags="-X main.version=${{ env.version }} -X main.commit=$GITHUB_SHA -X main.date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" -o op
+
+            - name: Upload build artifact
+              uses: actions/upload-artifact@v2
+              with:
+                  name: openproject-cli
+                  path: op
+
+    release:
+        needs: [ build ]
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Download artifact
+              uses: actions/download-artifact@v2
+              with:
+                  name: openproject-cli
+
+            - name: Set version
+              run: echo "version=${GITHUB_REF#refs/*/}" >> "$GITHUB_ENV"
+
+            - name: Set executable flag
+              run: chmod +x op
+
+            - name: Zip executable
+              run: zip -r openproject-cli_linux_x64_${{ env.version }}.zip op
+
+            - name: Create release
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: openproject-cli_linux_x64_${{ env.version }}.zip

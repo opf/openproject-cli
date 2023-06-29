@@ -1,13 +1,15 @@
 package cmd
 
 import (
+	"fmt"
 	"net/url"
 	"os"
-
-	"github.com/opf/openproject-cli/cmd/create"
+	"runtime"
+	"time"
 
 	"github.com/spf13/cobra"
 
+	"github.com/opf/openproject-cli/cmd/create"
 	"github.com/opf/openproject-cli/cmd/inspect"
 	"github.com/opf/openproject-cli/cmd/list"
 	"github.com/opf/openproject-cli/cmd/update"
@@ -17,15 +19,33 @@ import (
 	"github.com/opf/openproject-cli/components/routes"
 )
 
+var showVersionFlag bool
+
 var rootCmd = &cobra.Command{
 	Use:   os.Args[0],
 	Short: "An easy-to-use CLI for the OpenProject APIv3",
 	Long: `OpenProject CLI is a fast, reliable and easy-to-use
 tool to manage your work packages, notifications and
 projects of your OpenProject instance.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if showVersionFlag {
+			versionText := fmt.Sprintf(
+				"%s: %s\n\tcommit: %s\n\tbuilt: %s\n\tbuilt with: %s",
+				"OpenProject CLI",
+				configuration.CliVersion.Version,
+				configuration.CliVersion.Commit,
+				configuration.CliVersion.Date.Format(time.UnixDate),
+				runtime.Version(),
+			)
+
+			fmt.Println(printer.Yellow(versionText))
+		}
+	},
 }
 
-func Execute() error {
+func Execute(version *configuration.Version) error {
+	configuration.Init(version)
+
 	return rootCmd.Execute()
 }
 
@@ -45,6 +65,14 @@ func init() {
 
 	requests.Init(parse, token)
 	routes.Init(parse)
+
+	rootCmd.Flags().BoolVarP(
+		&showVersionFlag,
+		"version",
+		"",
+		false,
+		"Show version information of the OpenProject CLI",
+	)
 
 	rootCmd.AddCommand(
 		loginCmd,
