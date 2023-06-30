@@ -20,7 +20,7 @@ jobs:
               run: echo "version=${GITHUB_REF#refs/*/}" >> "$GITHUB_ENV"
 
             - name: Build
-              run: go build -ldflags="-X main.version=${{ env.version }} -X main.commit=$GITHUB_SHA -X main.date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" -o op
+              run: CGO_ENABLED=0 go build -ldflags="-s -w -extldflags "-static" -X main.version=${{ env.version }} -X main.commit=$GITHUB_SHA -X main.date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" -o op
 
             - name: Upload build artifact
               uses: actions/upload-artifact@v2
