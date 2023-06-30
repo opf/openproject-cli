@@ -62,7 +62,7 @@ func apiError(status int, err apiErrorModel) {
 		status,
 		Yellow(err.ErrorIdentifier),
 		err.Messsage,
-		)
+	)
 }
 
 func indent(spaces int) (res string) {

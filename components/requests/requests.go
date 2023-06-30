@@ -38,7 +38,7 @@ func Patch(path string, requestBody *RequestData) (responseBody []byte, err erro
 
 func Do(method string, path string, query *Query, requestData *RequestData) (responseBody []byte, err error) {
 	if client == nil || hostUnitialised() {
-		return  nil, errors.Custom("Cannot execute requests without initializing request client first. Run `op login`")
+		return nil, errors.Custom("Cannot execute requests without initializing request client first. Run `op login`")
 	}
 
 	requestUrl := *host
@@ -58,7 +58,7 @@ func Do(method string, path string, query *Query, requestData *RequestData) (res
 		body,
 	)
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
 
 	if requestData != nil {
@@ -71,14 +71,13 @@ func Do(method string, path string, query *Query, requestData *RequestData) (res
 
 	resp, err := client.Do(request)
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
-
 
 	defer func() { _ = resp.Body.Close() }()
 	response, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
 
 	if !isSuccess(resp.StatusCode) {

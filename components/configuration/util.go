@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/errors"
 )
 
@@ -44,8 +45,7 @@ func ReadConfig() (host, token string, err error) {
 		return "", "", nil
 	}
 
-	sanitized := strings.Replace(string(file), "\n", "", -1)
-	parts := strings.Split(sanitized, " ")
+	parts := strings.Split(common.SanitizeLineBreaks(string(file)), " ")
 	if len(parts) != 2 {
 		return "", "", errors.Custom(fmt.Sprintf("Invalid config file at %s. Please remove the file and run `op login` again.", configFile()))
 	}

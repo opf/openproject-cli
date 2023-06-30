@@ -34,6 +34,10 @@ func Users() string {
 	return Root() + "/users"
 }
 
+func UserMe() string {
+	return Users() + "/me"
+}
+
 func WorkPackage(id uint64) string {
 	return WorkPackages() + fmt.Sprintf("/%d", id)
 }

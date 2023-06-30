@@ -9,11 +9,13 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/configuration"
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
+	"github.com/opf/openproject-cli/components/resources/users"
 	"github.com/opf/openproject-cli/dtos"
 )
 
@@ -65,7 +67,20 @@ func login(_ *cobra.Command, _ []string) {
 			continue
 		}
 
-		token = t
+		token = common.SanitizeLineBreaks(t)
+
+		requests.Init(hostUrl, token)
+		user, err := users.Me()
+		if err != nil {
+			printer.Error(err)
+			continue
+		}
+
+		if user.Name == "Anonymous" {
+			printer.ErrorText("no authenticate given")
+			continue
+		}
+
 		break
 	}
 
