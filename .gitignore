@@ -1,5 +1,6 @@
 # IDE prefixes
 .fleet
+.idea
 
 # Compile output, if running `go build` on a linux/x64
 openproject-cli
