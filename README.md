@@ -6,6 +6,9 @@
 OpenProject CLI is a tool for operating your OpenProject instances from the command line. Therefore, it provides a
 subset of use cases for OpenProject.
 
+⚠️ **IMPORTANT**: This tool is currently in a pre-release phase. It is not meant to be full-featured, complete, nor will
+it have official technical support by the OpenProject GmbH.
+
 The OpenProject CLI is meant to be operated in a self-explanatory and easy-to-use way. It provides meaningful commands
 without abbreviations, that can be executed in a human-readable manner. For more experienced users, many commands
 provide aliases for fewer keystrokes.
