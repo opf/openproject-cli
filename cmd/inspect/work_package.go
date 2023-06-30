@@ -18,7 +18,7 @@ var inspectWorkPackageCmd = &cobra.Command{
 	Use:     "workpackage [id]",
 	Aliases: []string{"wp"},
 	Short:   "Show details about a work package",
-	Long:    "Show detailed information of a work package refereced by it's ID.",
+	Long:    "Show detailed information of a work package referenced by it's ID.",
 	Run:     inspectWorkPackage,
 }
 

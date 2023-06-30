@@ -12,6 +12,7 @@ import (
 	"github.com/opf/openproject-cli/cmd/create"
 	"github.com/opf/openproject-cli/cmd/inspect"
 	"github.com/opf/openproject-cli/cmd/list"
+	"github.com/opf/openproject-cli/cmd/search"
 	"github.com/opf/openproject-cli/cmd/update"
 	"github.com/opf/openproject-cli/components/configuration"
 	"github.com/opf/openproject-cli/components/printer"
@@ -85,5 +86,6 @@ func init() {
 		update.RootCmd,
 		inspect.RootCmd,
 		create.RootCmd,
+		search.RootCmd,
 	)
 }

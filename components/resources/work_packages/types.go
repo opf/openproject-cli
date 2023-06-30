@@ -1,9 +1,9 @@
 package work_packages
 
 import (
-	"strconv"
 	"strings"
 
+	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/requests"
 	"github.com/opf/openproject-cli/dtos"
@@ -25,11 +25,7 @@ func availableTypes(projectLink *dtos.LinkDto) (dtos.TypeDtos, error) {
 }
 
 func findType(input string, availableTypes dtos.TypeDtos) *dtos.TypeDto {
-	var typeAsId = false
-	typeId, err := strconv.ParseUint(input, 10, 64)
-	if err == nil {
-		typeAsId = true
-	}
+	typeAsId, typeId := common.ParseId(input)
 
 	var found []*dtos.TypeDto
 	for _, t := range availableTypes {

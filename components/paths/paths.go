@@ -6,6 +6,10 @@ func Notifications() string {
 	return Root() + "/notifications"
 }
 
+func Principals() string {
+	return Root() + "/principals"
+}
+
 func Project(id uint64) string {
 	return Projects() + fmt.Sprintf("/%d", id)
 }
@@ -30,12 +34,12 @@ func User(id uint64) string {
 	return Users() + fmt.Sprintf("/%d", id)
 }
 
-func Users() string {
-	return Root() + "/users"
-}
-
 func UserMe() string {
 	return Users() + "/me"
+}
+
+func Users() string {
+	return Root() + "/users"
 }
 
 func WorkPackage(id uint64) string {

@@ -27,7 +27,7 @@ var workPackagesCmd = &cobra.Command{
 
 func listWorkPackages(_ *cobra.Command, _ []string) {
 	if len(version) != 0 && projectId == 0 {
-		printer.ErrorText("Version flag (--version) can only be used in conjunction with projectId flag (-p or --projectId).")
+		printer.ErrorText("Version flag (--version) can only be used in conjunction with projectId flag (-p or --project-id).")
 	}
 
 	if all, err := work_packages.All(filterOptions()); err == nil {

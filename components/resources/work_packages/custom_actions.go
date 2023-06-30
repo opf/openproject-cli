@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/opf/openproject-cli/components/common"
@@ -39,11 +38,7 @@ func action(workPackage *dtos.WorkPackageDto, action string) error {
 }
 
 func findAction(actionInput string, availableActions []*dtos.CustomActionDto) *dtos.CustomActionDto {
-	var actionAsId = false
-	actionId, err := strconv.ParseUint(actionInput, 10, 64)
-	if err == nil {
-		actionAsId = true
-	}
+	actionAsId, actionId := common.ParseId(actionInput)
 
 	var found []*dtos.CustomActionDto
 	for _, act := range availableActions {
