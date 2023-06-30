@@ -37,7 +37,7 @@ func Patch(path string, requestBody *RequestData) (responseBody []byte, err erro
 }
 
 func Do(method string, path string, query *Query, requestData *RequestData) (responseBody []byte, err error) {
-	if client == nil {
+	if client == nil || hostUnitialised() {
 		return  nil, errors.Custom("Cannot execute requests without initializing request client first. Run `op login`")
 	}
 
@@ -90,4 +90,8 @@ func Do(method string, path string, query *Query, requestData *RequestData) (res
 
 func isSuccess(code int) bool {
 	return code >= 200 && code <= 299
+}
+
+func hostUnitialised() bool {
+	return len(host.Scheme) == 0 || len(host.Host) == 0
 }

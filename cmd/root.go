@@ -60,6 +60,7 @@ func init() {
 	host, token, err := configuration.ReadConfigFile()
 	if err != nil {
 		printer.Error(err)
+		return
 	}
 
 	parse, err := url.Parse(host)

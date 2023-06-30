@@ -34,7 +34,7 @@ const (
 	tokenInputError    = "There was a problem parsing the token input. Please try again."
 )
 
-func login(cmd *cobra.Command, args []string) {
+func login(_ *cobra.Command, _ []string) {
 	var hostUrl *url.URL
 	var token string
 

@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"fmt"
+	"github.com/opf/openproject-cli/components/errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,7 +12,7 @@ const configDirName = "openproject"
 const configFileName = "config"
 
 func WriteConfigFile(host, token string) error {
-	err := ensureConfigFile()
+	err := ensureConfigDir()
 	if err != nil {
 		return err
 	}
@@ -21,42 +22,33 @@ func WriteConfigFile(host, token string) error {
 }
 
 func ReadConfigFile() (host, token string, err error) {
-	err = ensureConfigFile()
+	err = ensureConfigDir()
 	if err != nil {
 		return "", "", err
 	}
 
 	file, err := os.ReadFile(configFile())
-	if err != nil {
-		return "", "", err
+	if os.IsNotExist(err) {
+		// Empty config file is no error,
+		// user just has to run login command first
+		return "", "", nil
 	}
 
-	t := strings.Replace(string(file), "\n", "", -1)
-	parts := strings.Split(t, " ")
-	if len(parts) < 2 {
-		return parts[0], "", nil
+	sanitized := strings.Replace(string(file), "\n", "", -1)
+	parts := strings.Split(sanitized, " ")
+	if len(parts) != 2 {
+		return "", "", errors.Custom(fmt.Sprintf("Invalid config file at %s. Please remove the file and run `op login` again.", configFile()))
 	}
+
 	return parts[0], parts[1], nil
 }
 
-func ensureConfigFile() error {
+func ensureConfigDir() error {
 	if _, err := os.Stat(configFileDir()); os.IsNotExist(err) {
 		err = os.MkdirAll(configFileDir(), 0700)
 		if err != nil {
 			return err
 		}
-	}
-
-	if _, err := os.Stat(configFile()); os.IsNotExist(err) {
-		file, err := os.Create(configFile())
-		if err != nil {
-			return err
-		}
-		err = os.Chmod(configFile(), 0644)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
 	}
 
 	return nil
@@ -71,5 +63,6 @@ func configFileDir() string {
 	if present {
 		return filepath.Join(xdgConfigDir, configDirName)
 	}
+
 	return filepath.Join(os.Getenv("HOME"), ".config", configDirName)
 }
