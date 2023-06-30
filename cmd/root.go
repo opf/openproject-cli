@@ -57,7 +57,7 @@ func init() {
 	activePrinter := &printer.ConsolePrinter{}
 	printer.Init(activePrinter)
 
-	host, token, err := configuration.ReadConfigFile()
+	host, token, err := configuration.ReadConfig()
 	if err != nil {
 		printer.Error(err)
 		return

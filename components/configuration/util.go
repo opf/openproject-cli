@@ -2,14 +2,19 @@ package configuration
 
 import (
 	"fmt"
-	"github.com/opf/openproject-cli/components/errors"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/opf/openproject-cli/components/errors"
 )
 
-const configDirName = "openproject"
-const configFileName = "config"
+const (
+	envHost        = "OP_CLI_HOST"
+	envToken       = "OP_CLI_TOKEN"
+	configDirName  = "openproject"
+	configFileName = "config"
+)
 
 func WriteConfigFile(host, token string) error {
 	err := ensureConfigDir()
@@ -21,10 +26,15 @@ func WriteConfigFile(host, token string) error {
 	return os.WriteFile(configFile(), bytes, 0644)
 }
 
-func ReadConfigFile() (host, token string, err error) {
+func ReadConfig() (host, token string, err error) {
 	err = ensureConfigDir()
 	if err != nil {
 		return "", "", err
+	}
+
+	ok, h, t := readEnvironment()
+	if ok {
+		return h, t, nil
 	}
 
 	file, err := os.ReadFile(configFile())
@@ -41,6 +51,14 @@ func ReadConfigFile() (host, token string, err error) {
 	}
 
 	return parts[0], parts[1], nil
+}
+
+func readEnvironment() (ok bool, host, token string) {
+	host, hasHost := os.LookupEnv(envHost)
+	token, hasToken := os.LookupEnv(envToken)
+	ok = hasHost && hasToken
+
+	return
 }
 
 func ensureConfigDir() error {
