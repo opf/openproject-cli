@@ -12,7 +12,7 @@ import (
 )
 
 var activitiesCmd = &cobra.Command{
-	Use:     "activities [wpId]",
+	Use:     "activities [work package id]",
 	Aliases: []string{"ac"},
 	Short:   "Lists activities for work package",
 	Long:    `Get a list of activities for a work package.`,
@@ -21,7 +21,8 @@ var activitiesCmd = &cobra.Command{
 
 func listActivities(_ *cobra.Command, args []string) {
 	if len(args) != 1 {
-		printer.ErrorText(fmt.Sprintf("Expected 1 argument [wpId], but got %d", len(args)))
+		printer.ErrorText(fmt.Sprintf("Expected 1 argument [work package id], but got %d", len(args)))
+		return
 	}
 
 	wpId, err := strconv.ParseUint(args[0], 10, 64)
@@ -33,7 +34,7 @@ func listActivities(_ *cobra.Command, args []string) {
 		printer.ErrorText(err.Error())
 	}
 
-	userIds := []uint64{}
+	var userIds []uint64
 	for _, a := range activities {
 		if a.UserId > 0 {
 			userIds = append(userIds, a.UserId)
@@ -41,6 +42,6 @@ func listActivities(_ *cobra.Command, args []string) {
 		}
 	}
 
-	users := users.ByIds(userIds)
-	printer.Activities(activities, users)
+	userList := users.ByIds(userIds)
+	printer.Activities(activities, userList)
 }
