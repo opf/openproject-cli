@@ -39,7 +39,11 @@ projects of your OpenProject instance.`,
 			)
 
 			fmt.Println(printer.Yellow(versionText))
+
+			return
 		}
+
+		cmd.Help()
 	},
 }
 
