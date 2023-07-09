@@ -6,7 +6,8 @@ import (
 )
 
 func SanitizeLineBreaks(input string) string {
-	return strings.Replace(input, "\n", "", -1)
+	noCRLF := strings.Replace(input, "\r\n", "", -1)
+	return strings.Replace(noCRLF, "\n", "", -1)
 }
 
 func ParseId(input string) (bool, uint64) {

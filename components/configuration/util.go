@@ -82,5 +82,15 @@ func configFileDir() string {
 		return filepath.Join(xdgConfigDir, configDirName)
 	}
 
-	return filepath.Join(os.Getenv("HOME"), ".config", configDirName)
+	return filepath.Join(homeDir(), ".config", configDirName)
+}
+
+func homeDir() string {
+	if home, ok := os.LookupEnv("HOME"); ok {
+		return home
+	}
+
+	// On Windows `$HOME` is not set per default, but it is
+	// constructed from `$HOMEDRIVE` and `$HOMEPATH`.
+	return filepath.Join(os.Getenv("HOMEDRIVE"), os.Getenv("HOMEPATH"))
 }

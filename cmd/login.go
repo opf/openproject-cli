@@ -95,7 +95,7 @@ func parseHostUrl() (ok bool, errMessage string, host *url.URL) {
 		return false, urlInputError, nil
 	}
 
-	input = strings.Replace(input, "\n", "", -1)
+	input = common.SanitizeLineBreaks(input)
 	input = strings.TrimSuffix(input, "/")
 	parsed, err := url.Parse(input)
 	if err != nil {
