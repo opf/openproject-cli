@@ -42,7 +42,7 @@ func Do(method string, path string, query *Query, requestData *RequestData) (res
 	}
 
 	requestUrl := *host
-	requestUrl.Path = path
+	requestUrl.Path += path
 	if query != nil {
 		requestUrl.RawQuery = query.String()
 	}
