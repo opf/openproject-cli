@@ -25,5 +25,12 @@ func init() {
 		"Open the work package in the default browser",
 	)
 
+	inspectWorkPackageCmd.Flags().BoolVar(
+		&listAvailableTypes,
+		"types",
+		false,
+		"List the available types on the work package.",
+	)
+
 	RootCmd.AddCommand(inspectProjectCmd, inspectWorkPackageCmd)
 }

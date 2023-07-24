@@ -60,6 +60,20 @@ func All(filterOptions *map[FilterOption]string) ([]*models.WorkPackage, error) 
 	return workPackageCollection.Convert(), nil
 }
 
+func AvailableTypes(id uint64) ([]*models.Type, error) {
+	workPackageDto, err := fetch(id)
+	if err != nil {
+		return nil, err
+	}
+
+	types, err := availableTypes(workPackageDto.Links.Project)
+	if err != nil {
+		return nil, err
+	}
+
+	return types.Convert(), nil
+}
+
 func fetch(id uint64) (*dtos.WorkPackageDto, error) {
 	response, err := requests.Get(paths.WorkPackage(id), nil)
 	if err != nil {

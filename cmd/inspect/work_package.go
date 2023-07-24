@@ -13,6 +13,7 @@ import (
 )
 
 var shouldOpenWorkPackageInBrowser bool
+var listAvailableTypes bool
 
 var inspectWorkPackageCmd = &cobra.Command{
 	Use:     "workpackage [id]",
@@ -34,6 +35,14 @@ func inspectWorkPackage(_ *cobra.Command, args []string) {
 		return
 	}
 
+	if hasListingFlag() {
+		switch {
+		case listAvailableTypes:
+			listTypes(id)
+		}
+		return
+	}
+
 	workPackage, err := work_packages.Lookup(id)
 	if err != nil {
 		printer.Error(err)
@@ -48,4 +57,18 @@ func inspectWorkPackage(_ *cobra.Command, args []string) {
 	} else {
 		printer.WorkPackage(workPackage)
 	}
+}
+
+func listTypes(id uint64) {
+	types, err := work_packages.AvailableTypes(id)
+	if err != nil {
+		printer.Error(err)
+		return
+	}
+
+	printer.Types(types)
+}
+
+func hasListingFlag() bool {
+	return listAvailableTypes
 }
