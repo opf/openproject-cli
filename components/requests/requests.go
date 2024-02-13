@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/opf/openproject-cli/components/errors"
+	"github.com/opf/openproject-cli/components/printer"
 )
 
 var client *http.Client
@@ -25,15 +26,21 @@ func Init(hostUrl *url.URL, tokenValue string) {
 }
 
 func Get(path string, query *Query) (responseBody []byte, err error) {
-	return Do("GET", path, query, nil)
+	loadingFunc := func() ([]byte, error) { return Do("GET", path, query, nil) }
+
+	return printer.WithSpinner(loadingFunc)
 }
 
 func Post(path string, requestData *RequestData) (responseBody []byte, err error) {
-	return Do("POST", path, nil, requestData)
+	loadingFunc := func() ([]byte, error) { return Do("POST", path, nil, requestData) }
+
+	return printer.WithSpinner(loadingFunc)
 }
 
 func Patch(path string, requestBody *RequestData) (responseBody []byte, err error) {
-	return Do("PATCH", path, nil, requestBody)
+	loadingFunc := func() ([]byte, error) { return Do("PATCH", path, nil, requestBody) }
+
+	return printer.WithSpinner(loadingFunc)
 }
 
 func Do(method string, path string, query *Query, requestData *RequestData) (responseBody []byte, err error) {
