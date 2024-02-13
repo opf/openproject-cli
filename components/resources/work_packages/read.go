@@ -27,7 +27,7 @@ func Lookup(id uint64) (*models.WorkPackage, error) {
 	return workPackage.Convert(), nil
 }
 
-func All(filterOptions *map[FilterOption]string) ([]*models.WorkPackage, error) {
+func All(filterOptions *map[FilterOption]string) (*models.WorkPackageCollection, error) {
 	var filters []requests.Filter
 	var projectId *uint64
 

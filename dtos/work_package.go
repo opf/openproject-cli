@@ -35,6 +35,10 @@ type workPackageElements struct {
 type WorkPackageCollectionDto struct {
 	Embedded workPackageElements `json:"_embedded"`
 	Type     string              `json:"_type"`
+	Total    int64               `json:"total"`
+	Count    int64               `json:"count"`
+	PageSize int64               `json:"pageSize"`
+	Offset   int64               `json:"offset"`
 }
 
 type CreateWorkPackageDto struct {
@@ -55,12 +59,18 @@ func (dto *WorkPackageDto) Convert() *models.WorkPackage {
 	}
 }
 
-func (dto *WorkPackageCollectionDto) Convert() []*models.WorkPackage {
+func (dto *WorkPackageCollectionDto) Convert() *models.WorkPackageCollection {
 	var workPackages = make([]*models.WorkPackage, len(dto.Embedded.Elements))
 
 	for idx, p := range dto.Embedded.Elements {
 		workPackages[idx] = p.Convert()
 	}
 
-	return workPackages
+	return &models.WorkPackageCollection{
+		Total:    dto.Total,
+		Count:    dto.Count,
+		PageSize: dto.PageSize,
+		Offset:   dto.Offset,
+		Items:    workPackages,
+	}
 }

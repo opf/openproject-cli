@@ -16,6 +16,7 @@ import (
 var assignee string
 var projectId uint64
 var version string
+var showTotal bool
 
 var workPackagesCmd = &cobra.Command{
 	Use:     "workpackages",
@@ -30,9 +31,13 @@ func listWorkPackages(_ *cobra.Command, _ []string) {
 		printer.ErrorText("Version flag (--version) can only be used in conjunction with projectId flag (-p or --project-id).")
 	}
 
-	if all, err := work_packages.All(filterOptions()); err == nil {
-		printer.WorkPackages(all)
-	} else {
+	collection, err := work_packages.All(filterOptions())
+	switch {
+	case err == nil && showTotal:
+		printer.Number(collection.Total)
+	case err == nil:
+		printer.WorkPackages(collection.Items)
+	default:
 		printer.Error(err)
 	}
 }

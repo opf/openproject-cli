@@ -9,3 +9,11 @@ type WorkPackage struct {
 	Description string
 	LockVersion int
 }
+
+type WorkPackageCollection struct {
+	Total    int64
+	Count    int64
+	PageSize int64
+	Offset   int64
+	Items    []*WorkPackage
+}

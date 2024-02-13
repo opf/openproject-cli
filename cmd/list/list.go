@@ -40,6 +40,13 @@ func init() {
 		"",
 		"Show only work packages having the specified version")
 
+	workPackagesCmd.Flags().BoolVarP(
+		&showTotal,
+		"total",
+		"",
+		false,
+		"Show only the total number of work packages matching the filter options.")
+
 	RootCmd.AddCommand(
 		projectsCmd,
 		notificationsCmd,
