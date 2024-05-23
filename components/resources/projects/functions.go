@@ -9,7 +9,8 @@ import (
 )
 
 func All() ([]*models.Project, error) {
-	response, err := requests.Get(paths.Projects(), nil)
+	query := requests.NewPagedQuery(-1, nil)
+	response, err := requests.Get(paths.Projects(), &query)
 	if err != nil {
 		return nil, err
 	}
@@ -19,8 +20,7 @@ func All() ([]*models.Project, error) {
 }
 
 func Lookup(id uint64) (*models.Project, error) {
-	query := requests.NewPagedQuery(-1, nil)
-	response, err := requests.Get(paths.Project(id), &query)
+	response, err := requests.Get(paths.Project(id), nil)
 	if err != nil {
 		return nil, err
 	}

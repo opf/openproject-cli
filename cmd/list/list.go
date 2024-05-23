@@ -41,7 +41,7 @@ func init() {
 		"Show only work packages having the specified version")
 
 	workPackagesCmd.Flags().StringVarP(
-		&status,
+		&statusFilter,
 		"status",
 		"s",
 		"",
@@ -63,5 +63,6 @@ status.`)
 		notificationsCmd,
 		workPackagesCmd,
 		activitiesCmd,
+		statusCmd,
 	)
 }

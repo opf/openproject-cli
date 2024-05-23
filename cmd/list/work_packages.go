@@ -18,7 +18,7 @@ var assignee string
 var projectId uint64
 var version string
 var showTotal bool
-var status string
+var statusFilter string
 
 var workPackagesCmd = &cobra.Command{
 	Use:     "workpackages",
@@ -56,8 +56,8 @@ func filterOptions() *map[work_packages.FilterOption]string {
 		options[work_packages.Assignee] = assignee
 	}
 
-	if len(status) > 0 {
-		options[work_packages.Status] = validateStatusFilterValue(status)
+	if len(statusFilter) > 0 {
+		options[work_packages.Status] = validateStatusFilterValue(statusFilter)
 	}
 
 	if len(version) > 0 {

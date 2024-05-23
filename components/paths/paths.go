@@ -30,6 +30,10 @@ func Root() string {
 	return "/api/v3"
 }
 
+func Status() string {
+	return Root() + "/statuses"
+}
+
 func User(id uint64) string {
 	return Users() + fmt.Sprintf("/%d", id)
 }
