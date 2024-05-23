@@ -3,6 +3,7 @@ package list
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 
 	"github.com/opf/openproject-cli/components/common"
@@ -56,7 +57,7 @@ func filterOptions() *map[work_packages.FilterOption]string {
 	}
 
 	if len(status) > 0 {
-		options[work_packages.Status] = status
+		options[work_packages.Status] = validateStatusFilterValue(status)
 	}
 
 	if len(version) > 0 {
@@ -94,4 +95,18 @@ func validatedVersionId(version string) string {
 	}
 
 	return strconv.FormatUint(filteredVersions[0].Id, 10)
+}
+
+func validateStatusFilterValue(status string) string {
+	matched, err := regexp.Match(`^(open)$|^(closed)$|^(!?[0-9,]+)$`, []byte(status))
+	if err != nil {
+		printer.Error(err)
+	}
+
+	if !matched {
+		printer.ErrorText(fmt.Sprintf("Invalid status filter value %s.", printer.Yellow(status)))
+		os.Exit(-1)
+	}
+
+	return status
 }

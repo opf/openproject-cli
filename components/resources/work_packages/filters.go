@@ -23,9 +23,27 @@ func VersionFilter(version string) requests.Filter {
 }
 
 func StatusFilter(status string) requests.Filter {
+	var operator string
+	var values []string
+
+	switch {
+	case status == "open":
+		operator = "o"
+		values = []string{}
+	case status == "closed":
+		operator = "c"
+		values = []string{}
+	case strings.Index(status, "!") == 0:
+		operator = "!"
+		values = strings.Split(status[1:], ",")
+	default:
+		operator = "="
+		values = strings.Split(status, ",")
+	}
+
 	return requests.Filter{
-		Operator: "=",
+		Operator: operator,
 		Name:     "status",
-		Values:   strings.Split(status, ","),
+		Values:   values,
 	}
 }
