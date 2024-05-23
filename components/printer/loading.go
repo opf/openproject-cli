@@ -6,7 +6,7 @@ import (
 	"github.com/briandowns/spinner"
 )
 
-type Func[T any] func() (T, error)
+type function[T any] func() (T, error)
 
 var loadingSpinner *spinner.Spinner
 
@@ -16,7 +16,7 @@ func init() {
 	_ = loadingSpinner.Color("yellow")
 }
 
-func WithSpinner[T any](f Func[T]) (T, error) {
+func WithSpinner[T any](f function[T]) (T, error) {
 	loadingSpinner.Start()
 
 	t, err := f()
