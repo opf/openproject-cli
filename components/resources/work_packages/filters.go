@@ -1,6 +1,8 @@
 package work_packages
 
 import (
+	"strings"
+
 	"github.com/opf/openproject-cli/components/requests"
 )
 
@@ -17,5 +19,13 @@ func VersionFilter(version string) requests.Filter {
 		Operator: "=",
 		Name:     "version",
 		Values:   []string{version},
+	}
+}
+
+func StatusFilter(status string) requests.Filter {
+	return requests.Filter{
+		Operator: "=",
+		Name:     "status",
+		Values:   strings.Split(status, ","),
 	}
 }

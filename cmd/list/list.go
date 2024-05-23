@@ -40,6 +40,15 @@ func init() {
 		"",
 		"Show only work packages having the specified version")
 
+	workPackagesCmd.Flags().StringVarP(
+		&status,
+		"status",
+		"s",
+		"",
+		`Show only work packages having the specified status. The value can be a single
+ID or a comma separated array of IDs, i.e. '7,13'. Multiple values are
+concatenated with a logical 'OR'.`)
+
 	workPackagesCmd.Flags().BoolVarP(
 		&showTotal,
 		"total",

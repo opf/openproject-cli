@@ -40,32 +40,16 @@ func (query Query) String() string {
 	return fmt.Sprintf("pageSize=%d%s", query.pageSize, filtersQuery)
 }
 
-func NewNotificationReasonFilter(reason string) Filter {
-	return Filter{
-		Operator: "=",
-		Name:     "reason",
-		Values:   []string{reason},
-	}
-}
-
-func NewNotificationReadFilter(read bool) Filter {
-	var bStr string
-	if read {
-		bStr = "t"
-	} else {
-		bStr = "f"
-	}
-
-	return Filter{
-		Operator: "=",
-		Name:     "readIAN",
-		Values:   []string{bStr},
-	}
-}
-
 func NewQuery(filters []Filter) Query {
 	return Query{
 		pageSize: 100,
+		filters:  filters,
+	}
+}
+
+func NewPagedQuery(pageSize int, filters []Filter) Query {
+	return Query{
+		pageSize: pageSize,
 		filters:  filters,
 	}
 }

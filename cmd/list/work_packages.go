@@ -17,6 +17,7 @@ var assignee string
 var projectId uint64
 var version string
 var showTotal bool
+var status string
 
 var workPackagesCmd = &cobra.Command{
 	Use:     "workpackages",
@@ -29,6 +30,7 @@ var workPackagesCmd = &cobra.Command{
 func listWorkPackages(_ *cobra.Command, _ []string) {
 	if len(version) != 0 && projectId == 0 {
 		printer.ErrorText("Version flag (--version) can only be used in conjunction with projectId flag (-p or --project-id).")
+		return
 	}
 
 	collection, err := work_packages.All(filterOptions())
@@ -51,6 +53,10 @@ func filterOptions() *map[work_packages.FilterOption]string {
 
 	if len(assignee) > 0 {
 		options[work_packages.Assignee] = assignee
+	}
+
+	if len(status) > 0 {
+		options[work_packages.Status] = status
 	}
 
 	if len(version) > 0 {

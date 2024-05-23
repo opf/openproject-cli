@@ -20,11 +20,11 @@ func All(reason string) ([]*models.Notification, error) {
 
 func generateQuery(reason string) *requests.Query {
 	filters := []requests.Filter{
-		requests.NewNotificationReadFilter(false),
+		ReadFilter(false),
 	}
 
 	if reason != "" {
-		filters = append(filters, requests.NewNotificationReasonFilter(reason))
+		filters = append(filters, ReasonFilter(reason))
 	}
 
 	query := requests.NewQuery(filters)
