@@ -19,6 +19,7 @@ var projectId uint64
 var version string
 var showTotal bool
 var statusFilter string
+var typeFilter string
 
 var workPackagesCmd = &cobra.Command{
 	Use:     "workpackages",
@@ -58,6 +59,10 @@ func filterOptions() *map[work_packages.FilterOption]string {
 
 	if len(statusFilter) > 0 {
 		options[work_packages.Status] = validateStatusFilterValue(statusFilter)
+	}
+
+	if len(typeFilter) > 0 {
+		options[work_packages.Type] = validateStatusFilterValue(typeFilter)
 	}
 
 	if len(version) > 0 {

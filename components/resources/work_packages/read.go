@@ -17,6 +17,7 @@ const (
 	Version
 	Project
 	Status
+	Type
 )
 
 func Lookup(id uint64) (*models.WorkPackage, error) {
@@ -40,6 +41,8 @@ func All(filterOptions *map[FilterOption]string) (*models.WorkPackageCollection,
 			filters = append(filters, VersionFilter(value))
 		case Status:
 			filters = append(filters, StatusFilter(value))
+		case Type:
+			filters = append(filters, TypeFilter(value))
 		case Project:
 			n, _ := strconv.ParseUint(value, 10, 64)
 			projectId = &n

@@ -51,6 +51,16 @@ keywords 'open', 'closed', a single ID or a comma separated array of IDs, i.e.
 prefixed with an '!' the list is instead filtered to not have the specified
 status.`)
 
+	workPackagesCmd.Flags().StringVarP(
+		&typeFilter,
+		"type",
+		"t",
+		"",
+		`Show only work packages having the specified types. The value can be a single
+ID or a comma separated array of IDs, i.e. '7,13'. Multiple values are
+concatenated with a logical 'OR'. If the IDs are prefixed with an '!' the list
+is instead filtered to not have the specified status.`)
+
 	workPackagesCmd.Flags().BoolVarP(
 		&showTotal,
 		"total",

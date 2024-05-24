@@ -22,6 +22,26 @@ func VersionFilter(version string) requests.Filter {
 	}
 }
 
+func TypeFilter(workPackageType string) requests.Filter {
+	var operator string
+	var values []string
+
+	switch {
+	case strings.Index(workPackageType, "!") == 0:
+		operator = "!"
+		values = strings.Split(workPackageType[1:], ",")
+	default:
+		operator = "="
+		values = strings.Split(workPackageType, ",")
+	}
+
+	return requests.Filter{
+		Operator: operator,
+		Name:     "type",
+		Values:   values,
+	}
+}
+
 func StatusFilter(status string) requests.Filter {
 	var operator string
 	var values []string
