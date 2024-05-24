@@ -27,6 +27,6 @@ func generateQuery(reason string) *requests.Query {
 		filters = append(filters, ReasonFilter(reason))
 	}
 
-	query := requests.NewQuery(filters)
+	query := requests.NewFilterQuery(filters)
 	return &query
 }

@@ -18,7 +18,7 @@ func ByIds(ids []uint64) []*models.User {
 	var filters []requests.Filter
 	filters = append(filters, IdFilter(ids))
 
-	query := requests.NewQuery(filters)
+	query := requests.NewFilterQuery(filters)
 
 	requestUrl := paths.Principals()
 
@@ -61,7 +61,7 @@ func Search(input string) ([]*models.User, error) {
 		filters = append(filters, resources.TypeAheadFilter(input))
 	}
 
-	query := requests.NewQuery(filters)
+	query := requests.NewFilterQuery(filters)
 
 	response, err := requests.Get(paths.Principals(), &query)
 	if err != nil {

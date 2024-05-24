@@ -7,8 +7,8 @@ import (
 )
 
 type Query struct {
-	pageSize int
-	filters  []Filter
+	filters    []Filter
+	attributes map[string]string
 }
 
 type Filter struct {
@@ -27,29 +27,47 @@ func (filter Filter) String() string {
 }
 
 func (query Query) String() string {
-	var filtersQuery = ""
-	if len(query.filters) > 0 {
-		var fStr = make([]string, len(query.filters))
-		for idx, f := range query.filters {
-			fStr[idx] = f.String()
+	queryStr := filtersQueryAttribute(query.filters)
+	for key, value := range query.attributes {
+		if len(queryStr) > 0 {
+			queryStr += "&"
 		}
-		filtersString := fmt.Sprintf("[%s]", strings.Join(fStr, ","))
-		filtersQuery = fmt.Sprintf("&filters=%s", url.QueryEscape(filtersString))
+		queryStr += fmt.Sprintf("%s=%s", key, url.QueryEscape(value))
 	}
 
-	return fmt.Sprintf("pageSize=%d%s", query.pageSize, filtersQuery)
+	return queryStr
 }
 
-func NewQuery(filters []Filter) Query {
-	return Query{
-		pageSize: 100,
-		filters:  filters,
+func filtersQueryAttribute(filters []Filter) string {
+	if len(filters) == 0 {
+		return ""
 	}
+
+	var fStr = make([]string, len(filters))
+	for idx, f := range filters {
+		fStr[idx] = f.String()
+	}
+
+	filtersString := fmt.Sprintf("[%s]", strings.Join(fStr, ","))
+	return fmt.Sprintf("filters=%s", url.QueryEscape(filtersString))
+}
+
+func NewQuery(attributes map[string]string, filters []Filter) Query {
+	return Query{attributes: attributes, filters: filters}
+}
+
+func NewFilterQuery(filters []Filter) Query {
+	attributes := map[string]string{
+		"pageSize": "100",
+	}
+
+	return Query{attributes: attributes, filters: filters}
 }
 
 func NewPagedQuery(pageSize int, filters []Filter) Query {
-	return Query{
-		pageSize: pageSize,
-		filters:  filters,
+	attributes := map[string]string{
+		"pageSize": fmt.Sprintf("%d", pageSize),
 	}
+
+	return Query{attributes: attributes, filters: filters}
 }

@@ -49,7 +49,7 @@ func All(filterOptions *map[FilterOption]string) (*models.WorkPackageCollection,
 		}
 	}
 
-	query := requests.NewQuery(filters)
+	query := requests.NewFilterQuery(filters)
 
 	requestUrl := paths.WorkPackages()
 
