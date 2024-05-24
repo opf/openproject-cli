@@ -2,25 +2,38 @@ package printer
 
 import (
 	"fmt"
+	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/models"
+	"strings"
 )
 
-func StatusList(statuss []*models.Status) {
-	for _, p := range statuss {
-		printStatus(p)
+func StatusList(status []*models.Status) {
+	var maxIdLength = 0
+	for _, s := range status {
+		maxIdLength = common.Max(maxIdLength, idLength(s.Id))
+	}
+
+	for _, s := range status {
+		printStatus(s, maxIdLength)
 	}
 }
 
 func Status(status *models.Status) {
-	printStatus(status)
+	printStatus(status, idLength(status.Id))
 }
 
-func printStatus(status *models.Status) {
-	var defaultSuffix string
+func printStatus(status *models.Status, maxIdLength int) {
+	var parts []string
 
-	id := fmt.Sprintf("#%d", status.Id)
+	diff := maxIdLength - idLength(status.Id)
+	idStr := fmt.Sprintf("%s#%d", indent(diff), status.Id)
+	parts = append(parts, Red(idStr))
+
+	parts = append(parts, Cyan(status.Name))
+
 	if status.IsDefault {
-		defaultSuffix = fmt.Sprintf(" (%s)", Yellow("default"))
+		parts = append(parts, fmt.Sprintf("(%s)", Yellow("default")))
 	}
-	activePrinter.Printf("%s %s%s\n", Red(id), Cyan(status.Name), defaultSuffix)
+
+	activePrinter.Println(strings.Join(parts, " "))
 }

@@ -17,8 +17,8 @@ func TestTypes(t *testing.T) {
 	}
 
 	var expected string
-	expected += fmt.Sprintf("%s %s\n", printer.Red(fmt.Sprintf("  #%d", types[0].Id)), printer.Yellow(types[0].Name))
-	expected += fmt.Sprintf("%s %s\n", printer.Red(fmt.Sprintf("#%d", types[1].Id)), printer.Yellow(types[1].Name))
+	expected += fmt.Sprintf("%s %s\n", printer.Red(fmt.Sprintf("  #%d", types[0].Id)), printer.Cyan(types[0].Name))
+	expected += fmt.Sprintf("%s %s\n", printer.Red(fmt.Sprintf("#%d", types[1].Id)), printer.Cyan(types[1].Name))
 
 	printer.Types(types)
 

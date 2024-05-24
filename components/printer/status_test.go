@@ -2,10 +2,8 @@ package printer_test
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
-	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/models"
 )
@@ -50,20 +48,13 @@ func TestStatusList(t *testing.T) {
 	testingPrinter.Reset()
 
 	status := []*models.Status{
-		{Id: 42, Name: "First"},
+		{Id: 2, Name: "First"},
 		{Id: 45, Name: "Second"},
 		{Id: 123, Name: "Third", IsDefault: true},
 	}
 
-	expected := common.Reduce[*models.Status, string](
-		status[:len(status)-1],
-		func(result string, status *models.Status) string {
-			idString := "#" + strconv.FormatUint(status.Id, 10)
-
-			return result + fmt.Sprintf("%s %s\n", printer.Red(idString), printer.Cyan(status.Name))
-		},
-		"")
-
+	expected := fmt.Sprintf("%s %s\n", printer.Red("  #2"), printer.Cyan("First"))
+	expected += fmt.Sprintf("%s %s\n", printer.Red(" #45"), printer.Cyan("Second"))
 	expected += fmt.Sprintf("%s %s (%s)\n", printer.Red("#123"), printer.Cyan("Third"), printer.Yellow("default"))
 
 	printer.StatusList(status)

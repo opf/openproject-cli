@@ -64,5 +64,6 @@ status.`)
 		workPackagesCmd,
 		activitiesCmd,
 		statusCmd,
+		typesCmd,
 	)
 }

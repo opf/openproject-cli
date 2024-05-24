@@ -26,6 +26,6 @@ func printType(workPackageType *models.Type, maxIdLength int) {
 	idStr := fmt.Sprintf("%s#%d", indent(diff), workPackageType.Id)
 	parts = append(parts, Red(idStr))
 
-	parts = append(parts, Yellow(workPackageType.Name))
+	parts = append(parts, Cyan(workPackageType.Name))
 	activePrinter.Println(strings.Join(parts, " "))
 }

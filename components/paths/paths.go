@@ -34,6 +34,10 @@ func Status() string {
 	return Root() + "/statuses"
 }
 
+func Types() string {
+	return Root() + "/types"
+}
+
 func User(id uint64) string {
 	return Users() + fmt.Sprintf("/%d", id)
 }
