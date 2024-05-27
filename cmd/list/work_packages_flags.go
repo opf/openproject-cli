@@ -1,9 +1,5 @@
 package list
 
-import (
-	"github.com/opf/openproject-cli/components/resources"
-)
-
 func initWorkPackagesFlags() {
 	workPackagesCmd.Flags().StringVarP(
 		&assignee,
@@ -48,18 +44,6 @@ ID or a comma separated array of IDs, i.e. '7,13'. Multiple values are
 concatenated with a logical 'OR'. If the IDs are prefixed with an '!' the list
 is instead filtered to not have the specified status.`)
 
-	workPackagesCmd.Flags().StringVarP(
-		&subProject,
-		"sub-project",
-		"",
-		"",
-		`Show only work packages of the specified subprojects. This filter only applies,
-if the flag '--include-sub-projects' is set. It then includes only the sub
-projects matching the filter. The value can be a single ID or a comma separated
-array of IDs, i.e. '7,13'. Multiple values are concatenated with a logical
-'OR'. If the IDs are prefixed with an '!' instead the specified sub projects
-are excluded.`)
-
 	workPackagesCmd.Flags().BoolVarP(
 		&includeSubProjects,
 		"include-sub-projects",
@@ -77,15 +61,12 @@ the default is false.`)
 		"Show only the total number of work packages matching the filter options.")
 
 	for _, filter := range activeFilters {
-		switch filter.(type) {
-		case resources.StringValueFilter:
-			workPackagesCmd.Flags().StringVarP(
-				filter.Value(),
-				filter.Name(),
-				filter.ShortHand(),
-				filter.(resources.StringValueFilter).DefaultValue(),
-				filter.Usage(),
-			)
-		}
+		workPackagesCmd.Flags().StringVarP(
+			filter.ValuePointer(),
+			filter.Name(),
+			filter.ShortHand(),
+			filter.DefaultValue(),
+			filter.Usage(),
+		)
 	}
 }

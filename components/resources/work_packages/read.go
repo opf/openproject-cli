@@ -36,8 +36,6 @@ func All(filterOptions *map[FilterOption]string, query requests.Query, showOnlyT
 			filters = append(filters, StatusFilter(value))
 		case Type:
 			filters = append(filters, TypeFilter(value))
-		case SubProject:
-			filters = append(filters, SubProjectFilter(value))
 		case Project:
 			n, _ := strconv.ParseUint(value, 10, 64)
 			projectId = &n

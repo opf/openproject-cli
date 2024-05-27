@@ -11,14 +11,12 @@ func TypeAheadFilter(input string) requests.Filter {
 }
 
 type Filter interface {
-	Value() *string
+	Value() string
+	ValuePointer() *string
 	Name() string
 	ShortHand() string
 	Usage() string
 	ValidateInput() error
 	Query() requests.Query
-}
-
-type StringValueFilter interface {
 	DefaultValue() string
 }

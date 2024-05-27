@@ -10,8 +10,12 @@ type TimestampFilter struct {
 	value string
 }
 
-func (f *TimestampFilter) Value() *string {
+func (f *TimestampFilter) ValuePointer() *string {
 	return &f.value
+}
+
+func (f *TimestampFilter) Value() string {
+	return f.value
 }
 
 func (f *TimestampFilter) Name() string {

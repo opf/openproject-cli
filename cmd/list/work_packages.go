@@ -2,17 +2,17 @@ package list
 
 import (
 	"fmt"
-	"github.com/opf/openproject-cli/components/requests"
-	"github.com/opf/openproject-cli/components/resources"
-	"github.com/opf/openproject-cli/components/resources/work_packages/filters"
 	"os"
 	"regexp"
 	"strconv"
 
 	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/printer"
+	"github.com/opf/openproject-cli/components/requests"
+	"github.com/opf/openproject-cli/components/resources"
 	"github.com/opf/openproject-cli/components/resources/projects"
 	"github.com/opf/openproject-cli/components/resources/work_packages"
+	"github.com/opf/openproject-cli/components/resources/work_packages/filters"
 	"github.com/opf/openproject-cli/models"
 	"github.com/spf13/cobra"
 )
@@ -24,10 +24,11 @@ var showTotal bool
 var statusFilter string
 var typeFilter string
 var includeSubProjects bool
-var subProject string
 
-var activeFilters = []resources.Filter{
-	filters.NewTimestampFilter(),
+var activeFilters = map[string]resources.Filter{
+	"timestamp":     filters.NewTimestampFilter(),
+	"subProject":    filters.NewSubProjectFilter(),
+	"notSubProject": filters.NewNotSubProjectFilter(),
 }
 
 var workPackagesCmd = &cobra.Command{
@@ -40,7 +41,7 @@ var workPackagesCmd = &cobra.Command{
 
 func listWorkPackages(_ *cobra.Command, _ []string) {
 	// This needs to be removed, once all filters are built the "new" way
-	if errorText := validateCommandFlags(); len(errorText) > 0 {
+	if errorText := validateCommandFlagComposition(); len(errorText) > 0 {
 		printer.ErrorText(errorText)
 		return
 	}
@@ -62,21 +63,29 @@ func listWorkPackages(_ *cobra.Command, _ []string) {
 	}
 }
 
-func validateCommandFlags() (errorText string) {
+func validateCommandFlagComposition() (errorText string) {
 	switch {
 	case len(version) != 0 && projectId == 0:
 		return "Version flag (--version) can only be used in conjunction with projectId flag (-p or --project-id)."
-	case len(subProject) > 0 && (!includeSubProjects || projectId == 0):
-		return "Sub project filter flag (--sub-project) can only be used in conjunction with setting the flag--include-sub-projects and setting a project with the projectId flag (-p or --project-id)."
-	default:
-		return ""
+	case len(activeFilters["subProject"].Value()) > 0 || len(activeFilters["notSubProject"].Value()) > 0:
+		if !includeSubProjects || projectId == 0 {
+			return `Sub project filter flags (--sub-project or --not-sub-project) can only be used
+in conjunction with setting the flag --include-sub-projects and setting a
+project with the projectId flag (-p or --project-id).`
+		}
 	}
+
+	return ""
 }
 
 func buildQuery() (requests.Query, error) {
 	var q requests.Query
 
 	for _, filter := range activeFilters {
+		if filter.Value() == filter.DefaultValue() {
+			continue
+		}
+
 		err := filter.ValidateInput()
 		if err != nil {
 			return requests.NewEmptyQuery(), err
@@ -107,10 +116,6 @@ func filterOptions() *map[work_packages.FilterOption]string {
 
 	if len(typeFilter) > 0 {
 		options[work_packages.Type] = validateFilterValue(work_packages.Type, typeFilter)
-	}
-
-	if len(subProject) > 0 {
-		options[work_packages.SubProject] = validateFilterValue(work_packages.SubProject, subProject)
 	}
 
 	if len(version) > 0 {
