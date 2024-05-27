@@ -18,6 +18,7 @@ const (
 	Project
 	Status
 	Type
+	IncludeSubProjects
 )
 
 func Lookup(id uint64) (*models.WorkPackage, error) {
@@ -29,12 +30,15 @@ func Lookup(id uint64) (*models.WorkPackage, error) {
 	return workPackage.Convert(), nil
 }
 
-func All(filterOptions *map[FilterOption]string) (*models.WorkPackageCollection, error) {
+func All(filterOptions *map[FilterOption]string, showOnlyTotal bool) (*models.WorkPackageCollection, error) {
 	var filters []requests.Filter
 	var projectId *uint64
+	var queryAttributes = make(map[string]string)
 
 	for updateOpt, value := range *filterOptions {
 		switch updateOpt {
+		case IncludeSubProjects:
+			queryAttributes["includeSubprojects"] = value
 		case Assignee:
 			filters = append(filters, AssigneeFilter(value))
 		case Version:
@@ -49,7 +53,13 @@ func All(filterOptions *map[FilterOption]string) (*models.WorkPackageCollection,
 		}
 	}
 
-	query := requests.NewFilterQuery(filters)
+	if showOnlyTotal {
+		queryAttributes["pageSize"] = "0"
+	} else {
+		queryAttributes["pageSize"] = "-1"
+	}
+
+	query := requests.NewQuery(queryAttributes, filters)
 
 	requestUrl := paths.WorkPackages()
 

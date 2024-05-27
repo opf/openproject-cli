@@ -32,13 +32,26 @@ func TestFilterQuery_String_WithoutFilters(t *testing.T) {
 	}
 }
 
-func TestPagedQuery_String_WithFilters(t *testing.T) {
-	expectedString := "filters=%5B%7B%22status%22%3A%7B%22operator%22%3A%22%3D%22%2C%22values%22%3A%5B%221%22%2C%223%22%5D%7D%7D%5D&pageSize=-1"
+func TestPaginatedQuery_String_WithFilters(t *testing.T) {
+	expectedString := "filters=%5B%7B%22status%22%3A%7B%22operator%22%3A%22%3D%22%2C%22values%22%3A%5B%221%22%2C%223%22%5D%7D%7D%5D&pageSize=7"
 
 	filters := []requests.Filter{
 		work_packages.StatusFilter("1,3"),
 	}
-	queryString := requests.NewPagedQuery(-1, filters).String()
+	queryString := requests.NewPaginatedQuery(7, filters).String()
+
+	if queryString != expectedString {
+		t.Errorf("Expected %s, but got %s", expectedString, queryString)
+	}
+}
+
+func TestNewUnpaginatedQuery_String_WithFilters(t *testing.T) {
+	expectedString := "filters=%5B%7B%22status%22%3A%7B%22operator%22%3A%22%3D%22%2C%22values%22%3A%5B%2212%22%2C%223%22%5D%7D%7D%5D&pageSize=-1"
+
+	filters := []requests.Filter{
+		work_packages.StatusFilter("12,3"),
+	}
+	queryString := requests.NewUnpaginatedQuery(nil, filters).String()
 
 	if queryString != expectedString {
 		t.Errorf("Expected %s, but got %s", expectedString, queryString)

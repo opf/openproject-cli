@@ -53,6 +53,10 @@ func filtersQueryAttribute(filters []Filter) string {
 }
 
 func NewQuery(attributes map[string]string, filters []Filter) Query {
+	if attributes == nil {
+		return Query{attributes: make(map[string]string), filters: filters}
+	}
+
 	return Query{attributes: attributes, filters: filters}
 }
 
@@ -64,7 +68,17 @@ func NewFilterQuery(filters []Filter) Query {
 	return Query{attributes: attributes, filters: filters}
 }
 
-func NewPagedQuery(pageSize int, filters []Filter) Query {
+func NewUnpaginatedQuery(attributes map[string]string, filters []Filter) Query {
+	var attr = attributes
+	if attr == nil {
+		attr = make(map[string]string)
+	}
+
+	attr["pageSize"] = "-1"
+	return Query{attributes: attr, filters: filters}
+}
+
+func NewPaginatedQuery(pageSize int, filters []Filter) Query {
 	attributes := map[string]string{
 		"pageSize": fmt.Sprintf("%d", pageSize),
 	}

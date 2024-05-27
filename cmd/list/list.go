@@ -62,6 +62,15 @@ concatenated with a logical 'OR'. If the IDs are prefixed with an '!' the list
 is instead filtered to not have the specified status.`)
 
 	workPackagesCmd.Flags().BoolVarP(
+		&includeSubProjects,
+		"include-sub-projects",
+		"",
+		false,
+		`If listing the work packages of a project, this flag indicates if work
+packages of sub projects should be included in the list. If omitting the flag,
+the default is false.`)
+
+	workPackagesCmd.Flags().BoolVarP(
 		&showTotal,
 		"total",
 		"",

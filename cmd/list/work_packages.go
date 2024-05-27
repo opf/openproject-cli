@@ -20,6 +20,7 @@ var version string
 var showTotal bool
 var statusFilter string
 var typeFilter string
+var includeSubProjects bool
 
 var workPackagesCmd = &cobra.Command{
 	Use:     "workpackages",
@@ -35,7 +36,7 @@ func listWorkPackages(_ *cobra.Command, _ []string) {
 		return
 	}
 
-	collection, err := work_packages.All(filterOptions())
+	collection, err := work_packages.All(filterOptions(), showTotal)
 	switch {
 	case err == nil && showTotal:
 		printer.Number(collection.Total)
@@ -48,6 +49,8 @@ func listWorkPackages(_ *cobra.Command, _ []string) {
 
 func filterOptions() *map[work_packages.FilterOption]string {
 	options := make(map[work_packages.FilterOption]string)
+
+	options[work_packages.IncludeSubProjects] = strconv.FormatBool(includeSubProjects)
 
 	if projectId > 0 {
 		options[work_packages.Project] = strconv.FormatUint(projectId, 10)

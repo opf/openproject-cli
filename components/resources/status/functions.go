@@ -9,7 +9,7 @@ import (
 )
 
 func All() ([]*models.Status, error) {
-	query := requests.NewPagedQuery(-1, nil)
+	query := requests.NewPaginatedQuery(-1, nil)
 	response, err := requests.Get(paths.Status(), &query)
 	if err != nil {
 		return nil, err
