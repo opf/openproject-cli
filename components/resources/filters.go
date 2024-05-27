@@ -9,3 +9,16 @@ func TypeAheadFilter(input string) requests.Filter {
 		Values:   []string{input},
 	}
 }
+
+type Filter interface {
+	Value() *string
+	Name() string
+	ShortHand() string
+	Usage() string
+	ValidateInput() error
+	Query() requests.Query
+}
+
+type StringValueFilter interface {
+	DefaultValue() string
+}

@@ -1,5 +1,9 @@
 package list
 
+import (
+	"github.com/opf/openproject-cli/components/resources"
+)
+
 func initWorkPackagesFlags() {
 	workPackagesCmd.Flags().StringVarP(
 		&assignee,
@@ -71,4 +75,17 @@ the default is false.`)
 		"",
 		false,
 		"Show only the total number of work packages matching the filter options.")
+
+	for _, filter := range activeFilters {
+		switch filter.(type) {
+		case resources.StringValueFilter:
+			workPackagesCmd.Flags().StringVarP(
+				filter.Value(),
+				filter.Name(),
+				filter.ShortHand(),
+				filter.(resources.StringValueFilter).DefaultValue(),
+				filter.Usage(),
+			)
+		}
+	}
 }

@@ -2,6 +2,9 @@ package list
 
 import (
 	"fmt"
+	"github.com/opf/openproject-cli/components/requests"
+	"github.com/opf/openproject-cli/components/resources"
+	"github.com/opf/openproject-cli/components/resources/work_packages/filters"
 	"os"
 	"regexp"
 	"strconv"
@@ -23,6 +26,10 @@ var typeFilter string
 var includeSubProjects bool
 var subProject string
 
+var activeFilters = []resources.Filter{
+	filters.NewTimestampFilter(),
+}
+
 var workPackagesCmd = &cobra.Command{
 	Use:     "workpackages",
 	Aliases: []string{"wps"},
@@ -32,12 +39,19 @@ var workPackagesCmd = &cobra.Command{
 }
 
 func listWorkPackages(_ *cobra.Command, _ []string) {
+	// This needs to be removed, once all filters are built the "new" way
 	if errorText := validateCommandFlags(); len(errorText) > 0 {
 		printer.ErrorText(errorText)
 		return
 	}
 
-	collection, err := work_packages.All(filterOptions(), showTotal)
+	query, err := buildQuery()
+	if err != nil {
+		printer.ErrorText(err.Error())
+		return
+	}
+
+	collection, err := work_packages.All(filterOptions(), query, showTotal)
 	switch {
 	case err == nil && showTotal:
 		printer.Number(collection.Total)
@@ -57,6 +71,21 @@ func validateCommandFlags() (errorText string) {
 	default:
 		return ""
 	}
+}
+
+func buildQuery() (requests.Query, error) {
+	var q requests.Query
+
+	for _, filter := range activeFilters {
+		err := filter.ValidateInput()
+		if err != nil {
+			return requests.NewEmptyQuery(), err
+		}
+
+		q = q.Merge(filter.Query())
+	}
+
+	return q, nil
 }
 
 func filterOptions() *map[work_packages.FilterOption]string {

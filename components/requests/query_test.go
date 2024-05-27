@@ -99,3 +99,31 @@ func TestQuery_String(t *testing.T) {
 		t.Errorf("Expected %s to contain %s", queryString, expected)
 	}
 }
+
+func TestQuery_Merge(t *testing.T) {
+	attributes1 := map[string]string{
+		"pageSize":   "20",
+		"timestamps": "PT0S",
+	}
+	filters1 := []requests.Filter{
+		work_packages.StatusFilter("1,3"),
+	}
+
+	attributes2 := map[string]string{
+		"pageSize":           "25",
+		"includeSubprojects": "true",
+	}
+	filters2 := []requests.Filter{
+		work_packages.TypeFilter("!1"),
+	}
+
+	query1 := requests.NewQuery(attributes1, filters1)
+	query2 := requests.NewQuery(attributes2, filters2)
+
+	result := query1.Merge(query2)
+	expected := "filters=%5B%7B%22status%22%3A%7B%22operator%22%3A%22%3D%22%2C%22values%22%3A%5B%221%22%2C%223%22%5D%7D%7D%2C%7B%22type%22%3A%7B%22operator%22%3A%22%21%22%2C%22values%22%3A%5B%221%22%5D%7D%7D%5D&pageSize=25&timestamps=PT0S&includeSubprojects=true"
+
+	if result.String() != expected {
+		t.Errorf("Expected %s, but got %s", expected, result.String())
+	}
+}

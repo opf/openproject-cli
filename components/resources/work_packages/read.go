@@ -19,7 +19,7 @@ func Lookup(id uint64) (*models.WorkPackage, error) {
 	return workPackage.Convert(), nil
 }
 
-func All(filterOptions *map[FilterOption]string, showOnlyTotal bool) (*models.WorkPackageCollection, error) {
+func All(filterOptions *map[FilterOption]string, query requests.Query, showOnlyTotal bool) (*models.WorkPackageCollection, error) {
 	var filters []requests.Filter
 	var projectId *uint64
 	var queryAttributes = make(map[string]string)
@@ -50,7 +50,8 @@ func All(filterOptions *map[FilterOption]string, showOnlyTotal bool) (*models.Wo
 		queryAttributes["pageSize"] = "-1"
 	}
 
-	query := requests.NewQuery(queryAttributes, filters)
+	legacyQuery := requests.NewQuery(queryAttributes, filters)
+	newQuery := legacyQuery.Merge(query)
 
 	requestUrl := paths.WorkPackages()
 
@@ -58,7 +59,7 @@ func All(filterOptions *map[FilterOption]string, showOnlyTotal bool) (*models.Wo
 		requestUrl = paths.ProjectWorkPackages(*projectId)
 	}
 
-	response, err := requests.Get(requestUrl, &query)
+	response, err := requests.Get(requestUrl, &newQuery)
 	if err != nil {
 		return nil, err
 	}

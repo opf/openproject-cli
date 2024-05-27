@@ -26,6 +26,24 @@ func (filter Filter) String() string {
 	)
 }
 
+func (query Query) Merge(another Query) Query {
+	filters := append(query.filters, another.filters...)
+
+	attributes := query.attributes
+	if attributes == nil {
+		attributes = make(map[string]string)
+	}
+
+	for key, value := range another.attributes {
+		attributes[key] = value
+	}
+
+	return Query{
+		attributes: attributes,
+		filters:    filters,
+	}
+}
+
 func (query Query) String() string {
 	queryStr := filtersQueryAttribute(query.filters)
 	for key, value := range query.attributes {
@@ -58,6 +76,10 @@ func NewQuery(attributes map[string]string, filters []Filter) Query {
 	}
 
 	return Query{attributes: attributes, filters: filters}
+}
+
+func NewEmptyQuery() Query {
+	return Query{attributes: make(map[string]string), filters: []Filter{}}
 }
 
 func NewFilterQuery(filters []Filter) Query {
