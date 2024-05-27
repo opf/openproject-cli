@@ -6,6 +6,45 @@ import (
 	"github.com/opf/openproject-cli/components/requests"
 )
 
+type FilterOption int
+
+const (
+	Assignee FilterOption = iota
+	Version
+	Project
+	Status
+	Type
+	SubProject
+	IncludeSubProjects
+)
+
+var InputValidationExpression = map[FilterOption]string{
+	Status:     "^(open)$|^(closed)$|^(!?[0-9,]+)$",
+	Type:       "^(!?[0-9,]+)$",
+	SubProject: "^(!?[0-9,]+)$",
+}
+
+func (f FilterOption) String() string {
+	switch f {
+	case Assignee:
+		return "assignee"
+	case Version:
+		return "version"
+	case Project:
+		return "project"
+	case Status:
+		return "status"
+	case Type:
+		return "type"
+	case SubProject:
+		return "sub-project"
+	case IncludeSubProjects:
+		return "include-sub-projects"
+	default:
+		return "filter"
+	}
+}
+
 func AssigneeFilter(name string) requests.Filter {
 	return requests.Filter{
 		Operator: "=",
@@ -38,6 +77,26 @@ func TypeFilter(workPackageType string) requests.Filter {
 	return requests.Filter{
 		Operator: operator,
 		Name:     "type",
+		Values:   values,
+	}
+}
+
+func SubProjectFilter(filterValue string) requests.Filter {
+	var operator string
+	var values []string
+
+	switch {
+	case strings.Index(filterValue, "!") == 0:
+		operator = "!"
+		values = strings.Split(filterValue[1:], ",")
+	default:
+		operator = "="
+		values = strings.Split(filterValue, ",")
+	}
+
+	return requests.Filter{
+		Operator: operator,
+		Name:     "subprojectId",
 		Values:   values,
 	}
 }

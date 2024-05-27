@@ -21,6 +21,7 @@ var showTotal bool
 var statusFilter string
 var typeFilter string
 var includeSubProjects bool
+var subProject string
 
 var workPackagesCmd = &cobra.Command{
 	Use:     "workpackages",
@@ -31,8 +32,8 @@ var workPackagesCmd = &cobra.Command{
 }
 
 func listWorkPackages(_ *cobra.Command, _ []string) {
-	if len(version) != 0 && projectId == 0 {
-		printer.ErrorText("Version flag (--version) can only be used in conjunction with projectId flag (-p or --project-id).")
+	if errorText := validateCommandFlags(); len(errorText) > 0 {
+		printer.ErrorText(errorText)
 		return
 	}
 
@@ -44,6 +45,17 @@ func listWorkPackages(_ *cobra.Command, _ []string) {
 		printer.WorkPackages(collection.Items)
 	default:
 		printer.Error(err)
+	}
+}
+
+func validateCommandFlags() (errorText string) {
+	switch {
+	case len(version) != 0 && projectId == 0:
+		return "Version flag (--version) can only be used in conjunction with projectId flag (-p or --project-id)."
+	case len(subProject) > 0 && (!includeSubProjects || projectId == 0):
+		return "Sub project filter flag (--sub-project) can only be used in conjunction with setting the flag--include-sub-projects and setting a project with the projectId flag (-p or --project-id)."
+	default:
+		return ""
 	}
 }
 
@@ -61,11 +73,15 @@ func filterOptions() *map[work_packages.FilterOption]string {
 	}
 
 	if len(statusFilter) > 0 {
-		options[work_packages.Status] = validateStatusFilterValue(statusFilter)
+		options[work_packages.Status] = validateFilterValue(work_packages.Status, statusFilter)
 	}
 
 	if len(typeFilter) > 0 {
-		options[work_packages.Type] = validateStatusFilterValue(typeFilter)
+		options[work_packages.Type] = validateFilterValue(work_packages.Type, typeFilter)
+	}
+
+	if len(subProject) > 0 {
+		options[work_packages.SubProject] = validateFilterValue(work_packages.SubProject, subProject)
 	}
 
 	if len(version) > 0 {
@@ -105,16 +121,16 @@ func validatedVersionId(version string) string {
 	return strconv.FormatUint(filteredVersions[0].Id, 10)
 }
 
-func validateStatusFilterValue(status string) string {
-	matched, err := regexp.Match(`^(open)$|^(closed)$|^(!?[0-9,]+)$`, []byte(status))
+func validateFilterValue(filter work_packages.FilterOption, value string) string {
+	matched, err := regexp.Match(work_packages.InputValidationExpression[filter], []byte(value))
 	if err != nil {
 		printer.Error(err)
 	}
 
 	if !matched {
-		printer.ErrorText(fmt.Sprintf("Invalid status filter value %s.", printer.Yellow(status)))
+		printer.ErrorText(fmt.Sprintf("Invalid %s value %s.", filter, printer.Yellow(value)))
 		os.Exit(-1)
 	}
 
-	return status
+	return value
 }

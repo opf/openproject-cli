@@ -10,17 +10,6 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
-type FilterOption int
-
-const (
-	Assignee FilterOption = iota
-	Version
-	Project
-	Status
-	Type
-	IncludeSubProjects
-)
-
 func Lookup(id uint64) (*models.WorkPackage, error) {
 	workPackage, err := fetch(id)
 	if err != nil {
@@ -47,6 +36,8 @@ func All(filterOptions *map[FilterOption]string, showOnlyTotal bool) (*models.Wo
 			filters = append(filters, StatusFilter(value))
 		case Type:
 			filters = append(filters, TypeFilter(value))
+		case SubProject:
+			filters = append(filters, SubProjectFilter(value))
 		case Project:
 			n, _ := strconv.ParseUint(value, 10, 64)
 			projectId = &n
