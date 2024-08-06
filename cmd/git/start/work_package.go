@@ -82,18 +82,23 @@ func deriveBranchName(id uint64) (string, error) {
 		return "", err
 	}
 
-	typeName := strings.Replace(strings.ToLower(workPackage.Type), " ", "-", -1)
-	subject := regexp.MustCompile("[^a-zA-Z0-9-/_.]").
-		ReplaceAllStringFunc(workPackage.Subject, escapeWhiteSpaceAndDropSpecials)
+	name := fmt.Sprintf(
+		"%s/%d-%s",
+		sanitizeString(workPackage.Type),
+		workPackage.Id,
+		sanitizeString(workPackage.Subject),
+	)
 
-	name := fmt.Sprintf("%s/%d-%s", typeName, workPackage.Id, subject)
 	return name, nil
 }
 
-func escapeWhiteSpaceAndDropSpecials(s string) string {
-	if s == " " {
-		return "-"
-	}
+func sanitizeString(str string) string {
+	lower := strings.ToLower(str)
+	return regexp.MustCompile("[^a-zA-Z0-9-/_.]").ReplaceAllStringFunc(lower, func(s string) string {
+		if s == " " {
+			return "-"
+		}
 
-	return ""
+		return ""
+	})
 }
