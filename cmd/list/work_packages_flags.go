@@ -17,13 +17,6 @@ func initWorkPackagesFlags() {
 		"Show only work packages within the specified projectId")
 
 	workPackagesCmd.Flags().StringVarP(
-		&version,
-		"version",
-		"v",
-		"",
-		"Show only work packages having the specified version")
-
-	workPackagesCmd.Flags().StringVarP(
 		&statusFilter,
 		"status",
 		"s",

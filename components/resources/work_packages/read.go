@@ -30,8 +30,6 @@ func All(filterOptions *map[FilterOption]string, query requests.Query, showOnlyT
 			queryAttributes["includeSubprojects"] = value
 		case Assignee:
 			filters = append(filters, AssigneeFilter(value))
-		case Version:
-			filters = append(filters, VersionFilter(value))
 		case Status:
 			filters = append(filters, StatusFilter(value))
 		case Type:

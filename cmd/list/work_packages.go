@@ -19,16 +19,17 @@ import (
 
 var assignee string
 var projectId uint64
-var version string
 var showTotal bool
 var statusFilter string
 var typeFilter string
 var includeSubProjects bool
 
 var activeFilters = map[string]resources.Filter{
-	"timestamp":     filters.NewTimestampFilter(),
-	"subProject":    filters.NewSubProjectFilter(),
 	"notSubProject": filters.NewNotSubProjectFilter(),
+	"notVersion":    filters.NewNotVersionFilter(),
+	"subProject":    filters.NewSubProjectFilter(),
+	"timestamp":     filters.NewTimestampFilter(),
+	"version":       filters.NewVersionFilter(),
 }
 
 var workPackagesCmd = &cobra.Command{
@@ -65,8 +66,10 @@ func listWorkPackages(_ *cobra.Command, _ []string) {
 
 func validateCommandFlagComposition() (errorText string) {
 	switch {
-	case len(version) != 0 && projectId == 0:
+	case len(activeFilters["version"].Value()) != 0 && projectId == 0:
 		return "Version flag (--version) can only be used in conjunction with projectId flag (-p or --project-id)."
+	case len(activeFilters["notVersion"].Value()) != 0 && projectId == 0:
+		return "Not version filter flag (--not-version) can only be used in conjunction with projectId flag (-p or --project-id)."
 	case len(activeFilters["subProject"].Value()) > 0 || len(activeFilters["notSubProject"].Value()) > 0:
 		if !includeSubProjects || projectId == 0 {
 			return `Sub project filter flags (--sub-project or --not-sub-project) can only be used
@@ -116,10 +119,6 @@ func filterOptions() *map[work_packages.FilterOption]string {
 
 	if len(typeFilter) > 0 {
 		options[work_packages.Type] = validateFilterValue(work_packages.Type, typeFilter)
-	}
-
-	if len(version) > 0 {
-		options[work_packages.Version] = validatedVersionId(version)
 	}
 
 	return &options

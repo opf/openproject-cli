@@ -10,7 +10,6 @@ type FilterOption int
 
 const (
 	Assignee FilterOption = iota
-	Version
 	Project
 	Status
 	Type
@@ -26,8 +25,6 @@ func (f FilterOption) String() string {
 	switch f {
 	case Assignee:
 		return "assignee"
-	case Version:
-		return "version"
 	case Project:
 		return "project"
 	case Status:
@@ -46,14 +43,6 @@ func AssigneeFilter(name string) requests.Filter {
 		Operator: "=",
 		Name:     "assignee",
 		Values:   []string{name},
-	}
-}
-
-func VersionFilter(version string) requests.Filter {
-	return requests.Filter{
-		Operator: "=",
-		Name:     "version",
-		Values:   []string{version},
 	}
 }
 
