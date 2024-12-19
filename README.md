@@ -49,6 +49,12 @@ OpenProject CLI: X.Y.Z
         built with: go1.20.5
 ```
 
+> MacOS will place the executable in quarantine by default. If your Mac displays an alert when you run the executable, you can dequarantine the `op` executable via the following command:
+
+```shell
+xattr -d com.apple.quarantine /usr/local/bin/op
+```
+
 ### Go toolchain
 
 If you already have the Go toolchain installed on your system, you can install the OpenProject CLI with the `go install`
