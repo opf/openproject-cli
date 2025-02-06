@@ -7,7 +7,7 @@ type TimeEntry struct {
 	Comment     string
 	Project     string
 	WorkPackage string
-	SpentOn     string
+	SpentOn     time.Time
 	Hours       time.Duration
 	Ongoing     bool
 	User        string

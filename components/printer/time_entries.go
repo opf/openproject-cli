@@ -41,7 +41,7 @@ func printTimeEntry(timeEntry *models.TimeEntry, maxIdLength int, maxActivityLen
 		parts = append(parts, activityStr)
 	}
 
-	parts = append(parts, Cyan(timeEntry.SpentOn))
+	parts = append(parts, Cyan(timeEntry.SpentOn.Format("Mon Jan _2")))
 
 	hoursStr := fmt.Sprintf("%.2fh", timeEntry.Hours.Hours())
 	parts = append(parts, hoursStr)

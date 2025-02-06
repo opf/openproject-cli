@@ -1,6 +1,8 @@
 package dtos
 
 import (
+	"time"
+
 	"github.com/opf/openproject-cli/models"
 	"github.com/sosodev/duration"
 )
@@ -38,13 +40,14 @@ type timeEntryLinksDto struct {
 
 func (dto *TimeEntryDto) Convert() *models.TimeEntry {
 	hours, _ := duration.Parse(dto.Hours)
+	spentOn, _ := time.Parse(time.DateOnly, dto.SpentOn)
 
 	return &models.TimeEntry{
 		Id:          uint64(dto.Id),
 		Comment:     dto.Comment.Raw,
 		Project:     dto.Links.Project.Title,
 		WorkPackage: dto.Links.WorkPackage.Title,
-		SpentOn:     dto.SpentOn,
+		SpentOn:     spentOn,
 		Hours:       hours.ToTimeDuration(),
 		Ongoing:     dto.Ongoing,
 		User:        dto.Links.User.Title,
