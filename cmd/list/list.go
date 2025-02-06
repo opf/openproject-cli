@@ -26,6 +26,7 @@ func init() {
 		workPackagesCmd,
 		activitiesCmd,
 		statusCmd,
+		timeEntriesCmd,
 		typesCmd,
 	)
 }
