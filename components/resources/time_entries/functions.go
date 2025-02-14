@@ -8,17 +8,7 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
-func All(filterOptions *map[FilterOption]string) ([]*models.TimeEntry, error) {
-	var filters []requests.Filter
-
-	for updateOpt, value := range *filterOptions {
-		if updateOpt == User {
-			filters = append(filters, UserFilter(value))
-		}
-	}
-
-	query := requests.NewPaginatedQuery(-1, filters)
-
+func All(query requests.Query) ([]*models.TimeEntry, error) {
 	response, err := requests.Get(paths.TimeEntries(), &query)
 	if err != nil {
 		return nil, err

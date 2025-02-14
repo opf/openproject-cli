@@ -2,11 +2,16 @@ package list
 
 import (
 	"github.com/opf/openproject-cli/components/printer"
+	"github.com/opf/openproject-cli/components/requests"
+	"github.com/opf/openproject-cli/components/resources"
 	"github.com/opf/openproject-cli/components/resources/time_entries"
+	"github.com/opf/openproject-cli/components/resources/time_entries/filters"
 	"github.com/spf13/cobra"
 )
 
-var user string
+var activeTimeEntryFilters = map[string]resources.Filter{
+	"user": filters.NewUserFilter(),
+}
 
 var timeEntriesCmd = &cobra.Command{
 	Use:   "timeentries",
@@ -16,19 +21,30 @@ var timeEntriesCmd = &cobra.Command{
 }
 
 func listTimeEntries(_ *cobra.Command, _ []string) {
-	if all, err := time_entries.All(timeEntriesFilterOptions()); err == nil {
+	query, err := buildTimeEntriesQuery()
+	if err != nil {
+		printer.ErrorText(err.Error())
+		return
+	}
+
+	if all, err := time_entries.All(query); err == nil {
 		printer.TimeEntryList(all)
 	} else {
 		printer.Error(err)
 	}
 }
 
-func timeEntriesFilterOptions() *map[time_entries.FilterOption]string {
-	options := make(map[time_entries.FilterOption]string)
+func buildTimeEntriesQuery() (requests.Query, error) {
+	var q requests.Query
 
-	if len(user) > 0 {
-		options[time_entries.User] = user
+	for _, filter := range activeTimeEntryFilters {
+		err := filter.ValidateInput()
+		if err != nil {
+			return requests.NewEmptyQuery(), err
+		}
+
+		q = q.Merge(filter.Query())
 	}
 
-	return &options
+	return q, nil
 }

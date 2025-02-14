@@ -1,11 +1,13 @@
 package list
 
 func initTimeEntriesFlags() {
-	timeEntriesCmd.Flags().StringVarP(
-		&user,
-		"user",
-		"u",
-		"me",
-		"User the time entry tracks expenditures for (can be name, ID or 'me')",
-	)
+	for _, filter := range activeTimeEntryFilters {
+		timeEntriesCmd.Flags().StringVarP(
+			filter.ValuePointer(),
+			filter.Name(),
+			filter.ShortHand(),
+			filter.DefaultValue(),
+			filter.Usage(),
+		)
+	}
 }
