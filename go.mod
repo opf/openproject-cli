@@ -10,6 +10,8 @@ require (
 	github.com/spf13/cobra v1.8.1
 )
 
+require github.com/sosodev/duration v1.3.1
+
 require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect

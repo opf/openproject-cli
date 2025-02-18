@@ -34,6 +34,10 @@ func Status() string {
 	return Root() + "/statuses"
 }
 
+func TimeEntries() string {
+	return Root() + "/time_entries"
+}
+
 func Types() string {
 	return Root() + "/types"
 }
