@@ -35,7 +35,7 @@ jobs:
               run: GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -extldflags "-static" -X main.version=${{ env.version }} -X main.commit=$GITHUB_SHA -X main.date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" -o op-windows_amd64
 
             - name: Upload build artifact
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: openproject-cli
                   path: op-*
