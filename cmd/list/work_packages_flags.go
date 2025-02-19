@@ -6,7 +6,7 @@ func initWorkPackagesFlags() {
 		"assignee",
 		"a",
 		"",
-		"Assignee of the work package (can be name, ID or 'me')",
+		"Assignee of the work package (can be ID or 'me')",
 	)
 
 	workPackagesCmd.Flags().Uint64VarP(

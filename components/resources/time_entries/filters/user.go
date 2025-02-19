@@ -11,10 +11,9 @@ import (
 )
 
 // validates the value is one or more of the following - separated by commas
-// - a valid login (see https://github.com/opf/openproject/blob/dev/app/models/user.rb#L135)
 // - a numeric id
 // - me
-const validValueRegexp = `^([\pL0-9_\-@.+ ]+|[0-9]+|me)(,([\pL0-9_\-@.+ ]+|[0-9]+|me))*$`
+const validValueRegexp = `^([0-9]+|me)(,([0-9]+|me))*$`
 
 type UserFilter struct {
 	value string
@@ -37,7 +36,7 @@ func (f *UserFilter) ShortHand() string {
 }
 
 func (f *UserFilter) Usage() string {
-	return `User the time entry tracks expenditures for (can be name, ID or 'me')`
+	return `User the time entry tracks expenditures for (can be ID or 'me')`
 }
 
 func (f *UserFilter) ValidateInput() error {
