@@ -1,8 +1,9 @@
 package common_test
 
 import (
-	"github.com/opf/openproject-cli/components/common"
 	"testing"
+
+	"github.com/opf/openproject-cli/components/common"
 )
 
 func TestContains(t *testing.T) {
@@ -45,5 +46,17 @@ func TestFilter(t *testing.T) {
 
 	if !common.Contains(result, list[2]) || !common.Contains(result, list[3]) {
 		t.Errorf("Expected %v to contain %d and %d, but does not", list, list[2], list[3])
+	}
+}
+
+func TestAll(t *testing.T) {
+	list := []int{23, 245, 54, 132, 4325}
+
+	if !common.All(list, func(value int) bool { return value > 1 }) {
+		t.Error("Expected result to be true, but got false")
+	}
+
+	if common.All(list, func(value int) bool { return value%2 == 0 }) {
+		t.Error("Expected result to be false, but got true")
 	}
 }

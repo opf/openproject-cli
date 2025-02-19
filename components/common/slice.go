@@ -31,3 +31,15 @@ func Filter[T any](slice []T, f func(T) bool) []T {
 		[]T{},
 	)
 }
+
+func All[T any](slice []T, f func(T) bool) bool {
+	for _, val := range slice {
+		if f(val) {
+			continue
+		} else {
+			return false
+		}
+	}
+
+	return true
+}

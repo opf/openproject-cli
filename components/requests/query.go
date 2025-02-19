@@ -2,7 +2,9 @@ package requests
 
 import (
 	"fmt"
+	"github.com/opf/openproject-cli/components/common"
 	"net/url"
+	"slices"
 	"strings"
 )
 
@@ -24,6 +26,19 @@ func (filter Filter) String() string {
 		filter.Operator,
 		strings.Join(filter.Values, "\",\""),
 	)
+}
+
+func (filter Filter) Equals(other Filter) bool {
+	valuesEqual := true
+
+	for _, value := range filter.Values {
+		if !slices.Contains(other.Values, value) {
+			valuesEqual = false
+			break
+		}
+	}
+
+	return filter.Operator == other.Operator && filter.Name == other.Name && valuesEqual
 }
 
 func (query Query) Merge(another Query) Query {
@@ -54,6 +69,32 @@ func (query Query) String() string {
 	}
 
 	return queryStr
+}
+
+func (query Query) Equals(other Query) bool {
+	filtersEqual := common.All(
+		query.filters,
+		func(filter Filter) bool {
+			filterExists := false
+			for _, f := range other.filters {
+				if filter.Equals(f) {
+					filterExists = true
+					break
+				}
+			}
+
+			return filterExists
+		})
+
+	attributesEqual := true
+	for idx, value := range query.attributes {
+		if other.attributes[idx] != value {
+			attributesEqual = false
+			break
+		}
+	}
+
+	return filtersEqual && attributesEqual
 }
 
 func filtersQueryAttribute(filters []Filter) string {
