@@ -2,6 +2,7 @@ package printer
 
 import (
 	"encoding/json"
+
 	"github.com/opf/openproject-cli/components/errors"
 )
 
@@ -15,6 +16,10 @@ func Info(msg string) {
 	activePrinter.Println(msg)
 }
 
+func Input(prompt string) {
+	activePrinter.Printf(prompt)
+}
+
 func Done() {
 	activePrinter.Println(Green("DONE"))
 }
@@ -26,6 +31,12 @@ func Error(err error) {
 		responseError(err.Status(), err.Response())
 	default:
 		activePrinter.Printf("%s Program exited with error: %+v\n", Red("[ERROR]"), err)
+	}
+}
+
+func Debug(verboseFlag bool, msg string) {
+	if verboseFlag {
+		activePrinter.Printf("%s %s\n", Magenta("[DEBUG]"), msg)
 	}
 }
 

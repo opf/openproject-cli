@@ -21,6 +21,7 @@ import (
 	"github.com/opf/openproject-cli/components/routes"
 )
 
+var Verbose bool
 var showVersionFlag bool
 
 var rootCmd = &cobra.Command{
@@ -70,7 +71,7 @@ func init() {
 		printer.Error(err)
 	}
 
-	requests.Init(parse, token)
+	requests.Init(parse, token, Verbose)
 	routes.Init(parse)
 
 	rootCmd.Flags().BoolVarP(
@@ -79,6 +80,14 @@ func init() {
 		"",
 		false,
 		"Show version information of the OpenProject CLI",
+	)
+
+	rootCmd.PersistentFlags().BoolVarP(
+		&Verbose,
+		"verbose",
+		"",
+		false,
+		"Print verbose information of any process that supports this output.",
 	)
 
 	rootCmd.AddCommand(

@@ -1,6 +1,7 @@
 package requests
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -13,16 +14,18 @@ import (
 var client *http.Client
 var host *url.URL
 var token string
+var verbose bool
 
 type RequestData struct {
 	ContentType string
 	Body        io.Reader
 }
 
-func Init(hostUrl *url.URL, tokenValue string) {
+func Init(hostUrl *url.URL, tokenValue string, verboseFlag bool) {
 	client = &http.Client{}
 	host = hostUrl
 	token = tokenValue
+	verbose = verboseFlag
 }
 
 func Get(path string, query *Query) (responseBody []byte, err error) {
@@ -44,6 +47,12 @@ func Patch(path string, requestBody *RequestData) (responseBody []byte, err erro
 }
 
 func Do(method string, path string, query *Query, requestData *RequestData) (responseBody []byte, err error) {
+	printer.Debug(verbose, "Building HTTP request:")
+	printer.Debug(verbose, fmt.Sprintf("\twith Method: %s", method))
+	printer.Debug(verbose, fmt.Sprintf("\twith Path: %s", path))
+	printer.Debug(verbose, fmt.Sprintf("\twith Query: %+v", query))
+	printer.Debug(verbose, fmt.Sprintf("\twith Body: %+v", requestData))
+
 	if client == nil || hostUnitialised() {
 		return nil, errors.Custom("Cannot execute requests without initializing request client first. Run `op login`")
 	}
@@ -76,6 +85,8 @@ func Do(method string, path string, query *Query, requestData *RequestData) (res
 		request.SetBasicAuth("apikey", token)
 	}
 
+	printer.Debug(verbose, fmt.Sprintf("Running HTTP request %s %s", request.Method, request.URL))
+
 	resp, err := client.Do(request)
 	if err != nil {
 		return nil, err
@@ -86,6 +97,8 @@ func Do(method string, path string, query *Query, requestData *RequestData) (res
 	if err != nil {
 		return nil, err
 	}
+
+	printer.Debug(verbose, fmt.Sprintf("Received response:\n%s", response))
 
 	if !isSuccess(resp.StatusCode) {
 		return nil, errors.NewResponseError(resp.StatusCode, response)

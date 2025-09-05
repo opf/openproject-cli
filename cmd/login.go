@@ -41,17 +41,20 @@ func login(_ *cobra.Command, _ []string) {
 	var token string
 
 	for {
-		fmt.Print("OpenProject host URL: ")
+		printer.Debug(Verbose, "Parsing host URL ...")
+		printer.Input("OpenProject host URL: ")
+
 		ok, msg, host := parseHostUrl()
 		if !ok {
-			fmt.Println(msg)
+			printer.ErrorText(msg)
 			continue
 		}
 
-		requests.Init(host, "")
+		printer.Debug(Verbose, "Initializing requests client ...")
+		requests.Init(host, "", Verbose)
 		ok = checkOpenProjectApi()
 		if !ok {
-			fmt.Println(noOpInstanceError)
+			printer.ErrorText(noOpInstanceError)
 			continue
 		}
 
@@ -69,7 +72,7 @@ func login(_ *cobra.Command, _ []string) {
 
 		token = common.SanitizeLineBreaks(t)
 
-		requests.Init(hostUrl, token)
+		requests.Init(hostUrl, token, Verbose)
 		user, err := users.Me()
 		if err != nil {
 			printer.Error(err)
@@ -92,24 +95,39 @@ func parseHostUrl() (ok bool, errMessage string, host *url.URL) {
 
 	input, err := reader.ReadString('\n')
 	if err != nil {
+		printer.Debug(Verbose, fmt.Sprintf("Error reading string input: %+v", err))
 		return false, urlInputError, nil
 	}
 
+	printer.Debug(Verbose, fmt.Sprintf("Parsed input %q.", input))
+	printer.Debug(Verbose, "Sanitizing input ...")
+
 	input = common.SanitizeLineBreaks(input)
 	input = strings.TrimSuffix(input, "/")
+
+	printer.Debug(Verbose, fmt.Sprintf("Sanitized input '%s'.", input))
+	printer.Debug(Verbose, "Parsing input as url ...")
+
 	parsed, err := url.Parse(input)
 	if err != nil {
+		printer.Debug(Verbose, fmt.Sprintf("Error parsing url: %+v", err))
 		return false, urlInputError, nil
 	}
+
+	printer.Debug(Verbose, fmt.Sprintf("Parsed url '%s'.", parsed))
+	printer.Debug(Verbose, "Checking for http host and scheme ...")
 
 	if parsed.Scheme == "" || parsed.Host == "" {
 		return false, missingSchemeError, nil
 	}
 
+	printer.Debug(Verbose, "Parsing input successful, continuing with next steps.")
 	return true, "", parsed
 }
 
 func checkOpenProjectApi() bool {
+	printer.Debug(Verbose, "Fetching API root to check for instance configuration ...")
+
 	response, err := requests.Get(paths.Root(), nil)
 	if err != nil {
 		return false
