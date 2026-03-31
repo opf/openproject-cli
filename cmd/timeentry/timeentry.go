@@ -1,0 +1,15 @@
+package timeentry
+
+import "github.com/spf13/cobra"
+
+var RootCmd = &cobra.Command{
+	Use:   "timeentry [verb]",
+	Short: "Manage time entries",
+	Long:  "List time entries in OpenProject.",
+}
+
+func init() {
+	initListFlags()
+
+	RootCmd.AddCommand(listCmd)
+}
