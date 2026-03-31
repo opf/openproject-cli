@@ -26,3 +26,6 @@ openproject-cli
 
 # Go workspace file
 go.work
+
+# Claude local settings file
+.claude/settings.local.json
