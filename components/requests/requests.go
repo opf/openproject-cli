@@ -107,6 +107,35 @@ func Do(method string, path string, query *Query, requestData *RequestData) (res
 	return response, nil
 }
 
+// Probe performs a GET request and returns the raw response without treating
+// non-2xx status codes as errors. Used for instance detection before authentication.
+func Probe(path string) (statusCode int, header http.Header, body []byte, err error) {
+	if client == nil || hostUnitialised() {
+		return 0, nil, nil, errors.Custom("Cannot execute requests without initializing request client first. Run `op login`")
+	}
+
+	requestUrl := *host
+	requestUrl.Path += path
+
+	request, err := http.NewRequest("GET", requestUrl.String(), nil)
+	if err != nil {
+		return 0, nil, nil, err
+	}
+
+	resp, err := client.Do(request)
+	if err != nil {
+		return 0, nil, nil, err
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, nil, err
+	}
+
+	return resp.StatusCode, resp.Header, responseBody, nil
+}
+
 func isSuccess(code int) bool {
 	return code >= 200 && code <= 299
 }

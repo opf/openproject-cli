@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
@@ -63,7 +64,7 @@ func login(_ *cobra.Command, _ []string) {
 	}
 
 	for {
-		fmt.Printf("OpenProject API Token (Visit %s/my/access_token to generate one): ", hostUrl)
+		fmt.Printf("OpenProject API Token (Visit %s/my/access_tokens to generate one): ", hostUrl)
 		ok, t := requestApiToken()
 		if !ok {
 			fmt.Println(tokenInputError)
@@ -128,14 +129,29 @@ func parseHostUrl() (ok bool, errMessage string, host *url.URL) {
 func checkOpenProjectApi() bool {
 	printer.Debug(Verbose, "Fetching API root to check for instance configuration ...")
 
-	response, err := requests.Get(paths.Root(), nil)
+	statusCode, header, body, err := requests.Probe(paths.Root())
 	if err != nil {
+		printer.Debug(Verbose, fmt.Sprintf("Error probing OpenProject API: %+v", err))
 		return false
 	}
 
-	c := parser.Parse[dtos.ConfigDto](response)
+	// Public instance: standard check on the root resource
+	if statusCode == http.StatusOK {
+		c := parser.Parse[dtos.ConfigDto](body)
+		return c.Type == "Root" && len(c.InstanceName) > 0
+	}
 
-	return c.Type == "Root" && len(c.InstanceName) > 0
+	// Auth-required instance: detect OpenProject via the Link header added before authentication
+	if statusCode == http.StatusUnauthorized {
+		linkHeader := header.Get("Link")
+		if strings.Contains(linkHeader, "/api/v3/openapi.json") {
+			return true
+		}
+		// Fallback: check error body for OpenProject-specific error identifier
+		return strings.Contains(string(body), "openproject-org")
+	}
+
+	return false
 }
 
 func requestApiToken() (ok bool, token string) {
