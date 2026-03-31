@@ -11,11 +11,12 @@ var RootCmd = &cobra.Command{
 func init() {
 	listCmd.Flags().Uint64VarP(
 		&listWpId,
-		"wp",
+		"work-package",
 		"",
 		0,
 		"Work package ID to list activities for",
 	)
+	_ = listCmd.MarkFlagRequired("work-package")
 
 	RootCmd.AddCommand(listCmd)
 }

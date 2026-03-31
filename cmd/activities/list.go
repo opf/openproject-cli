@@ -13,17 +13,12 @@ var listWpId uint64
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Lists activities",
-	Long:  "Get a list of activities, scoped by the provided flag (e.g. --wp).",
+	Long:  "Get a list of activities, scoped by the provided flag (e.g. --work-package).",
 	Run:   listActivities,
 }
 
 func listActivities(_ *cobra.Command, _ []string) {
-	if listWpId > 0 {
-		listWorkPackageActivities(listWpId)
-		return
-	}
-
-	printer.ErrorText("Please specify a scope. Example: --wp [id]")
+	listWorkPackageActivities(listWpId)
 }
 
 func listWorkPackageActivities(wpId uint64) {
