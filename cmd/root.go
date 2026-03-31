@@ -10,16 +10,11 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/opf/openproject-cli/cmd/activities"
-	"github.com/opf/openproject-cli/cmd/create"
 	"github.com/opf/openproject-cli/cmd/git"
-	"github.com/opf/openproject-cli/cmd/inspect"
-	"github.com/opf/openproject-cli/cmd/list"
 	"github.com/opf/openproject-cli/cmd/notification"
 	"github.com/opf/openproject-cli/cmd/project"
-	"github.com/opf/openproject-cli/cmd/search"
 	"github.com/opf/openproject-cli/cmd/status"
 	"github.com/opf/openproject-cli/cmd/timeentry"
-	"github.com/opf/openproject-cli/cmd/update"
 	"github.com/opf/openproject-cli/cmd/user"
 	"github.com/opf/openproject-cli/cmd/workpackage"
 	"github.com/opf/openproject-cli/cmd/wptype"
@@ -109,12 +104,6 @@ func init() {
 		wptype.RootCmd,
 		status.RootCmd,
 		notification.RootCmd,
-		// verb-first (kept during transition)
-		list.RootCmd,
-		update.RootCmd,
-		inspect.RootCmd,
-		create.RootCmd,
-		search.RootCmd,
 		git.RootCmd,
 	)
 }

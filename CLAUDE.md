@@ -51,10 +51,10 @@ API response → `parser.Parse[SomethingDto]()` → `dto.Convert()` → `models.
 
 ### Command conventions
 
-- Commands follow `op <verb> <resource>` (verb-first)
-- Each verb has its own package under `cmd/` (`create`, `list`, `update`, `inspect`, `search`)
-- Each verb package exposes a `RootCmd` registered in `cmd/root.go`
-- One file per resource within each verb package (e.g. `cmd/list/work_packages.go`)
+- Commands follow `op <noun> <verb>` (noun-first), e.g. `op work-package list`, `op time-entry create`
+- Each noun has its own package under `cmd/` (`workpackage`, `timeentry`, `project`, `user`, …)
+- Each noun package exposes a `RootCmd` registered in `cmd/root.go`
+- One file per verb within each noun package (e.g. `cmd/workpackage/list.go`, `cmd/workpackage/create.go`)
 - Flags: always define long flag names; add short flags (`-p`, `-o`) for frequently used ones
 - Flags that resolve a resource (e.g. `--type`, `--assignee`) perform an API lookup and store the resolved link in the DTO
 
