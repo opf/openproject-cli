@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/routes"
@@ -16,8 +17,8 @@ func WorkPackages(workPackages []*models.WorkPackage) {
 	var maxStatusLength = 0
 	for _, w := range workPackages {
 		maxIdLength = common.Max(maxIdLength, idLength(w.Id))
-		maxTypeLength = common.Max(maxTypeLength, len(w.Type))
-		maxStatusLength = common.Max(maxStatusLength, len(w.Status))
+		maxTypeLength = common.Max(maxTypeLength, utf8.RuneCountInString(w.Type))
+		maxStatusLength = common.Max(maxStatusLength, utf8.RuneCountInString(w.Status))
 	}
 
 	for _, workPackage := range workPackages {
@@ -26,7 +27,7 @@ func WorkPackages(workPackages []*models.WorkPackage) {
 }
 
 func WorkPackage(workPackage *models.WorkPackage) {
-	printHeadline(workPackage, idLength(workPackage.Id), 0, len(workPackage.Type))
+	printHeadline(workPackage, idLength(workPackage.Id), 0, utf8.RuneCountInString(workPackage.Type))
 	printAttributes(workPackage)
 	activePrinter.Println()
 	printOpenLink(workPackage)
@@ -45,12 +46,12 @@ func printHeadline(workPackage *models.WorkPackage, maxIdLength, maxStatusLength
 	idStr := fmt.Sprintf("%s#%d", indent(diff), workPackage.Id)
 	parts = append(parts, Red(idStr))
 
-	diff = maxTypeLength - len(workPackage.Type)
+	diff = maxTypeLength - utf8.RuneCountInString(workPackage.Type)
 	typeStr := strings.ToUpper(workPackage.Type) + indent(diff)
 	parts = append(parts, Green(typeStr))
 
 	if maxStatusLength > 0 {
-		diff = maxStatusLength - len(workPackage.Status)
+		diff = maxStatusLength - utf8.RuneCountInString(workPackage.Status)
 		statusStr := fmt.Sprintf("[%s]%s", Yellow(workPackage.Status), indent(diff))
 		parts = append(parts, statusStr)
 	}

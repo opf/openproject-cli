@@ -93,6 +93,44 @@ func TestWorkPackage_Assignee_With_Empty_String(t *testing.T) {
 	}
 }
 
+func TestWorkPackages_WithAccentedCharacters(t *testing.T) {
+	testingPrinter.Reset()
+
+	// The bug: len() counts bytes, not runes. Accented chars (â, é...) are 2 bytes but 1 rune.
+	// The misalignment only appears when the string that determines the max column width
+	// has NO accented chars, while another string does.
+	// Here "User Story" (10 runes, 10 bytes) sets maxTypeLength, while "Tâche" (5 runes, 6 bytes)
+	// gets one space too few with the broken code (diff=10-6=4 instead of correct 10-5=5).
+	workPackages := []*models.WorkPackage{
+		{
+			Id:      2,
+			Subject: "Subject A",
+			Type:    "Tâche",
+			Status:  "En cours",
+		},
+		{
+			Id:      10,
+			Subject: "Subject B",
+			Type:    "User Story",
+			Status:  "En cours de spécification",
+		},
+	}
+
+	var expected string
+
+	// maxTypeLength = max(5, 10) = 10 → "TÂCHE" gets 5 trailing spaces
+	// maxStatusLength = max(8, 25) = 25 → "En cours" gets 17 trailing spaces
+	// id #2 = 2 chars, #10 = 3 chars → 1 leading space for #2
+	expected += fmt.Sprintf("%s %s [%s]                  %s\n", printer.Red(" #2"), printer.Green("TÂCHE     "), printer.Yellow("En cours"), printer.Cyan("Subject A"))
+	expected += fmt.Sprintf("%s %s [%s] %s\n", printer.Red("#10"), printer.Green("USER STORY"), printer.Yellow("En cours de spécification"), printer.Cyan("Subject B"))
+
+	printer.WorkPackages(workPackages)
+
+	if testingPrinter.Result != expected {
+		t.Errorf("\nExpected:\n%sbut got:\n%s", expected, testingPrinter.Result)
+	}
+}
+
 func TestWorkPackages(t *testing.T) {
 	testingPrinter.Reset()
 
