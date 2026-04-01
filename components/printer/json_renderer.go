@@ -10,6 +10,25 @@ import (
 
 type JsonRenderer struct{}
 
+func (r *JsonRenderer) Budget(b *models.Budget) {
+	printJson(struct {
+		Id      uint64 `json:"id"`
+		Subject string `json:"subject"`
+	}{b.Id, b.Subject})
+}
+
+func (r *JsonRenderer) Budgets(bs []*models.Budget) {
+	type item struct {
+		Id      uint64 `json:"id"`
+		Subject string `json:"subject"`
+	}
+	out := make([]item, len(bs))
+	for i, b := range bs {
+		out[i] = item{b.Id, b.Subject}
+	}
+	printJson(out)
+}
+
 func (r *JsonRenderer) WorkPackage(wp *models.WorkPackage) {
 	printJson(struct {
 		Id          uint64 `json:"id"`

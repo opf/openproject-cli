@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/opf/openproject-cli/cmd/activities"
+	"github.com/opf/openproject-cli/cmd/budget"
 	"github.com/opf/openproject-cli/cmd/git"
 	"github.com/opf/openproject-cli/cmd/notification"
 	"github.com/opf/openproject-cli/cmd/project"
@@ -109,6 +110,7 @@ func init() {
 		loginCmd,
 		// noun-first (new)
 		activities.RootCmd,
+		budget.RootCmd,
 		workpackage.RootCmd,
 		project.RootCmd,
 		user.RootCmd,

@@ -13,6 +13,20 @@ import (
 
 type TextRenderer struct{}
 
+func (r *TextRenderer) Budget(b *models.Budget) {
+	printBudget(b, idLength(b.Id))
+}
+
+func (r *TextRenderer) Budgets(bs []*models.Budget) {
+	var maxIdLength = 0
+	for _, b := range bs {
+		maxIdLength = common.Max(maxIdLength, idLength(b.Id))
+	}
+	for _, b := range bs {
+		printBudget(b, maxIdLength)
+	}
+}
+
 func (r *TextRenderer) WorkPackage(wp *models.WorkPackage) {
 	printHeadline(wp, idLength(wp.Id), 0, utf8.RuneCountInString(wp.Type))
 	printAttributes(wp)
@@ -142,6 +156,12 @@ func (r *TextRenderer) CustomActions(actions []*models.CustomAction) {
 
 func (r *TextRenderer) Number(n int64) {
 	activePrinter.Printf("%s\n", Cyan(strconv.FormatInt(n, 10)))
+}
+
+func printBudget(b *models.Budget, maxIdLength int) {
+	diff := maxIdLength - idLength(b.Id)
+	idStr := fmt.Sprintf("%s#%d", indent(diff), b.Id)
+	activePrinter.Printf("%s %s\n", Red(idStr), Cyan(b.Subject))
 }
 
 func printProject(p *models.Project) {

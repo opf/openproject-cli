@@ -7,6 +7,8 @@ import (
 )
 
 type Renderer interface {
+	Budget(*models.Budget)
+	Budgets([]*models.Budget)
 	WorkPackage(*models.WorkPackage)
 	WorkPackages([]*models.WorkPackage)
 	Project(*models.Project)

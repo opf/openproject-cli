@@ -26,6 +26,18 @@ func ProjectWorkPackages(projectId uint64) string {
 	return Project(projectId) + "/work_packages"
 }
 
+func Budget(id uint64) string {
+	return Budgets() + fmt.Sprintf("/%d", id)
+}
+
+func Budgets() string {
+	return Root() + "/budgets"
+}
+
+func ProjectBudgets(projectId uint64) string {
+	return Project(projectId) + "/budgets"
+}
+
 func Root() string {
 	return "/api/v3"
 }
