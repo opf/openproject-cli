@@ -52,7 +52,7 @@ API response → `parser.Parse[SomethingDto]()` → `dto.Convert()` → `models.
 ### Command conventions
 
 - Commands follow `op <noun> <verb>` (noun-first), e.g. `op work-package list`, `op time-entry create`
-- Each noun has its own package under `cmd/` (`workpackage`, `timeentry`, `project`, `user`, …)
+- Each noun has its own package under `cmd/` (`workpackage`, `timeentry`, `project`, `user`, …) — package names use no hyphens even when the command name does (e.g. `work-package` → `package workpackage`)
 - Each noun package exposes a `RootCmd` registered in `cmd/root.go`
 - One file per verb within each noun package (e.g. `cmd/workpackage/list.go`, `cmd/workpackage/create.go`)
 - Flags: always define long flag names; add short flags (`-p`, `-o`) for frequently used ones

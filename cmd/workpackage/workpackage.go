@@ -3,7 +3,7 @@ package workpackage
 import "github.com/spf13/cobra"
 
 var RootCmd = &cobra.Command{
-	Use:   "workpackage [verb]",
+	Use:   "work-package [verb]",
 	Short: "Manage work packages",
 	Long:  "Create, list, update, inspect, and manage work packages in OpenProject.",
 }

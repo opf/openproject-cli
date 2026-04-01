@@ -89,7 +89,7 @@ Open a new shell and completion should work by using the `TAB` key as usual.
 ## Usage
 
 The OpenProject CLI commands are structured in a common, human-readable pattern. Every command is built
-as `op VERB RESOURCE [additional information]`. You will see plenty of examples within this section.
+as `op NOUN VERB [additional information]`. You will see plenty of examples within this section.
 
 ### Discoverability
 
@@ -102,12 +102,11 @@ possibilities he can use from here.
 # General help
 op -h
 
-# Help about what things I can list
-op list -h
+# Help about work package commands
+op work-package -h
 
-# Help about how can I narrow down my list of work
-# packages to get exactly what I was looking for
-op list workpackages -h
+# Help about how can I narrow down my list of work packages
+op work-package list -h
 ```
 
 The second basement is the autocompletion. To set it up correctly, follow the steps explained in the `Completion`
@@ -117,20 +116,20 @@ Once it is working, you can use it to discover possible commands and flags while
 
 ```shell
 # Chaining commands: hitting completion key after
-op list
+op work-package
 # returns
-activities     -- Lists activities for work package
-notifications  -- Lists notificationswork package
-projects       -- Lists projects
-workpackages   -- Lists work packages
+create  -- Create work package in project
+inspect -- Inspect a work package
+list    -- Lists work packages
+update  -- Update a work package
 
 # Discover flags: hitting completion key after
-op update workpackge 42 -
+op work-package update 42 -
 # returns
 --action    -a  -- Executes a custom action on a work package
 --assignee      -- Assign a user to the work package
 --attach        -- Attach a file to the work package
---help      -h  -- help for workpackage
+--help      -h  -- help for work-package
 --subject       -- Change the subject of the work package
 --type      -t  -- Change the work package type
 ```
@@ -146,34 +145,34 @@ of examples, that might be useful for a great number of people.
 # Creating a work package in a project only by subject.
 # Work package is created with many default values (as for type and status),
 # very similar to how a work package is created inline in a work package table.
-op create workpackge --project 11 'Document new CLI tool'
+op work-package create --project 11 'Document new CLI tool'
 
 # Same command with shorthands and directly open it in a browser to continue working on it.
-op create workpackge -p11 'Document new CLI tool' -o
+op work-package create -p11 'Document new CLI tool' -o
 ```
 
 #### Listing
 
 ```shell
 # Get a list of unread notifications and filter them by reason
-op list notifications --reason mentioned
+op notification list --reason mentioned
 
 # Get a list of all work packages assigned to me
-op list workpackages --assignee me
+op work-package list --assignee me
 ```
 
 #### Updating
 
 ```shell
 # Executing a custom action on a work package
-op update workpackage 42 --action Claim
+op work-package update 42 --action Claim
 
 # Batch updating some properties of a work package
 # Valid input will get processed, while invalid (e.g. wrongly typed) input will get omitted
-op update workpackage 42 --subject 'The new subject' --status 'In Progress' --type Implementation
+op work-package update 42 --subject 'The new subject' --status 'In Progress' --type Implementation
 
 # Uploading an attachment to a work package
-op update workpackage 42 --attach ./Downloads/Report.pdf
+op work-package update 42 --attach ./Downloads/Report.pdf
 ```
 
 #### Inspecting
@@ -181,7 +180,7 @@ op update workpackage 42 --attach ./Downloads/Report.pdf
 ```shell
 # Inspecting a work package with more details,
 # then in the work package list command
-op inspect workpackage 42
+op work-package inspect 42
 ```
 
 ## Creating a release

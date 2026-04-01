@@ -3,7 +3,7 @@ package timeentry
 import "github.com/spf13/cobra"
 
 var RootCmd = &cobra.Command{
-	Use:   "timeentry [verb]",
+	Use:   "time-entry [verb]",
 	Short: "Manage time entries",
 	Long:  "List time entries in OpenProject.",
 }
