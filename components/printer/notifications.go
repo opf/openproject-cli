@@ -4,32 +4,20 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/models"
 )
+
+func Notification(n *models.Notification) {
+	activeRenderer.Notification(n)
+}
+
+func Notifications(notifications []*models.Notification) {
+	activeRenderer.Notifications(notifications)
+}
 
 type groupedNotification struct {
 	notification *models.Notification
 	count        int
-}
-
-func Notifications(notifications []*models.Notification) {
-	grouped := group(notifications)
-
-	var maxIdLength int
-	var maxReasonLength int
-	for _, element := range grouped {
-		maxIdLength = common.Max(maxIdLength, idLength(element.notification.ResourceId))
-		maxReasonLength = common.Max(maxReasonLength, len(element.notification.Reason))
-	}
-
-	for _, notification := range grouped {
-		printNotification(notification, maxIdLength, maxReasonLength)
-	}
-}
-
-func Notification(notification *models.Notification) {
-	printNotification(&groupedNotification{notification: notification, count: 1}, idLength(notification.ResourceId), len(notification.Reason))
 }
 
 func printNotification(line *groupedNotification, maxIdLength, maxReasonLength int) {
@@ -63,12 +51,10 @@ func group(notifications []*models.Notification) []*groupedNotification {
 				break
 			}
 		}
-
 		if !alreadyAdded {
 			list = append(list, &groupedNotification{notification: notification, count: 1})
 		}
 	}
-
 	return list
 }
 

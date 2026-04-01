@@ -1,7 +1,5 @@
 package printer
 
-import "strconv"
-
-func Number(number int64) {
-	activePrinter.Printf("%s\n", Cyan(strconv.FormatInt(number, 10)))
+func Number(n int64) {
+	activeRenderer.Number(n)
 }

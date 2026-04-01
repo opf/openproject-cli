@@ -6,33 +6,16 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/routes"
 	"github.com/opf/openproject-cli/models"
 )
 
-func WorkPackages(workPackages []*models.WorkPackage) {
-	var maxIdLength = 0
-	var maxTypeLength = 0
-	var maxStatusLength = 0
-	for _, w := range workPackages {
-		maxIdLength = common.Max(maxIdLength, idLength(w.Id))
-		maxTypeLength = common.Max(maxTypeLength, utf8.RuneCountInString(w.Type))
-		maxStatusLength = common.Max(maxStatusLength, utf8.RuneCountInString(w.Status))
-	}
-
-	for _, workPackage := range workPackages {
-		printHeadline(workPackage, maxIdLength, maxStatusLength, maxTypeLength)
-	}
+func WorkPackage(wp *models.WorkPackage) {
+	activeRenderer.WorkPackage(wp)
 }
 
-func WorkPackage(workPackage *models.WorkPackage) {
-	printHeadline(workPackage, idLength(workPackage.Id), 0, utf8.RuneCountInString(workPackage.Type))
-	printAttributes(workPackage)
-	activePrinter.Println()
-	printOpenLink(workPackage)
-	activePrinter.Println()
-	printDescription(workPackage)
+func WorkPackages(wps []*models.WorkPackage) {
+	activeRenderer.WorkPackages(wps)
 }
 
 func idLength(id uint64) int {
@@ -75,52 +58,40 @@ func printOpenLink(workPackage *models.WorkPackage) {
 }
 
 func printDescription(workPackage *models.WorkPackage) {
-	lines := splitIntoLines(workPackage.Description, 80)
-	for _, line := range lines {
+	for _, line := range splitIntoLines(workPackage.Description, 80) {
 		activePrinter.Printf("%s\n", line)
 	}
 }
 
 func splitWords(text string, lineLength int) []string {
 	words := strings.Fields(text)
-
 	var lines []string
 	var line string
-
 	for _, word := range words {
 		if len(line)+len(word)+1 > lineLength {
 			lines = append(lines, line)
 			line = ""
 		}
-
 		if len(line) > 0 {
 			line += " "
 		}
-
 		line += word
 	}
-
 	if len(line) > 0 {
 		lines = append(lines, line)
 	}
-
 	return lines
 }
 
 func splitIntoLines(text string, lineLength int) []string {
-	paragraphs := strings.Split(text, "\n")
-
 	var lines []string
-
-	for _, paragraph := range paragraphs {
-		splitParagraph := splitWords(paragraph, lineLength)
-
-		if len(splitParagraph) == 0 {
-			lines = append(lines, "") // Append empty line
+	for _, paragraph := range strings.Split(text, "\n") {
+		split := splitWords(paragraph, lineLength)
+		if len(split) == 0 {
+			lines = append(lines, "")
 		} else {
-			lines = append(lines, splitParagraph...)
+			lines = append(lines, split...)
 		}
 	}
-
 	return lines
 }

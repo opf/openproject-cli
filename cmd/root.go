@@ -26,6 +26,7 @@ import (
 
 var Verbose bool
 var showVersionFlag bool
+var outputFormat string
 
 var rootCmd = &cobra.Command{
 	Use:   os.Args[0],
@@ -33,6 +34,9 @@ var rootCmd = &cobra.Command{
 	Long: `OpenProject CLI is a fast, reliable and easy-to-use
 tool to manage your work packages, notifications and
 projects of your OpenProject instance.`,
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
+		printer.InitRenderer(outputFormat)
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if showVersionFlag {
 			versionText := fmt.Sprintf(
@@ -91,6 +95,14 @@ func init() {
 		"",
 		false,
 		"Print verbose information of any process that supports this output.",
+	)
+
+	rootCmd.PersistentFlags().StringVarP(
+		&outputFormat,
+		"format",
+		"",
+		"text",
+		`Output format. Accepted values: text, json`,
 	)
 
 	rootCmd.AddCommand(
