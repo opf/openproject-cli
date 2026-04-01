@@ -8,6 +8,16 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
+func Lookup(id uint64) (*models.Budget, error) {
+	response, err := requests.Get(paths.Budget(id), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	element := parser.Parse[dtos.BudgetDto](response)
+	return element.Convert(), nil
+}
+
 func AllForProject(projectId uint64) ([]*models.Budget, error) {
 	query := requests.NewPaginatedQuery(-1, nil)
 	response, err := requests.Get(paths.ProjectBudgets(projectId), &query)

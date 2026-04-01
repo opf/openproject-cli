@@ -19,5 +19,5 @@ func init() {
 
 	_ = listCmd.MarkFlagRequired("project")
 
-	RootCmd.AddCommand(listCmd)
+	RootCmd.AddCommand(listCmd, inspectCmd)
 }
