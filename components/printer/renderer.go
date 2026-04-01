@@ -1,6 +1,10 @@
 package printer
 
-import "github.com/opf/openproject-cli/models"
+import (
+	"fmt"
+
+	"github.com/opf/openproject-cli/models"
+)
 
 type Renderer interface {
 	WorkPackage(*models.WorkPackage)
@@ -27,7 +31,10 @@ func InitRenderer(format string) {
 	switch format {
 	case "json":
 		activeRenderer = &JsonRenderer{}
+	case "text", "":
+		activeRenderer = &TextRenderer{}
 	default:
 		activeRenderer = &TextRenderer{}
+		ErrorText(fmt.Sprintf("unknown output format %q, falling back to text", format))
 	}
 }
