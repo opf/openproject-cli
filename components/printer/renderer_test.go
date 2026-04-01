@@ -16,6 +16,7 @@ func TestInitRenderer_UnknownFormat_PrintsError(t *testing.T) {
 }
 
 func TestInitRenderer_KnownFormats_NoError(t *testing.T) {
+	defer printer.InitRenderer("text")
 	for _, format := range []string{"text", "json"} {
 		testingPrinter.Reset()
 		printer.InitRenderer(format)

@@ -190,8 +190,8 @@ func (r *JsonRenderer) Activities(activities []*models.Activity, users []*models
 	for i, a := range activities {
 		userName := ""
 		if a.UserId > 0 {
-			idx := sort.Search(len(users)-1, func(j int) bool { return users[j].Id == a.UserId })
-			if idx < len(users) {
+			idx := sort.Search(len(users), func(j int) bool { return users[j].Id >= a.UserId })
+			if idx < len(users) && users[idx].Id == a.UserId {
 				userName = users[idx].Name
 			}
 		}

@@ -123,8 +123,10 @@ func (r *TextRenderer) Activities(activities []*models.Activity, users []*models
 	for _, activity := range activities {
 		user := &models.User{}
 		if activity.UserId > 0 {
-			idx := sort.Search(len(users)-1, func(i int) bool { return users[i].Id == activity.UserId })
-			user = users[idx]
+			idx := sort.Search(len(users), func(i int) bool { return users[i].Id >= activity.UserId })
+			if idx < len(users) && users[idx].Id == activity.UserId {
+				user = users[idx]
+			}
 		}
 		printActivityHeadline(activity, user)
 		printActivityBody(activity)
