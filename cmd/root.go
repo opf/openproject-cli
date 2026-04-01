@@ -120,4 +120,12 @@ func init() {
 		notification.RootCmd,
 		git.RootCmd,
 	)
+
+	rootCmd.InitDefaultCompletionCmd()
+	for _, cmd := range rootCmd.Commands() {
+		if cmd.Name() == "completion" {
+			_ = cmd.InheritedFlags().MarkHidden("format")
+			_ = cmd.InheritedFlags().MarkHidden("verbose")
+		}
+	}
 }
