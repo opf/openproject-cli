@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/paths"
@@ -18,11 +19,13 @@ type CreateOption int
 const (
 	CreateSubject CreateOption = iota
 	CreateType
+	CreateAssignee
 )
 
 var createMap = map[CreateOption]func(projectId uint64, workPackage *dtos.WorkPackageDto, input string) error{
-	CreateSubject: subjectCreate,
-	CreateType:    typeCreate,
+	CreateSubject:  subjectCreate,
+	CreateType:     typeCreate,
+	CreateAssignee: assigneeCreate,
 }
 
 func subjectCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) error {
@@ -57,6 +60,20 @@ func typeCreate(projectId uint64, workPackage *dtos.WorkPackageDto, input string
 
 	workPackage.Links.Type = foundType.Links.Self
 
+	return nil
+}
+
+func assigneeCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) error {
+	userId, err := strconv.ParseUint(input, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid user id %q: must be a number", input)
+	}
+
+	if workPackage.Links == nil {
+		workPackage.Links = &dtos.WorkPackageLinksDto{}
+	}
+
+	workPackage.Links.Assignee = &dtos.LinkDto{Href: paths.User(userId)}
 	return nil
 }
 

@@ -151,7 +151,10 @@ func subjectPatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
 }
 
 func assigneePatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
-	userId, _ := strconv.ParseUint(input, 10, 64)
+	userId, err := strconv.ParseUint(input, 10, 64)
+	if err != nil {
+		return "", fmt.Errorf("invalid user id %q: must be a number", input)
+	}
 
 	if patch.Links == nil {
 		patch.Links = &dtos.WorkPackageLinksDto{}

@@ -33,6 +33,12 @@ func init() {
 		"",
 		"Change the work package type",
 	)
+	createCmd.Flags().Uint64Var(
+		&createAssigneeFlag,
+		"assignee",
+		0,
+		"Assign a user to the work package",
+	)
 
 	updateCmd.Flags().StringVarP(
 		&updateActionFlag,

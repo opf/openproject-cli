@@ -2,6 +2,7 @@ package workpackage
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/spf13/cobra"
 
@@ -14,6 +15,7 @@ import (
 var createProjectId uint64
 var createOpenInBrowser bool
 var createTypeFlag string
+var createAssigneeFlag uint64
 
 var createCmd = &cobra.Command{
 	Use:   "create [subject]",
@@ -50,6 +52,9 @@ func createOptions(subject string) map[work_packages.CreateOption]string {
 	options[work_packages.CreateSubject] = subject
 	if len(createTypeFlag) > 0 {
 		options[work_packages.CreateType] = createTypeFlag
+	}
+	if createAssigneeFlag > 0 {
+		options[work_packages.CreateAssignee] = strconv.FormatUint(createAssigneeFlag, 10)
 	}
 	return options
 }
