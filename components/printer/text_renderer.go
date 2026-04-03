@@ -154,6 +154,11 @@ func (r *TextRenderer) CustomActions(actions []*models.CustomAction) {
 	}
 }
 
+func (r *TextRenderer) Whoami(host string, user *models.User) {
+	activePrinter.Printf("Server: %s\n", Cyan(host))
+	activePrinter.Printf("User:   %s %s\n", Red(fmt.Sprintf("#%d", user.Id)), Cyan(user.Name))
+}
+
 func (r *TextRenderer) Number(n int64) {
 	activePrinter.Printf("%s\n", Cyan(strconv.FormatInt(n, 10)))
 }

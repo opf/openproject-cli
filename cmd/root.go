@@ -108,6 +108,7 @@ func init() {
 
 	rootCmd.AddCommand(
 		loginCmd,
+		whoamiCmd,
 		// noun-first (new)
 		activities.RootCmd,
 		budget.RootCmd,

@@ -231,6 +231,14 @@ func (r *JsonRenderer) CustomActions(actions []*models.CustomAction) {
 	printJson(out)
 }
 
+func (r *JsonRenderer) Whoami(host string, user *models.User) {
+	printJson(struct {
+		Server string `json:"server"`
+		Id     uint64 `json:"id"`
+		Name   string `json:"name"`
+	}{host, user.Id, user.Name})
+}
+
 func (r *JsonRenderer) Number(n int64) {
 	printJson(struct {
 		Total int64 `json:"total"`
