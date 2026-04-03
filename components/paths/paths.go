@@ -50,6 +50,14 @@ func TimeEntries() string {
 	return Root() + "/time_entries"
 }
 
+func TimeEntry(id uint64) string {
+	return TimeEntries() + fmt.Sprintf("/%d", id)
+}
+
+func TimeEntryActivities() string {
+	return TimeEntries() + "/activities"
+}
+
 func Types() string {
 	return Root() + "/types"
 }

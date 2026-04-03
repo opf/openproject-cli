@@ -15,7 +15,7 @@ type TimeEntryDto struct {
 	Ongoing   bool               `json:"ongoing,omitempty"`
 	CreatedAt string             `json:"createdAt,omitempty"`
 	UpdatedAt string             `json:"updatedAt,omitempty"`
-	Links     *timeEntryLinksDto `json:"_links,omitempty"`
+	Links     *TimeEntryLinksDto `json:"_links,omitempty"`
 }
 
 type timeEntryElements struct {
@@ -29,10 +29,10 @@ type TimeEntryCollectionDto struct {
 	Count    uint64            `json:"count"`
 }
 
-type timeEntryLinksDto struct {
-	Project     *LinkDto `json:"project"`
+type TimeEntryLinksDto struct {
+	Project     *LinkDto `json:"project,omitempty"`
 	WorkPackage *LinkDto `json:"workPackage,omitempty"`
-	User        *LinkDto `json:"user"`
+	User        *LinkDto `json:"user,omitempty"`
 	Activity    *LinkDto `json:"activity,omitempty"`
 }
 
@@ -42,16 +42,37 @@ func (dto *TimeEntryDto) Convert() *models.TimeEntry {
 	hours, _ := duration.Parse(dto.Hours)
 	spentOn, _ := time.Parse(time.DateOnly, dto.SpentOn)
 
+	comment := ""
+	if dto.Comment != nil {
+		comment = dto.Comment.Raw
+	}
+
+	project, workPackage, user, activity := "", "", "", ""
+	if dto.Links != nil {
+		if dto.Links.Project != nil {
+			project = dto.Links.Project.Title
+		}
+		if dto.Links.WorkPackage != nil {
+			workPackage = dto.Links.WorkPackage.Title
+		}
+		if dto.Links.User != nil {
+			user = dto.Links.User.Title
+		}
+		if dto.Links.Activity != nil {
+			activity = dto.Links.Activity.Title
+		}
+	}
+
 	return &models.TimeEntry{
 		Id:          uint64(dto.Id),
-		Comment:     dto.Comment.Raw,
-		Project:     dto.Links.Project.Title,
-		WorkPackage: dto.Links.WorkPackage.Title,
+		Comment:     comment,
+		Project:     project,
+		WorkPackage: workPackage,
 		SpentOn:     spentOn,
 		Hours:       hours.ToTimeDuration(),
 		Ongoing:     dto.Ongoing,
-		User:        dto.Links.User.Title,
-		Activity:    dto.Links.Activity.Title,
+		User:        user,
+		Activity:    activity,
 		CreatedAt:   dto.CreatedAt,
 		UpdatedAt:   dto.UpdatedAt,
 	}
