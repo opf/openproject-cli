@@ -13,6 +13,7 @@ import (
 var updateActionFlag string
 var updateAssigneeFlag uint64
 var updateAttachFlag string
+var updateDescriptionFlag string
 var updateSubjectFlag string
 var updateTypeFlag string
 
@@ -24,7 +25,7 @@ provided by a flag is executed on its own.`,
 	Run: updateWorkPackage,
 }
 
-func updateWorkPackage(_ *cobra.Command, args []string) {
+func updateWorkPackage(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		printer.ErrorText(fmt.Sprintf("Expected 1 argument [id], but got %d", len(args)))
 		return
@@ -36,7 +37,7 @@ func updateWorkPackage(_ *cobra.Command, args []string) {
 		return
 	}
 
-	if workPackage, err := work_packages.Update(id, updateOptions()); err == nil {
+	if workPackage, err := work_packages.Update(id, updateOptions(cmd)); err == nil {
 		printer.Info("-- ")
 		printer.WorkPackage(workPackage)
 	} else {
@@ -44,7 +45,7 @@ func updateWorkPackage(_ *cobra.Command, args []string) {
 	}
 }
 
-func updateOptions() map[work_packages.UpdateOption]string {
+func updateOptions(cmd *cobra.Command) map[work_packages.UpdateOption]string {
 	options := make(map[work_packages.UpdateOption]string)
 	if len(updateActionFlag) > 0 {
 		options[work_packages.UpdateCustomAction] = updateActionFlag
@@ -54,6 +55,9 @@ func updateOptions() map[work_packages.UpdateOption]string {
 	}
 	if len(updateAttachFlag) > 0 {
 		options[work_packages.UpdateAttachment] = updateAttachFlag
+	}
+	if cmd.Flags().Changed("description") {
+		options[work_packages.UpdateDescription] = updateDescriptionFlag
 	}
 	if len(updateSubjectFlag) > 0 {
 		options[work_packages.UpdateSubject] = updateSubjectFlag

@@ -39,6 +39,12 @@ func init() {
 		0,
 		"Assign a user to the work package",
 	)
+	createCmd.Flags().StringVar(
+		&createDescriptionFlag,
+		"description",
+		"",
+		"Description of the work package (markdown)",
+	)
 
 	updateCmd.Flags().StringVarP(
 		&updateActionFlag,
@@ -58,6 +64,12 @@ func init() {
 		"attach",
 		"",
 		"Attach a file to the work package",
+	)
+	updateCmd.Flags().StringVar(
+		&updateDescriptionFlag,
+		"description",
+		"",
+		"Description of the work package (markdown)",
 	)
 	updateCmd.Flags().StringVar(
 		&updateSubjectFlag,

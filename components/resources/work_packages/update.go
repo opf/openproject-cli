@@ -21,16 +21,18 @@ const (
 	UpdateCustomAction UpdateOption = iota
 	UpdateAssignee
 	UpdateAttachment
+	UpdateDescription
 	UpdateSubject
 	UpdateType
 )
 
-var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType, UpdateAssignee}
+var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType, UpdateAssignee, UpdateDescription}
 
 var patchMap = map[UpdateOption]func(patch, workPackage *dtos.WorkPackageDto, input string) (string, error){
-	UpdateAssignee: assigneePatch,
-	UpdateType:     typePatch,
-	UpdateSubject:  subjectPatch,
+	UpdateAssignee:    assigneePatch,
+	UpdateDescription: descriptionPatch,
+	UpdateType:        typePatch,
+	UpdateSubject:     subjectPatch,
 }
 
 func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, error) {
@@ -148,6 +150,11 @@ func typePatch(patch, workPackage *dtos.WorkPackageDto, input string) (string, e
 func subjectPatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
 	patch.Subject = input
 	return fmt.Sprintf("Subject -> %s", input), nil
+}
+
+func descriptionPatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
+	patch.Description = &dtos.LongTextDto{Format: "markdown", Raw: input}
+	return "Description updated", nil
 }
 
 func assigneePatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {

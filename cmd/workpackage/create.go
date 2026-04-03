@@ -16,6 +16,7 @@ var createProjectId uint64
 var createOpenInBrowser bool
 var createTypeFlag string
 var createAssigneeFlag uint64
+var createDescriptionFlag string
 
 var createCmd = &cobra.Command{
 	Use:   "create [subject]",
@@ -24,14 +25,14 @@ var createCmd = &cobra.Command{
 	Run:   createWorkPackage,
 }
 
-func createWorkPackage(_ *cobra.Command, args []string) {
+func createWorkPackage(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		printer.ErrorText(fmt.Sprintf("Expected 1 argument [subject], but got %d", len(args)))
 		return
 	}
 
 	subject := args[0]
-	workPackage, err := work_packages.Create(createProjectId, createOptions(subject))
+	workPackage, err := work_packages.Create(createProjectId, createOptions(cmd, subject))
 	if err != nil {
 		printer.Error(err)
 		return
@@ -47,7 +48,7 @@ func createWorkPackage(_ *cobra.Command, args []string) {
 	}
 }
 
-func createOptions(subject string) map[work_packages.CreateOption]string {
+func createOptions(cmd *cobra.Command, subject string) map[work_packages.CreateOption]string {
 	options := make(map[work_packages.CreateOption]string)
 	options[work_packages.CreateSubject] = subject
 	if len(createTypeFlag) > 0 {
@@ -55,6 +56,9 @@ func createOptions(subject string) map[work_packages.CreateOption]string {
 	}
 	if createAssigneeFlag > 0 {
 		options[work_packages.CreateAssignee] = strconv.FormatUint(createAssigneeFlag, 10)
+	}
+	if cmd.Flags().Changed("description") {
+		options[work_packages.CreateDescription] = createDescriptionFlag
 	}
 	return options
 }

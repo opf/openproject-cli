@@ -20,12 +20,14 @@ const (
 	CreateSubject CreateOption = iota
 	CreateType
 	CreateAssignee
+	CreateDescription
 )
 
 var createMap = map[CreateOption]func(projectId uint64, workPackage *dtos.WorkPackageDto, input string) error{
-	CreateSubject:  subjectCreate,
-	CreateType:     typeCreate,
-	CreateAssignee: assigneeCreate,
+	CreateSubject:     subjectCreate,
+	CreateType:        typeCreate,
+	CreateAssignee:    assigneeCreate,
+	CreateDescription: descriptionCreate,
 }
 
 func subjectCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) error {
@@ -74,6 +76,11 @@ func assigneeCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) er
 	}
 
 	workPackage.Links.Assignee = &dtos.LinkDto{Href: paths.User(userId)}
+	return nil
+}
+
+func descriptionCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) error {
+	workPackage.Description = &dtos.LongTextDto{Format: "markdown", Raw: input}
 	return nil
 }
 
