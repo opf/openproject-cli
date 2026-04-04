@@ -73,17 +73,19 @@ func hoursToISO8601(hours float64) string {
 func activityCreate(entry *dtos.TimeEntryDto, input string) error {
 	activities, err := AllActivities()
 	if err != nil {
-		return err
+		printer.ErrorText(fmt.Sprintf("Could not fetch available activities: %s", err))
+		printer.Info("Use `op time-entry list` to see existing entries and their activities.")
+		return fmt.Errorf("activity lookup failed")
 	}
 
 	found := findActivity(input, activities)
 	if found == nil {
-		printer.ErrorText(fmt.Sprintf(
-			"No activity matching %q found. Available activities:",
-			input,
-		))
-		for _, a := range activities {
-			printer.Info(fmt.Sprintf("  - %s", a.Name))
+		printer.ErrorText(fmt.Sprintf("No activity matching %q found.", input))
+		if len(activities) > 0 {
+			printer.Info("Available activities:")
+			for _, a := range activities {
+				printer.Info(fmt.Sprintf("  - %s", a.Name))
+			}
 		}
 		return fmt.Errorf("activity %q not found", input)
 	}
