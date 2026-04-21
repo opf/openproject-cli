@@ -231,12 +231,13 @@ func (r *JsonRenderer) CustomActions(actions []*models.CustomAction) {
 	printJson(out)
 }
 
-func (r *JsonRenderer) Whoami(host string, user *models.User) {
+func (r *JsonRenderer) Whoami(profile, host string, user *models.User) {
 	printJson(struct {
-		Server string `json:"server"`
-		Id     uint64 `json:"id"`
-		Name   string `json:"name"`
-	}{host, user.Id, user.Name})
+		Profile string `json:"profile"`
+		Server  string `json:"server"`
+		Id      uint64 `json:"id"`
+		Name    string `json:"name"`
+	}{profile, host, user.Id, user.Name})
 }
 
 func (r *JsonRenderer) Number(n int64) {

@@ -30,7 +30,7 @@ components/
   printer/                  # Terminal output formatting
   routes/                   # Browser URL generation
   common/                   # Shared utilities (string, slice, math)
-  configuration/            # Config file reading, CLI version
+  configuration/            # Multi-profile config (INI), CLI version
   launch/                   # Browser launcher
 models/                     # Domain models (plain structs, no logic)
 dtos/                       # JSON DTOs with Convert() to models
@@ -65,6 +65,16 @@ API response → `parser.Parse[SomethingDto]()` → `dto.Convert()` → `models.
 - Operations are dispatched via a `map[Option]func(...)` — add new options by extending the map
 - Public API: `Create(...)`, `Lookup(id)`, `All(filters, query, ...)`, `Update(id, options)`
 
+### Configuration conventions
+
+- Config stored as INI at `~/.config/openproject/config` (or `$XDG_CONFIG_HOME/openproject/config`)
+- Each profile is an INI section: `[name]` with `host` and `token` keys
+- Profile names: letters, digits, `-`, `_` only; no leading/trailing hyphens; validated by `ValidateProfileName`, sanitized by `SanitizeProfileName`
+- Key constants: `DefaultProfile = "default"`, `EnvProfile = "OP_CLI_PROFILE"`
+- Key functions: `ReadConfig(profile)`, `WriteConfigForProfile(profile, host, token)`, `DeleteProfile(profile)`, `AllProfiles()`
+- `OP_CLI_HOST` / `OP_CLI_TOKEN` env vars override all profiles; `OP_CLI_PROFILE` selects a profile (overridden by `--profile` flag)
+- Old single-line format (`host token`) is auto-migrated to `[default]` on first read
+
 ### Paths conventions
 
 - All API paths are defined in `components/paths/paths.go`
@@ -83,8 +93,9 @@ API response → `parser.Parse[SomethingDto]()` → `dto.Convert()` → `models.
 - Test files use external test packages: `package printer_test`, `package requests_test`
 - `TestMain` in `printer_test` initializes shared state (routes, printer) for the package
 - Tests use plain `t.Errorf` — no test framework, no assertions library
-- Tests only exist for `printer`, `requests`, and `common` — no tests on `cmd/` or `resources/`
+- Tests only exist for `printer`, `requests`, `common`, and `configuration` — no tests on `cmd/` or `resources/`
 - When adding a new printer function, add a corresponding test in `components/printer/`
+- When adding a new configuration function, add a corresponding test in `components/configuration/`
 
 ## Dependencies
 

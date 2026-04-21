@@ -20,6 +20,7 @@ import (
 	"github.com/opf/openproject-cli/cmd/workpackage"
 	"github.com/opf/openproject-cli/cmd/wptype"
 	"github.com/opf/openproject-cli/components/configuration"
+	openerrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
 	"github.com/opf/openproject-cli/components/routes"
@@ -28,6 +29,7 @@ import (
 var Verbose bool
 var showVersionFlag bool
 var outputFormat string
+var profileName string
 
 var rootCmd = &cobra.Command{
 	Use:   os.Args[0],
@@ -35,8 +37,41 @@ var rootCmd = &cobra.Command{
 	Long: `OpenProject CLI is a fast, reliable and easy-to-use
 tool to manage your work packages, notifications and
 projects of your OpenProject instance.`,
-	PersistentPreRun: func(_ *cobra.Command, _ []string) {
+	SilenceErrors: true,
+	SilenceUsage:  true,
+	PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 		printer.InitRenderer(outputFormat)
+
+		// login and logout manage their own profile and requests setup
+		if cmd.Name() == "login" || cmd.Name() == "logout" {
+			return nil
+		}
+
+		profile, explicit := resolvedProfile(cmd)
+
+		if err := configuration.ValidateProfileName(profile); err != nil {
+			printer.Error(err)
+			os.Exit(1)
+		}
+
+		host, token, err := configuration.ReadConfig(profile)
+		if err != nil {
+			printer.Error(err)
+			os.Exit(1)
+		}
+
+		if host == "" && explicit {
+			printer.Error(openerrors.Custom(fmt.Sprintf(
+				"Profile %q not found. Run 'op login --profile %s' to create it.",
+				profile, profile,
+			)))
+			os.Exit(1)
+		}
+
+		parse, _ := url.Parse(host)
+		requests.Init(parse, token, Verbose)
+		routes.Init(parse)
+		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if showVersionFlag {
@@ -49,13 +84,26 @@ projects of your OpenProject instance.`,
 				runtime.Version(),
 			)
 
-			fmt.Println(printer.Yellow(versionText))
+			printer.Info(printer.Yellow(versionText))
 
 			return
 		}
 
 		cmd.Help()
 	},
+}
+
+// resolvedProfile returns the effective profile name for the current
+// invocation, and whether it was explicitly specified by the user (flag or
+// OP_CLI_PROFILE env var) vs falling through to the "default" fallback.
+func resolvedProfile(cmd *cobra.Command) (profile string, explicit bool) {
+	if cmd.Root().PersistentFlags().Changed("profile") {
+		return profileName, true
+	}
+	if env := os.Getenv(configuration.EnvProfile); env != "" {
+		return env, true
+	}
+	return configuration.DefaultProfile, false
 }
 
 func Execute(version *configuration.Version) error {
@@ -67,20 +115,6 @@ func Execute(version *configuration.Version) error {
 func init() {
 	activePrinter := &printer.ConsolePrinter{}
 	printer.Init(activePrinter)
-
-	host, token, err := configuration.ReadConfig()
-	if err != nil {
-		printer.Error(err)
-		return
-	}
-
-	parse, err := url.Parse(host)
-	if err != nil {
-		printer.Error(err)
-	}
-
-	requests.Init(parse, token, Verbose)
-	routes.Init(parse)
 
 	rootCmd.Flags().BoolVarP(
 		&showVersionFlag,
@@ -106,8 +140,17 @@ func init() {
 		`Output format. Accepted values: text, json`,
 	)
 
+	rootCmd.PersistentFlags().StringVarP(
+		&profileName,
+		"profile",
+		"",
+		configuration.DefaultProfile,
+		"Profile name to use (overrides OP_CLI_PROFILE env var)",
+	)
+
 	rootCmd.AddCommand(
 		loginCmd,
+		logoutCmd,
 		whoamiCmd,
 		// noun-first (new)
 		activities.RootCmd,

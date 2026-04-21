@@ -134,6 +134,84 @@ op work-package update 42 -
 --type      -t  -- Change the work package type
 ```
 
+### Authentication
+
+#### Single instance (default)
+
+Run `op login` to authenticate. You will be prompted for the host URL, an API
+token, and a profile name (defaults to `default`):
+
+```shell
+op login
+# Profile name? [default]
+# OpenProject host URL: https://community.openproject.org
+# OpenProject API Token: ...
+```
+
+#### Multiple instances
+
+Use named profiles to work with more than one OpenProject instance:
+
+```shell
+# Create a profile named "work"
+op login --profile work
+
+# Create a profile named "staging"
+op login --profile staging
+```
+
+All commands accept a `--profile` flag to select which instance to use:
+
+```shell
+op work-package list --profile work
+op project list --profile staging
+```
+
+The `OP_CLI_PROFILE` environment variable is an alternative to `--profile`,
+useful in scripts or shell sessions where you always want the same instance:
+
+```shell
+export OP_CLI_PROFILE=work
+op work-package list   # uses the "work" profile
+```
+
+When both are set, `--profile` takes precedence. The explicit credential
+variables `OP_CLI_HOST` and `OP_CLI_TOKEN` override everything.
+
+#### Inspecting and removing profiles
+
+`op whoami` shows all configured profiles together with their server URL and
+authenticated user:
+
+```shell
+op whoami
+# Profile: default
+# Server:  https://community.openproject.org
+# User:    #42 Jane Doe
+#
+# Profile: work
+# Server:  https://work.example.com
+# User:    #7 John Smith
+```
+
+Pass `--profile` to inspect a single profile:
+
+```shell
+op whoami --profile work
+```
+
+`op logout` removes a profile (defaults to `default`):
+
+```shell
+op logout              # removes the "default" profile
+op logout --profile work
+```
+
+#### Profile names
+
+Profile names may only contain letters, digits, `-` and `_`. When prompted
+interactively the CLI suggests a sanitized version of any invalid input.
+
 ### Prominent examples
 
 There are a couple of use cases, you might want to execute from the command line. In this section we provide a handful
