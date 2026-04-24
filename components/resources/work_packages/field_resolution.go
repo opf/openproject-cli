@@ -95,8 +95,10 @@ func resolveSchemaField(schema *Schema, key string) (*SchemaField, error) {
 
 func coerceFieldValue(field *SchemaField, raw string) (any, error) {
 	switch field.Type {
-	case "String", "Formattable":
+	case "String":
 		return raw, nil
+	case "Formattable":
+		return map[string]any{"raw": raw}, nil
 	case "Integer":
 		value, err := strconv.ParseInt(raw, 10, 64)
 		if err != nil {

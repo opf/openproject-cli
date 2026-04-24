@@ -65,3 +65,25 @@ func TestResolveFieldAssignmentsRejectsDuplicateAPIFields(t *testing.T) {
 		t.Fatalf("expected ErrDuplicateField, got %v", err)
 	}
 }
+
+func TestResolveFieldAssignmentsCoercesFormattableFields(t *testing.T) {
+	schema := &Schema{
+		Fields: []SchemaField{
+			{APIName: "customField401", Label: "Acceptance criteria", Type: "Formattable", Writable: true},
+		},
+	}
+
+	resolved, err := resolveFieldAssignments(schema, []string{"Acceptance criteria=Line one\nLine two"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	field := resolved["Acceptance criteria"]
+	value, ok := field.Value.(map[string]any)
+	if !ok {
+		t.Fatalf("expected formattable value map, got %#v", field.Value)
+	}
+	if value["raw"] != "Line one\nLine two" {
+		t.Fatalf("expected raw long text, got %#v", value["raw"])
+	}
+}
