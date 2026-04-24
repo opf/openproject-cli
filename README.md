@@ -130,6 +130,7 @@ op update workpackge 42 -
 --action    -a  -- Executes a custom action on a work package
 --assignee      -- Assign a user to the work package
 --attach        -- Attach a file to the work package
+--description   -- Change the raw work package description
 --help      -h  -- help for workpackage
 --subject       -- Change the subject of the work package
 --type      -t  -- Change the work package type
@@ -154,6 +155,11 @@ op create workpackge -p11 'Document new CLI tool' -o
 # Validating the creation of a child work package without persisting it.
 # The parent determines the project automatically.
 op create workpackage --parent 74316 --type Implementation 'Build reusable skill' --dry-run --json
+
+# Creating a child work package with an explicit raw description.
+op create workpackage --parent 74316 --type Implementation \
+  --description 'Use openproject-cli JSON workflows from a reusable agent skill.' \
+  'Build reusable skill'
 ```
 
 #### Listing
@@ -182,6 +188,10 @@ op update workpackage 42 --attach ./Downloads/Report.pdf
 # Resolving and validating field updates as JSON before applying them
 # This first slice supports schema-resolved custom fields via --set.
 op update workpackage 74316 --set 'Votes=3' --dry-run --json
+
+# Updating core fields, including the raw description, in one PATCH request.
+op update workpackage 74416 --subject 'Add explicit description support' \
+  --description 'Allow create and update to write the raw ticket body.'
 ```
 
 #### Inspecting

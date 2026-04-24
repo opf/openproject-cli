@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/printer"
@@ -22,15 +21,17 @@ const (
 	UpdateAssignee
 	UpdateAttachment
 	UpdateSubject
+	UpdateDescription
 	UpdateType
 )
 
-var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType, UpdateAssignee}
+var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType, UpdateAssignee, UpdateDescription}
 
 var patchMap = map[UpdateOption]func(patch, workPackage *dtos.WorkPackageDto, input string) (string, error){
-	UpdateAssignee: assigneePatch,
-	UpdateType:     typePatch,
-	UpdateSubject:  subjectPatch,
+	UpdateAssignee:    assigneePatch,
+	UpdateType:        typePatch,
+	UpdateSubject:     subjectPatch,
+	UpdateDescription: descriptionPatch,
 }
 
 func DryRunUpdate(id uint64, options map[UpdateOption]string) (*models.WorkPackageUpdatePlan, error) {
@@ -47,6 +48,10 @@ func DryRunUpdate(id uint64, options map[UpdateOption]string) (*models.WorkPacka
 		Action:         options[UpdateCustomAction],
 		Attach:         options[UpdateAttachment],
 		ResolvedFields: map[string]models.ResolvedField{},
+	}
+
+	if description, ok := options[UpdateDescription]; ok {
+		plan.Description = &description
 	}
 
 	if assignee, ok := options[UpdateAssignee]; ok {
@@ -113,8 +118,9 @@ func patch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) er
 	var patchNeeded = false
 	patchDto := dtos.WorkPackageDto{LockVersion: workPackage.LockVersion}
 
-	for option, value := range options {
-		if !common.Contains(patchableUpdates, option) {
+	for _, option := range patchableUpdates {
+		value, ok := options[option]
+		if !ok {
 			continue
 		}
 
@@ -139,7 +145,6 @@ func patch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) er
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -185,4 +190,9 @@ func assigneePatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) 
 
 	patch.Links.Assignee = &dtos.LinkDto{Href: paths.User(userId)}
 	return fmt.Sprintf("Assignee -> %s", input), nil
+}
+
+func descriptionPatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
+	patch.Description = &dtos.LongTextDto{Raw: input}
+	return "Description updated", nil
 }

@@ -40,6 +40,13 @@ func init() {
 		"Create the work package as a child of an existing work package",
 	)
 
+	createWorkPackageCmd.Flags().StringVar(
+		&descriptionFlag,
+		"description",
+		"",
+		"Set the raw work package description",
+	)
+
 	createWorkPackageCmd.Flags().BoolVar(
 		&printCreatedWorkPackageAsJSON,
 		"json",

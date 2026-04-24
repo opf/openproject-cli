@@ -19,6 +19,8 @@ var shouldOpenWorkPackageInBrowser bool
 var printCreatedWorkPackageAsJSON bool
 var dryRunCreateWorkPackage bool
 var typeFlag string
+var descriptionFlag string
+var descriptionFlagChanged bool
 
 var createWorkPackageCmd = &cobra.Command{
 	Use:   "workpackage [subject]",
@@ -27,7 +29,11 @@ var createWorkPackageCmd = &cobra.Command{
 	Run:   createWorkPackage,
 }
 
-func createWorkPackage(_ *cobra.Command, args []string) {
+func createWorkPackage(cmd *cobra.Command, args []string) {
+	if cmd != nil {
+		descriptionFlagChanged = cmd.Flags().Changed("description")
+	}
+
 	if len(args) != 1 {
 		printCreateError("invalid_argument", fmt.Sprintf("Expected 1 argument [subject], but got %d", len(args)))
 		return
@@ -102,6 +108,10 @@ func createOptions(subject string) map[work_packages.CreateOption]string {
 
 	if parentWorkPackageID > 0 {
 		options[work_packages.CreateParent] = fmt.Sprintf("%d", parentWorkPackageID)
+	}
+
+	if descriptionFlagChanged {
+		options[work_packages.CreateDescription] = descriptionFlag
 	}
 
 	return options

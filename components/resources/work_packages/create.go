@@ -20,11 +20,13 @@ const (
 	CreateSubject CreateOption = iota
 	CreateParent
 	CreateType
+	CreateDescription
 )
 
 var createMap = map[CreateOption]func(projectId uint64, workPackage *dtos.WorkPackageDto, input string) error{
-	CreateSubject: subjectCreate,
-	CreateParent:  parentCreate,
+	CreateSubject:     subjectCreate,
+	CreateParent:      parentCreate,
+	CreateDescription: descriptionCreate,
 }
 
 func subjectCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) error {
@@ -44,6 +46,12 @@ func parentCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) erro
 	}
 
 	workPackage.Links.Parent = &dtos.LinkDto{Href: paths.WorkPackage(parentID)}
+	return nil
+}
+
+func descriptionCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) error {
+	workPackage.Description = &dtos.LongTextDto{Raw: input}
+
 	return nil
 }
 
@@ -76,8 +84,9 @@ func DryRunCreate(projectId uint64, options map[CreateOption]string) (*models.Wo
 		ProjectID: resolved.ProjectID,
 		ParentID:  resolved.ParentID,
 		WorkPackage: models.WorkPackageDraft{
-			Subject: resolved.Options[CreateSubject],
-			Type:    resolved.TypeName,
+			Subject:     resolved.Options[CreateSubject],
+			Type:        resolved.TypeName,
+			Description: resolved.Options[CreateDescription],
 		},
 	}
 
@@ -87,7 +96,7 @@ func DryRunCreate(projectId uint64, options map[CreateOption]string) (*models.Wo
 func create(resolved *resolvedCreate) (*models.WorkPackage, error) {
 	workPackage := dtos.WorkPackageDto{}
 
-	for _, option := range []CreateOption{CreateSubject, CreateParent} {
+	for _, option := range []CreateOption{CreateSubject, CreateParent, CreateDescription} {
 		value, ok := resolved.Options[option]
 		if !ok {
 			continue

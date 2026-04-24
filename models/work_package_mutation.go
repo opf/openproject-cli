@@ -1,8 +1,9 @@
 package models
 
 type WorkPackageDraft struct {
-	Subject string `json:"subject"`
-	Type    string `json:"type"`
+	Subject     string `json:"subject"`
+	Type        string `json:"type"`
+	Description string `json:"description"`
 }
 
 type WorkPackageCreatePlan struct {

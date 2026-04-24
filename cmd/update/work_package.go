@@ -17,6 +17,8 @@ var (
 	actionFlag                    string
 	assigneeFlag                  uint64
 	attachFlag                    string
+	descriptionFlag               string
+	descriptionFlagChanged        bool
 	dryRunUpdateWorkPackage       bool
 	printUpdatedWorkPackageAsJSON bool
 	setFlags                      []string
@@ -32,7 +34,11 @@ provided by a flag is executed on its own.`,
 	Run: updateWorkPackage,
 }
 
-func updateWorkPackage(_ *cobra.Command, args []string) {
+func updateWorkPackage(cmd *cobra.Command, args []string) {
+	if cmd != nil {
+		descriptionFlagChanged = cmd.Flags().Changed("description")
+	}
+
 	if len(args) != 1 {
 		printUpdateError("invalid_argument", fmt.Sprintf("Expected 1 argument [id], but got %d", len(args)))
 		return
@@ -145,6 +151,7 @@ func updateWorkPackage(_ *cobra.Command, args []string) {
 			printUpdateError("api_error", err.Error())
 			return
 		}
+
 		printer.Error(err)
 		return
 	}
@@ -184,6 +191,9 @@ func updateOptions() map[work_packages.UpdateOption]string {
 	if len(subjectFlag) > 0 {
 		options[work_packages.UpdateSubject] = subjectFlag
 	}
+	if descriptionFlagChanged {
+		options[work_packages.UpdateDescription] = descriptionFlag
+	}
 	if len(typeFlag) > 0 {
 		options[work_packages.UpdateType] = typeFlag
 	}
@@ -194,6 +204,13 @@ func updateOptions() map[work_packages.UpdateOption]string {
 func validateUpdateWorkPackageFlags() error {
 	if dryRunUpdateWorkPackage && !printUpdatedWorkPackageAsJSON {
 		return fmt.Errorf("cannot use --dry-run without --json")
+	}
+
+	if descriptionFlagChanged {
+		conflicts := activeDescriptionConflicts()
+		if len(conflicts) > 0 {
+			return fmt.Errorf("cannot combine --description with %s", strings.Join(conflicts, ", "))
+		}
 	}
 
 	if len(setFlags) > 0 && hasLegacyUpdateFlags() {
@@ -222,8 +239,24 @@ func activeLegacyUpdateFlags() []string {
 	if len(subjectFlag) > 0 {
 		flags = append(flags, "--subject")
 	}
+	if descriptionFlagChanged {
+		flags = append(flags, "--description")
+	}
 	if len(typeFlag) > 0 {
 		flags = append(flags, "--type")
+	}
+
+	return flags
+}
+
+func activeDescriptionConflicts() []string {
+	flags := []string{}
+
+	if len(actionFlag) > 0 {
+		flags = append(flags, "--action")
+	}
+	if len(attachFlag) > 0 {
+		flags = append(flags, "--attach")
 	}
 
 	return flags
