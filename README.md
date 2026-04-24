@@ -125,7 +125,7 @@ projects       -- Lists projects
 workpackages   -- Lists work packages
 
 # Discover flags: hitting completion key after
-op update workpackge 42 -
+op update workpackage 42 -
 # returns
 --action    -a  -- Executes a custom action on a work package
 --assignee      -- Assign a user to the work package
@@ -147,10 +147,10 @@ of examples, that might be useful for a great number of people.
 # Creating a work package in a project only by subject.
 # Work package is created with many default values (as for type and status),
 # very similar to how a work package is created inline in a work package table.
-op create workpackge --project 11 'Document new CLI tool'
+op create workpackage --project 11 'Document new CLI tool'
 
 # Same command with shorthands and directly open it in a browser to continue working on it.
-op create workpackge -p11 'Document new CLI tool' -o
+op create workpackage -p11 'Document new CLI tool' -o
 
 # Validating the creation of a child work package without persisting it.
 # The parent determines the project automatically.
