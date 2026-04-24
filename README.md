@@ -150,6 +150,10 @@ op create workpackge --project 11 'Document new CLI tool'
 
 # Same command with shorthands and directly open it in a browser to continue working on it.
 op create workpackge -p11 'Document new CLI tool' -o
+
+# Validating the creation of a child work package without persisting it.
+# The parent determines the project automatically.
+op create workpackage --parent 74316 --type Implementation 'Build reusable skill' --dry-run --json
 ```
 
 #### Listing
@@ -190,6 +194,27 @@ op inspect workpackage 42
 # Inspecting a work package and its direct children as machine-readable JSON
 op inspect workpackage 74316 --children --json
 ```
+
+#### JSON error codes
+
+The `--json` variants of `inspect`, `create`, and `update` return a stable error envelope:
+
+```json
+{"error": {"code": "<code>", "message": "<message>"}}
+```
+
+| Code | Trigger | Mutation persisted? |
+|---|---|---|
+| `invalid_argument` | Missing positional arg, invalid id, local validation failure, malformed `--set`, or no update options under `--json`/`--dry-run` | No |
+| `conflicting_arguments` | Incompatible flag combinations, e.g. `--description` + `--set`, `--open` + `--json`, `--dry-run` without `--json` | No |
+| `api_error` | Underlying OpenProject API call failed while resolving, creating, updating, or dry-running a work package | No |
+| `post_apply_inspect_failed` | CREATE or PATCH succeeded but the follow-up inspect to build the JSON response failed — the mutation **has persisted**, only the response payload could not be assembled | **Yes** |
+| `ambiguous_field` | A `--set` label matched more than one schema field | No |
+| `duplicate_field` | A `--set` assignment names the same API field twice | No |
+| `unknown_field` | A `--set` label or API field is not present in the resolved schema | No |
+| `unsupported_field_type` | A `--set` field's schema type is not yet coercible | No |
+| `invalid_field_value` | A `--set` value fails type coercion (e.g. non-integer for an `Integer` field) | No |
+| `non_writable_field` | A `--set` field exists in the schema but is not writable | No |
 
 ## Creating a release
 
