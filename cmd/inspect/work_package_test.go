@@ -150,6 +150,69 @@ func TestInspectWorkPackagePrintsJSONWithoutChildrenQuery(t *testing.T) {
 	}
 }
 
+func TestInspectWorkPackagePrintsFormattableFieldsAsRawStrings(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v3/work_packages/74172":
+			_, _ = io.WriteString(w, `{
+				"id": 74172,
+				"subject": "Epic",
+				"description": {"raw": "Body"},
+				"customField401": {
+					"format": "markdown",
+					"html": "<p>Accepted</p>",
+					"raw": "Accepted"
+				},
+				"_embedded": {
+					"project": {
+						"id": 1482,
+						"identifier": "cli",
+						"name": "CLI"
+					}
+				},
+				"_links": {
+					"self": {"href": "/api/v3/work_packages/74172"},
+					"project": {"href": "/api/v3/projects/1482", "title": "CLI"},
+					"schema": {"href": "/api/v3/work_packages/schemas/1482-6"},
+					"status": {"href": "/api/v3/statuses/1", "title": "new"},
+					"type": {"href": "/api/v3/types/6", "title": "Epic"},
+					"assignee": {"href": null, "title": ""}
+				}
+			}`)
+		case "/api/v3/work_packages/schemas/1482-6":
+			_, _ = io.WriteString(w, `{"customField401":{"name":"Acceptance criteria","type":"Formattable","writable":true}}`)
+		case "/api/v3/work_packages":
+			t.Fatalf("unexpected children query: %s", r.URL.Path)
+		default:
+			t.Fatalf("unexpected path %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+
+	host, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	requests.Init(host, "token", false)
+	routes.Init(host)
+
+	activePrinter := &printer.TestingPrinter{}
+	printer.Init(activePrinter)
+
+	shouldOpenWorkPackageInBrowser = false
+	listAvailableTypes = false
+	includeChildrenInJson = false
+	printWorkPackageAsJSON = true
+
+	inspectWorkPackage(nil, []string{"74172"})
+
+	expected := "{\"work_package\":{\"id\":74172,\"subject\":\"Epic\",\"type\":\"Epic\",\"status\":\"new\",\"assignee\":\"\",\"description\":\"Body\",\"parent_id\":null,\"project\":{\"id\":1482,\"identifier\":\"cli\",\"name\":\"CLI\"},\"fields\":{\"customField401\":\"Accepted\"},\"field_labels\":{\"Acceptance criteria\":[\"customField401\"]}},\"children\":[]}\n"
+	if activePrinter.Result != expected {
+		t.Fatalf("expected %s, got %s", expected, activePrinter.Result)
+	}
+}
+
 func TestValidateInspectWorkPackageFlagsRejectsOpenAndJSON(t *testing.T) {
 	shouldOpenWorkPackageInBrowser = true
 	listAvailableTypes = false

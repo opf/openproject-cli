@@ -264,3 +264,51 @@ func TestInspectPreservesDuplicateFieldLabels(t *testing.T) {
 		t.Fatalf("expected duplicate KPI mappings, got %#v", payload.WorkPackage.FieldLabels)
 	}
 }
+
+func TestInspectNormalizesFormattableCustomFieldsToRawStrings(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v3/work_packages/74172":
+			_, _ = io.WriteString(w, `{
+				"id": 74172,
+				"subject": "Epic",
+				"customField401": {
+					"format": "markdown",
+					"html": "<p>Body</p>",
+					"raw": "Body"
+				},
+				"_links": {
+					"self": {"href": "/api/v3/work_packages/74172"},
+					"project": {"href": "/api/v3/projects/1482", "title": "CLI"},
+					"schema": {"href": "/api/v3/work_packages/schemas/1482-6"},
+					"status": {"href": "/api/v3/statuses/1", "title": "new"},
+					"type": {"href": "/api/v3/types/6", "title": "Epic"},
+					"assignee": {"href": null, "title": ""}
+				}
+			}`)
+		case "/api/v3/work_packages/schemas/1482-6":
+			_, _ = io.WriteString(w, `{
+				"customField401": {"name": "Acceptance criteria", "type": "Formattable", "writable": true}
+			}`)
+		default:
+			t.Fatalf("unexpected path %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+
+	host, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	requests.Init(host, "token", false)
+
+	payload, err := work_packages.Inspect(74172)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if payload.WorkPackage.Fields["customField401"] != "Body" {
+		t.Fatalf("expected Formattable field raw string, got %#v", payload.WorkPackage.Fields["customField401"])
+	}
+}
