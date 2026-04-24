@@ -142,7 +142,10 @@ func updateWorkPackage(cmd *cobra.Command, args []string) {
 	}
 
 	if !printUpdatedWorkPackageAsJSON {
-		printer.Info("Updating work package ...")
+		printer.Info("Updating work package with patch ...")
+		if summary := updateSummaryLines(options); len(summary) > 0 {
+			printer.Info("\t" + strings.Join(summary, "\n\t"))
+		}
 	}
 
 	workPackage, err := work_packages.Update(id, options)
@@ -173,8 +176,26 @@ func updateWorkPackage(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	printer.Done()
 	printer.Info("-- ")
 	printer.WorkPackage(workPackage)
+}
+
+func updateSummaryLines(options map[work_packages.UpdateOption]string) []string {
+	var lines []string
+	if v, ok := options[work_packages.UpdateSubject]; ok {
+		lines = append(lines, "Subject -> "+v)
+	}
+	if v, ok := options[work_packages.UpdateType]; ok {
+		lines = append(lines, "Type -> "+v)
+	}
+	if v, ok := options[work_packages.UpdateAssignee]; ok {
+		lines = append(lines, "Assignee -> "+v)
+	}
+	if v, ok := options[work_packages.UpdateDescription]; ok {
+		lines = append(lines, "Description -> "+v)
+	}
+	return lines
 }
 
 func updateOptions() map[work_packages.UpdateOption]string {

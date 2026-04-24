@@ -616,8 +616,14 @@ func TestUpdateWorkPackagePrintsHumanProgressForNonJSONUpdate(t *testing.T) {
 
 	updateWorkPackage(nil, []string{"74416"})
 
-	if !strings.Contains(activePrinter.Result, "Updating work package ...") {
-		t.Fatalf("expected human progress output, got %q", activePrinter.Result)
+	if !strings.Contains(activePrinter.Result, "Updating work package with patch ...") {
+		t.Fatalf("expected human progress header, got %q", activePrinter.Result)
+	}
+	if !strings.Contains(activePrinter.Result, "Subject -> New subject") {
+		t.Fatalf("expected per-field summary line, got %q", activePrinter.Result)
+	}
+	if !strings.Contains(activePrinter.Result, "DONE") {
+		t.Fatalf("expected DONE marker, got %q", activePrinter.Result)
 	}
 }
 

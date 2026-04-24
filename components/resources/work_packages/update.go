@@ -8,7 +8,6 @@ import (
 
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/paths"
-	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
 	"github.com/opf/openproject-cli/dtos"
 	"github.com/opf/openproject-cli/models"
@@ -27,7 +26,7 @@ const (
 
 var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType, UpdateAssignee, UpdateDescription}
 
-var patchMap = map[UpdateOption]func(patch, workPackage *dtos.WorkPackageDto, input string) (string, error){
+var patchMap = map[UpdateOption]func(patch, workPackage *dtos.WorkPackageDto, input string) error{
 	UpdateAssignee:    assigneePatch,
 	UpdateType:        typePatch,
 	UpdateSubject:     subjectPatch,
@@ -125,11 +124,9 @@ func patch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) er
 		}
 
 		patchNeeded = true
-		updateStringLine, err := patchMap[option](&patchDto, workPackage, value)
-		if err != nil {
+		if err := patchMap[option](&patchDto, workPackage, value); err != nil {
 			return err
 		}
-		_ = updateStringLine
 	}
 
 	if !patchNeeded {
@@ -148,24 +145,15 @@ func patch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) er
 	return nil
 }
 
-func typePatch(patch, workPackage *dtos.WorkPackageDto, input string) (string, error) {
+func typePatch(patch, workPackage *dtos.WorkPackageDto, input string) error {
 	types, err := availableTypes(workPackage.Links.Project)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	foundType := findType(input, types)
 	if foundType == nil {
-		printer.ErrorText("Failed to update work package type.")
-		printer.Info(fmt.Sprintf(
-			"No unique available type from input %s found for project %s. Please use one of the types listed below.",
-			printer.Cyan(input),
-			printer.Red(fmt.Sprintf("#%d", parser.IdFromLink(workPackage.Links.Project.Href))),
-		))
-
-		printer.Types(types.Convert())
-
-		return "", nil
+		return fmt.Errorf("no unique available type from input %q found for project #%d", input, parser.IdFromLink(workPackage.Links.Project.Href))
 	}
 
 	if patch.Links == nil {
@@ -173,15 +161,15 @@ func typePatch(patch, workPackage *dtos.WorkPackageDto, input string) (string, e
 	}
 
 	patch.Links.Type = foundType.Links.Self
-	return fmt.Sprintf("Type -> %s", foundType.Name), nil
+	return nil
 }
 
-func subjectPatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
+func subjectPatch(patch, _ *dtos.WorkPackageDto, input string) error {
 	patch.Subject = input
-	return fmt.Sprintf("Subject -> %s", input), nil
+	return nil
 }
 
-func assigneePatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
+func assigneePatch(patch, _ *dtos.WorkPackageDto, input string) error {
 	userId, _ := strconv.ParseUint(input, 10, 64)
 
 	if patch.Links == nil {
@@ -189,10 +177,10 @@ func assigneePatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) 
 	}
 
 	patch.Links.Assignee = &dtos.LinkDto{Href: paths.User(userId)}
-	return fmt.Sprintf("Assignee -> %s", input), nil
+	return nil
 }
 
-func descriptionPatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
+func descriptionPatch(patch, _ *dtos.WorkPackageDto, input string) error {
 	patch.Description = &dtos.LongTextDto{Raw: input}
-	return "Description updated", nil
+	return nil
 }
