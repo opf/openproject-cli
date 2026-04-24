@@ -166,10 +166,4 @@ func init() {
 	)
 
 	rootCmd.InitDefaultCompletionCmd()
-	for _, cmd := range rootCmd.Commands() {
-		if cmd.Name() == "completion" {
-			_ = cmd.InheritedFlags().MarkHidden("format")
-			_ = cmd.InheritedFlags().MarkHidden("verbose")
-		}
-	}
 }
