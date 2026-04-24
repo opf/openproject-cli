@@ -119,6 +119,15 @@ func TestDryRunUpdateIncludesAllLegacyFields(t *testing.T) {
 					]
 				}
 			}`)
+		case "/api/v3/statuses":
+			_, _ = io.WriteString(w, `{
+				"_embedded": {
+					"elements": [
+						{"id": 1, "name": "New"},
+						{"id": 2, "name": "In development"}
+					]
+				}
+			}`)
 		default:
 			t.Fatalf("unexpected path %s", r.URL.Path)
 		}
@@ -164,6 +173,13 @@ func TestDryRunUpdateIncludesAllLegacyFields(t *testing.T) {
 			options: map[work_packages.UpdateOption]string{work_packages.UpdateDescription: "New body"},
 			check: func(t *testing.T, plan any) {
 				assertPlanField(t, plan, "description", "New body")
+			},
+		},
+		{
+			name:    "status resolves against known statuses",
+			options: map[work_packages.UpdateOption]string{work_packages.UpdateStatus: "in development"},
+			check: func(t *testing.T, plan any) {
+				assertPlanField(t, plan, "status", "In development")
 			},
 		},
 		{
@@ -281,6 +297,113 @@ func TestDryRunUpdateReturnsErrorForUnresolvedType(t *testing.T) {
 	})
 	if err == nil {
 		t.Fatal("expected error for unresolved type, got nil")
+	}
+}
+
+func TestDryRunUpdateReturnsErrorForUnresolvedStatus(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v3/work_packages/74416":
+			_, _ = io.WriteString(w, `{
+				"id": 74416,
+				"_links": {
+					"self": {"href": "/api/v3/work_packages/74416"},
+					"project": {"href": "/api/v3/projects/1482", "title": "CLI"}
+				}
+			}`)
+		case "/api/v3/statuses":
+			_, _ = io.WriteString(w, `{"_embedded":{"elements":[]}}`)
+		default:
+			t.Fatalf("unexpected path %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+
+	host, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	requests.Init(host, "token", false)
+	printer.Init(&printer.TestingPrinter{})
+
+	_, err = work_packages.DryRunUpdate(74416, map[work_packages.UpdateOption]string{
+		work_packages.UpdateStatus: "In progress",
+	})
+	if err == nil {
+		t.Fatal("expected error for unresolved status, got nil")
+	}
+}
+
+func TestUpdatePatchIncludesStatus(t *testing.T) {
+	var patchBody map[string]any
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v3/work_packages/74416":
+			switch r.Method {
+			case http.MethodGet:
+				_, _ = io.WriteString(w, `{
+					"id": 74416,
+					"subject": "Old subject",
+					"lockVersion": 7,
+					"_links": {
+						"self": {"href": "/api/v3/work_packages/74416"},
+						"project": {"href": "/api/v3/projects/1482", "title": "CLI"},
+						"status": {"href": "/api/v3/statuses/1", "title": "New"},
+						"type": {"href": "/api/v3/types/7", "title": "Implementation"},
+						"assignee": {"href": null, "title": ""}
+					}
+				}`)
+			case http.MethodPatch:
+				if err := json.NewDecoder(r.Body).Decode(&patchBody); err != nil {
+					t.Fatal(err)
+				}
+				w.WriteHeader(http.StatusOK)
+				_, _ = io.WriteString(w, `{}`)
+			default:
+				t.Fatalf("unexpected method %s", r.Method)
+			}
+		case "/api/v3/statuses":
+			_, _ = io.WriteString(w, `{
+				"_embedded": {
+					"elements": [
+						{"id": 1, "name": "New"},
+						{"id": 2, "name": "In development"}
+					]
+				}
+			}`)
+		default:
+			t.Fatalf("unexpected path %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+
+	host, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	requests.Init(host, "token", false)
+	printer.Init(&printer.TestingPrinter{})
+
+	_, err = work_packages.Update(74416, map[work_packages.UpdateOption]string{
+		work_packages.UpdateStatus: "In development",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	links, ok := patchBody["_links"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected links object, got %#v", patchBody["_links"])
+	}
+	status, ok := links["status"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected status link object, got %#v", links["status"])
+	}
+	if status["href"] != "/api/v3/statuses/2" {
+		t.Fatalf("expected status href /api/v3/statuses/2, got %#v", status["href"])
 	}
 }
 

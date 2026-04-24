@@ -49,6 +49,12 @@ func addWorkPackageFlags() {
 		"",
 		"Change the raw work package description",
 	)
+	workPackageCmd.Flags().StringVar(
+		&statusFlag,
+		"status",
+		"",
+		"Change the status of the work package (by name)",
+	)
 	workPackageCmd.Flags().StringVarP(
 		&typeFlag,
 		"type",

@@ -26,6 +26,7 @@ type WorkPackageUpdatePlan struct {
 	Subject        string                   `json:"subject,omitempty"`
 	Type           string                   `json:"type,omitempty"`
 	Assignee       string                   `json:"assignee,omitempty"`
+	Status         string                   `json:"status,omitempty"`
 	Description    *string                  `json:"description,omitempty"`
 	Action         string                   `json:"action,omitempty"`
 	Attach         string                   `json:"attach,omitempty"`

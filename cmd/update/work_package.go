@@ -22,6 +22,7 @@ var (
 	dryRunUpdateWorkPackage       bool
 	printUpdatedWorkPackageAsJSON bool
 	setFlags                      []string
+	statusFlag                    string
 	subjectFlag                   string
 	typeFlag                      string
 )
@@ -195,6 +196,9 @@ func updateSummaryLines(options map[work_packages.UpdateOption]string) []string 
 	if v, ok := options[work_packages.UpdateDescription]; ok {
 		lines = append(lines, "Description -> "+v)
 	}
+	if v, ok := options[work_packages.UpdateStatus]; ok {
+		lines = append(lines, "Status -> "+v)
+	}
 	return lines
 }
 
@@ -214,6 +218,9 @@ func updateOptions() map[work_packages.UpdateOption]string {
 	}
 	if descriptionFlagChanged {
 		options[work_packages.UpdateDescription] = descriptionFlag
+	}
+	if len(statusFlag) > 0 {
+		options[work_packages.UpdateStatus] = statusFlag
 	}
 	if len(typeFlag) > 0 {
 		options[work_packages.UpdateType] = typeFlag
@@ -262,6 +269,9 @@ func activeLegacyUpdateFlags() []string {
 	}
 	if descriptionFlagChanged {
 		flags = append(flags, "--description")
+	}
+	if len(statusFlag) > 0 {
+		flags = append(flags, "--status")
 	}
 	if len(typeFlag) > 0 {
 		flags = append(flags, "--type")

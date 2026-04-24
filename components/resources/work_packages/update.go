@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/requests"
+	"github.com/opf/openproject-cli/components/resources/status"
 	"github.com/opf/openproject-cli/dtos"
 	"github.com/opf/openproject-cli/models"
 )
@@ -22,15 +24,17 @@ const (
 	UpdateSubject
 	UpdateDescription
 	UpdateType
+	UpdateStatus
 )
 
-var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType, UpdateAssignee, UpdateDescription}
+var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType, UpdateAssignee, UpdateDescription, UpdateStatus}
 
 var patchMap = map[UpdateOption]func(patch, workPackage *dtos.WorkPackageDto, input string) error{
 	UpdateAssignee:    assigneePatch,
 	UpdateType:        typePatch,
 	UpdateSubject:     subjectPatch,
 	UpdateDescription: descriptionPatch,
+	UpdateStatus:      statusPatch,
 }
 
 func DryRunUpdate(id uint64, options map[UpdateOption]string) (*models.WorkPackageUpdatePlan, error) {
@@ -44,6 +48,7 @@ func DryRunUpdate(id uint64, options map[UpdateOption]string) (*models.WorkPacka
 		Operation:      "update",
 		WorkPackageID:  id,
 		Subject:        options[UpdateSubject],
+		Status:         options[UpdateStatus],
 		Action:         options[UpdateCustomAction],
 		Attach:         options[UpdateAttachment],
 		ResolvedFields: map[string]models.ResolvedField{},
@@ -55,6 +60,15 @@ func DryRunUpdate(id uint64, options map[UpdateOption]string) (*models.WorkPacka
 
 	if assignee, ok := options[UpdateAssignee]; ok {
 		plan.Assignee = assignee
+	}
+
+	if value, ok := options[UpdateStatus]; ok {
+		resolvedStatus, err := resolveStatus(value)
+		if err != nil {
+			return nil, err
+		}
+
+		plan.Status = resolvedStatus.Name
 	}
 
 	if value, ok := options[UpdateType]; ok {
@@ -183,4 +197,33 @@ func assigneePatch(patch, _ *dtos.WorkPackageDto, input string) error {
 func descriptionPatch(patch, _ *dtos.WorkPackageDto, input string) error {
 	patch.Description = &dtos.LongTextDto{Raw: input}
 	return nil
+}
+
+func statusPatch(patch, _ *dtos.WorkPackageDto, input string) error {
+	resolvedStatus, err := resolveStatus(input)
+	if err != nil {
+		return err
+	}
+
+	if patch.Links == nil {
+		patch.Links = &dtos.WorkPackageLinksDto{}
+	}
+
+	patch.Links.Status = &dtos.LinkDto{Href: paths.StatusById(resolvedStatus.Id)}
+	return nil
+}
+
+func resolveStatus(input string) (*models.Status, error) {
+	statuses, err := status.All()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, candidate := range statuses {
+		if strings.EqualFold(candidate.Name, input) {
+			return candidate, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no status named %q found", input)
 }
