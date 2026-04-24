@@ -174,6 +174,10 @@ op update workpackage 42 --subject 'The new subject' --status 'In Progress' --ty
 
 # Uploading an attachment to a work package
 op update workpackage 42 --attach ./Downloads/Report.pdf
+
+# Resolving and validating field updates as JSON before applying them
+# This first slice supports schema-resolved custom fields via --set.
+op update workpackage 74316 --set 'Votes=3' --dry-run --json
 ```
 
 #### Inspecting
@@ -182,6 +186,9 @@ op update workpackage 42 --attach ./Downloads/Report.pdf
 # Inspecting a work package with more details,
 # then in the work package list command
 op inspect workpackage 42
+
+# Inspecting a work package and its direct children as machine-readable JSON
+op inspect workpackage 74316 --children --json
 ```
 
 ## Creating a release

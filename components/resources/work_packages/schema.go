@@ -1,6 +1,8 @@
 package work_packages
 
 import (
+	"sort"
+
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/requests"
 	"github.com/opf/openproject-cli/dtos"
@@ -37,6 +39,10 @@ func SchemaFor(workPackage *dtos.WorkPackageDto) (*Schema, error) {
 			Writable: field.Writable,
 		})
 	}
+
+	sort.Slice(fields, func(i, j int) bool {
+		return fields[i].APIName < fields[j].APIName
+	})
 
 	return &Schema{Fields: fields}, nil
 }

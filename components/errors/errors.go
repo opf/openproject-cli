@@ -1,5 +1,7 @@
 package errors
 
+import stderrors "errors"
+
 type customError struct {
 	text string
 }
@@ -10,6 +12,11 @@ func (err *customError) Error() string {
 
 func Custom(text string) error {
 	return &customError{text: text}
+}
+
+func IsCustom(err error) bool {
+	var target *customError
+	return stderrors.As(err, &target)
 }
 
 type ResponseError struct {

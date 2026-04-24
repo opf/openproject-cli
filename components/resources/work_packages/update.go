@@ -33,6 +33,43 @@ var patchMap = map[UpdateOption]func(patch, workPackage *dtos.WorkPackageDto, in
 	UpdateSubject:  subjectPatch,
 }
 
+func DryRunUpdate(id uint64, options map[UpdateOption]string) (*models.WorkPackageUpdatePlan, error) {
+	workPackage, err := fetch(id)
+	if err != nil {
+		return nil, err
+	}
+
+	plan := &models.WorkPackageUpdatePlan{
+		Valid:          true,
+		Operation:      "update",
+		WorkPackageID:  id,
+		Subject:        options[UpdateSubject],
+		Action:         options[UpdateCustomAction],
+		Attach:         options[UpdateAttachment],
+		ResolvedFields: map[string]models.ResolvedField{},
+	}
+
+	if assignee, ok := options[UpdateAssignee]; ok {
+		plan.Assignee = assignee
+	}
+
+	if value, ok := options[UpdateType]; ok {
+		types, err := availableTypes(workPackage.Links.Project)
+		if err != nil {
+			return nil, err
+		}
+
+		foundType := findType(value, types)
+		if foundType == nil {
+			return nil, fmt.Errorf("no unique available type from input %q found for work package #%d", value, id)
+		}
+
+		plan.Type = foundType.Name
+	}
+
+	return plan, nil
+}
+
 func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, error) {
 	workPackage, err := fetch(id)
 	if err != nil {
@@ -42,25 +79,25 @@ func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, er
 	if customAction, ok := options[UpdateCustomAction]; ok {
 		err = action(workPackage, customAction)
 		if err != nil {
-			printer.Error(err)
-		} else {
-			// reload work package to get new lock version
-			workPackage, err = fetch(id)
-			if err != nil {
-				return nil, err
-			}
+			return nil, err
+		}
+
+		// reload work package to get new lock version
+		workPackage, err = fetch(id)
+		if err != nil {
+			return nil, err
 		}
 	}
 
 	err = patch(workPackage, options)
 	if err != nil {
-		printer.Error(err)
+		return nil, err
 	}
 
 	if file, ok := options[UpdateAttachment]; ok {
 		err = upload(workPackage, file)
 		if err != nil {
-			printer.Error(err)
+			return nil, err
 		}
 	}
 
@@ -75,7 +112,6 @@ func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, er
 func patch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) error {
 	var patchNeeded = false
 	patchDto := dtos.WorkPackageDto{LockVersion: workPackage.LockVersion}
-	var updateString string
 
 	for option, value := range options {
 		if !common.Contains(patchableUpdates, option) {
@@ -87,21 +123,12 @@ func patch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) er
 		if err != nil {
 			return err
 		}
-
-		if len(updateStringLine) > 0 {
-			if len(updateString) > 0 {
-				updateString += "\n"
-			}
-			updateString += fmt.Sprintf("\t%s", updateStringLine)
-		}
+		_ = updateStringLine
 	}
 
 	if !patchNeeded {
 		return nil
 	}
-
-	printer.Info(fmt.Sprintf("Updating work package with patch ..."))
-	printer.Info(updateString)
 
 	marshal, err := json.Marshal(patchDto)
 	if err != nil {
@@ -113,7 +140,6 @@ func patch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) er
 		return err
 	}
 
-	printer.Done()
 	return nil
 }
 

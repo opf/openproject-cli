@@ -50,4 +50,22 @@ func addWorkPackageFlags() {
 		"",
 		"Change the work package type",
 	)
+	workPackageCmd.Flags().StringArrayVar(
+		&setFlags,
+		"set",
+		nil,
+		"Set a schema-resolved custom field using label=value or apiField=value",
+	)
+	workPackageCmd.Flags().BoolVar(
+		&printUpdatedWorkPackageAsJSON,
+		"json",
+		false,
+		"Print machine-readable JSON output",
+	)
+	workPackageCmd.Flags().BoolVar(
+		&dryRunUpdateWorkPackage,
+		"dry-run",
+		false,
+		"Resolve and validate without persisting the update",
+	)
 }

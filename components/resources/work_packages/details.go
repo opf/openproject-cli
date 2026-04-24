@@ -1,8 +1,6 @@
 package work_packages
 
 import (
-	"strconv"
-
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/requests"
@@ -130,12 +128,4 @@ func linkID(links *dtos.WorkPackageLinksDto, selector func(*dtos.WorkPackageLink
 
 	id := parser.IdFromLink(link.Href)
 	return &id
-}
-
-func ParentFilter(parentID uint64) requests.Filter {
-	return requests.Filter{
-		Operator: "=",
-		Name:     "parent",
-		Values:   []string{strconv.FormatUint(parentID, 10)},
-	}
 }

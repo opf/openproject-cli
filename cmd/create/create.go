@@ -16,7 +16,6 @@ func init() {
 		0,
 		"Project ID to create the work package in",
 	)
-	_ = createWorkPackageCmd.MarkFlagRequired("project")
 
 	createWorkPackageCmd.Flags().BoolVarP(
 		&shouldOpenWorkPackageInBrowser,
@@ -32,6 +31,27 @@ func init() {
 		"t",
 		"",
 		"Change the work package type",
+	)
+
+	createWorkPackageCmd.Flags().Uint64Var(
+		&parentWorkPackageID,
+		"parent",
+		0,
+		"Create the work package as a child of an existing work package",
+	)
+
+	createWorkPackageCmd.Flags().BoolVar(
+		&printCreatedWorkPackageAsJSON,
+		"json",
+		false,
+		"Print machine-readable JSON output",
+	)
+
+	createWorkPackageCmd.Flags().BoolVar(
+		&dryRunCreateWorkPackage,
+		"dry-run",
+		false,
+		"Resolve and validate without persisting the work package",
 	)
 
 	RootCmd.AddCommand(createWorkPackageCmd)

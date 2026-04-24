@@ -1,6 +1,7 @@
 package work_packages
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/opf/openproject-cli/components/requests"
@@ -89,5 +90,13 @@ func StatusFilter(status string) requests.Filter {
 		Operator: operator,
 		Name:     "status",
 		Values:   values,
+	}
+}
+
+func ParentFilter(parentID uint64) requests.Filter {
+	return requests.Filter{
+		Operator: "=",
+		Name:     "parent",
+		Values:   []string{strconv.FormatUint(parentID, 10)},
 	}
 }
