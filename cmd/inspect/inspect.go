@@ -29,7 +29,21 @@ func init() {
 		&listAvailableTypes,
 		"types",
 		false,
-		"List the available types on the work package.",
+		"List the available types on the work package",
+	)
+
+	inspectWorkPackageCmd.Flags().BoolVar(
+		&includeChildrenInJson,
+		"children",
+		false,
+		"Include direct child work packages in the output",
+	)
+
+	inspectWorkPackageCmd.Flags().BoolVar(
+		&printWorkPackageAsJSON,
+		"json",
+		false,
+		"Print machine-readable JSON output",
 	)
 
 	RootCmd.AddCommand(inspectProjectCmd, inspectWorkPackageCmd)

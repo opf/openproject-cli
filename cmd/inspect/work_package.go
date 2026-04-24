@@ -7,13 +7,17 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/opf/openproject-cli/components/launch"
+	"github.com/opf/openproject-cli/components/presenter"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/resources/work_packages"
 	"github.com/opf/openproject-cli/components/routes"
+	"github.com/opf/openproject-cli/models"
 )
 
 var shouldOpenWorkPackageInBrowser bool
 var listAvailableTypes bool
+var includeChildrenInJson bool
+var printWorkPackageAsJSON bool
 
 var inspectWorkPackageCmd = &cobra.Command{
 	Use:     "workpackage [id]",
@@ -25,13 +29,18 @@ var inspectWorkPackageCmd = &cobra.Command{
 
 func inspectWorkPackage(_ *cobra.Command, args []string) {
 	if len(args) != 1 {
-		printer.ErrorText(fmt.Sprintf("Expected 1 argument [id], but got %d", len(args)))
+		printInspectError("invalid_argument", fmt.Sprintf("Expected 1 argument [id], but got %d", len(args)))
 		return
 	}
 
 	id, err := strconv.ParseUint(args[0], 10, 64)
 	if err != nil {
-		printer.ErrorText(fmt.Sprintf("'%s' is an invalid work package id. Must be a number.", args[0]))
+		printInspectError("invalid_argument", fmt.Sprintf("'%s' is an invalid work package id. Must be a number.", args[0]))
+		return
+	}
+
+	if err := validateInspectWorkPackageFlags(); err != nil {
+		printInspectError("conflicting_arguments", err.Error())
 		return
 	}
 
@@ -40,6 +49,29 @@ func inspectWorkPackage(_ *cobra.Command, args []string) {
 		case listAvailableTypes:
 			listTypes(id)
 		}
+		return
+	}
+
+	if printWorkPackageAsJSON {
+		var payload *models.WorkPackageInspectPayload
+		var err error
+		if includeChildrenInJson {
+			payload, err = work_packages.InspectWithChildren(id)
+		} else {
+			payload, err = work_packages.Inspect(id)
+		}
+		if err != nil {
+			printInspectError("api_error", err.Error())
+			return
+		}
+
+		data, err := presenter.MarshalJSON(payload)
+		if err != nil {
+			printer.Error(err)
+			return
+		}
+
+		printer.Info(string(data))
 		return
 	}
 
@@ -71,4 +103,35 @@ func listTypes(id uint64) {
 
 func hasListingFlag() bool {
 	return listAvailableTypes
+}
+
+func validateInspectWorkPackageFlags() error {
+	if shouldOpenWorkPackageInBrowser && printWorkPackageAsJSON {
+		return fmt.Errorf("cannot use --open together with --json")
+	}
+
+	if includeChildrenInJson && !printWorkPackageAsJSON {
+		return fmt.Errorf("cannot use --children without --json")
+	}
+
+	if listAvailableTypes && (printWorkPackageAsJSON || includeChildrenInJson) {
+		return fmt.Errorf("cannot use --types together with --json or --children")
+	}
+
+	return nil
+}
+
+func printInspectError(code, message string) {
+	if !printWorkPackageAsJSON {
+		printer.ErrorText(message)
+		return
+	}
+
+	data, err := presenter.MarshalError(code, message)
+	if err != nil {
+		printer.Error(err)
+		return
+	}
+
+	printer.Info(string(data))
 }

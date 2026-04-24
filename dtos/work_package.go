@@ -1,6 +1,9 @@
 package dtos
 
 import (
+	"encoding/json"
+	"strings"
+
 	"github.com/opf/openproject-cli/models"
 )
 
@@ -9,6 +12,8 @@ type WorkPackageLinksDto struct {
 	AddAttachment     *LinkDto   `json:"addAttachment,omitempty"`
 	Status            *LinkDto   `json:"status,omitempty"`
 	Project           *LinkDto   `json:"project,omitempty"`
+	Parent            *LinkDto   `json:"parent,omitempty"`
+	Schema            *LinkDto   `json:"schema,omitempty"`
 	Assignee          *LinkDto   `json:"assignee,omitempty"`
 	Type              *LinkDto   `json:"type,omitempty"`
 	CustomActions     []*LinkDto `json:"customActions,omitempty"`
@@ -22,10 +27,12 @@ type WorkPackageDto struct {
 	Description *LongTextDto         `json:"description,omitempty"`
 	Embedded    *embeddedDto         `json:"_embedded,omitempty"`
 	LockVersion int                  `json:"lockVersion,omitempty"`
+	CustomFields map[string]any      `json:"-"`
 }
 
 type embeddedDto struct {
 	CustomActions []*CustomActionDto `json:"customActions"`
+	Project       *ProjectDto        `json:"project,omitempty"`
 }
 
 type workPackageElements struct {
@@ -47,14 +54,38 @@ type CreateWorkPackageDto struct {
 
 /////////////// MODEL CONVERSION ///////////////
 
+func (dto *WorkPackageDto) UnmarshalJSON(data []byte) error {
+	type alias WorkPackageDto
+	var base alias
+	if err := json.Unmarshal(data, &base); err != nil {
+		return err
+	}
+
+	var raw map[string]any
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	customFields := make(map[string]any)
+	for key, value := range raw {
+		if strings.HasPrefix(key, "customField") {
+			customFields[key] = value
+		}
+	}
+
+	*dto = WorkPackageDto(base)
+	dto.CustomFields = customFields
+	return nil
+}
+
 func (dto *WorkPackageDto) Convert() *models.WorkPackage {
 	return &models.WorkPackage{
 		Id:          uint64(dto.Id),
 		Subject:     dto.Subject,
-		Type:        dto.Links.Type.Title,
-		Assignee:    dto.Links.Assignee.Title,
-		Status:      dto.Links.Status.Title,
-		Description: dto.Description.Raw,
+		Type:        linkTitle(dto.Links, func(links *WorkPackageLinksDto) *LinkDto { return links.Type }),
+		Assignee:    linkTitle(dto.Links, func(links *WorkPackageLinksDto) *LinkDto { return links.Assignee }),
+		Status:      linkTitle(dto.Links, func(links *WorkPackageLinksDto) *LinkDto { return links.Status }),
+		Description: longTextRaw(dto.Description),
 		LockVersion: dto.LockVersion,
 	}
 }
@@ -73,4 +104,25 @@ func (dto *WorkPackageCollectionDto) Convert() *models.WorkPackageCollection {
 		Offset:   dto.Offset,
 		Items:    workPackages,
 	}
+}
+
+func linkTitle(links *WorkPackageLinksDto, selector func(*WorkPackageLinksDto) *LinkDto) string {
+	if links == nil {
+		return ""
+	}
+
+	link := selector(links)
+	if link == nil {
+		return ""
+	}
+
+	return link.Title
+}
+
+func longTextRaw(description *LongTextDto) string {
+	if description == nil {
+		return ""
+	}
+
+	return description.Raw
 }

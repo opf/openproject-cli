@@ -3,9 +3,10 @@ package dtos
 import "github.com/opf/openproject-cli/models"
 
 type ProjectDto struct {
-	Id    int64         `json:"id"`
-	Name  string        `json:"name"`
-	Links *projectLinks `json:"_links"`
+	Id         int64         `json:"id"`
+	Identifier string        `json:"identifier"`
+	Name       string        `json:"name"`
+	Links      *projectLinks `json:"_links"`
 }
 
 type projectLinks struct {
@@ -36,7 +37,8 @@ func (dto *ProjectCollectionDto) Convert() []*models.Project {
 
 func (dto *ProjectDto) Convert() *models.Project {
 	return &models.Project{
-		Id:   uint64(dto.Id),
-		Name: dto.Name,
+		Id:         uint64(dto.Id),
+		Identifier: dto.Identifier,
+		Name:       dto.Name,
 	}
 }
