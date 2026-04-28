@@ -10,6 +10,13 @@ func initListFlags() {
 	)
 
 	listCmd.Flags().Uint64VarP(
+		&listParentId,
+		"parent-id",
+		"",
+		0,
+		"Show only direct children of the specified work package ID")
+
+	listCmd.Flags().Uint64VarP(
 		&listProjectId,
 		"project-id",
 		"p",

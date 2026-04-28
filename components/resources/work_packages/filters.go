@@ -14,6 +14,7 @@ const (
 	Status
 	Type
 	IncludeSubProjects
+	Parent
 )
 
 var InputValidationExpression = map[FilterOption]string{
@@ -33,8 +34,18 @@ func (f FilterOption) String() string {
 		return "type"
 	case IncludeSubProjects:
 		return "include-sub-projects"
+	case Parent:
+		return "parent-id"
 	default:
 		return "filter"
+	}
+}
+
+func ParentFilter(id string) requests.Filter {
+	return requests.Filter{
+		Operator: "=",
+		Name:     "parent",
+		Values:   []string{id},
 	}
 }
 

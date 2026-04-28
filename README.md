@@ -237,6 +237,9 @@ op notification list --reason mentioned
 
 # Get a list of all work packages assigned to me
 op work-package list --assignee me
+
+# Get a list of direct children of a work package
+op work-package list --parent-id 42
 ```
 
 #### Updating

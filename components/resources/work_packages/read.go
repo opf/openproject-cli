@@ -37,6 +37,8 @@ func All(filterOptions *map[FilterOption]string, query requests.Query, showOnlyT
 		case Project:
 			n, _ := strconv.ParseUint(value, 10, 64)
 			projectId = &n
+		case Parent:
+			filters = append(filters, ParentFilter(value))
 		}
 	}
 

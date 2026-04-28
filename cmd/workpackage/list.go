@@ -19,6 +19,7 @@ import (
 )
 
 var listAssignee string
+var listParentId uint64
 var listProjectId uint64
 var listShowTotal bool
 var listStatusFilter string
@@ -44,6 +45,13 @@ func listWorkPackages(_ *cobra.Command, _ []string) {
 	if errorText := validateCommandFlagComposition(); len(errorText) > 0 {
 		printer.ErrorText(errorText)
 		return
+	}
+
+	if listParentId > 0 {
+		if _, err := work_packages.Lookup(listParentId); err != nil {
+			printer.ErrorText(fmt.Sprintf("--parent-id: work package #%d not found.", listParentId))
+			return
+		}
 	}
 
 	query, err := buildQuery()
@@ -103,6 +111,10 @@ func filterOptions() *map[work_packages.FilterOption]string {
 	options := make(map[work_packages.FilterOption]string)
 
 	options[work_packages.IncludeSubProjects] = strconv.FormatBool(listIncludeSubProjects)
+
+	if listParentId > 0 {
+		options[work_packages.Parent] = strconv.FormatUint(listParentId, 10)
+	}
 
 	if listProjectId > 0 {
 		options[work_packages.Project] = strconv.FormatUint(listProjectId, 10)
