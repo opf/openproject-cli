@@ -23,20 +23,20 @@ const (
 	CreateDescription
 )
 
-var createMap = map[CreateOption]func(projectId uint64, workPackage *dtos.WorkPackageDto, input string) error{
+var createMap = map[CreateOption]func(projectId string, workPackage *dtos.WorkPackageDto, input string) error{
 	CreateSubject:     subjectCreate,
 	CreateType:        typeCreate,
 	CreateAssignee:    assigneeCreate,
 	CreateDescription: descriptionCreate,
 }
 
-func subjectCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) error {
+func subjectCreate(_ string, workPackage *dtos.WorkPackageDto, input string) error {
 	workPackage.Subject = input
 
 	return nil
 }
 
-func typeCreate(projectId uint64, workPackage *dtos.WorkPackageDto, input string) error {
+func typeCreate(projectId string, workPackage *dtos.WorkPackageDto, input string) error {
 	types, err := availableTypes(&dtos.LinkDto{Href: paths.Project(projectId)})
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func typeCreate(projectId uint64, workPackage *dtos.WorkPackageDto, input string
 		printer.Info(fmt.Sprintf(
 			"No unique available type from input %s found for project %s. Please use one of the types listed below.",
 			printer.Cyan(input),
-			printer.Red(fmt.Sprintf("#%d", projectId)),
+			printer.Red(projectId),
 		))
 
 		printer.Types(types.Convert())
@@ -65,7 +65,7 @@ func typeCreate(projectId uint64, workPackage *dtos.WorkPackageDto, input string
 	return nil
 }
 
-func assigneeCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) error {
+func assigneeCreate(_ string, workPackage *dtos.WorkPackageDto, input string) error {
 	userId, err := strconv.ParseUint(input, 10, 64)
 	if err != nil {
 		return fmt.Errorf("invalid user id %q: must be a number", input)
@@ -79,16 +79,16 @@ func assigneeCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) er
 	return nil
 }
 
-func descriptionCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) error {
+func descriptionCreate(_ string, workPackage *dtos.WorkPackageDto, input string) error {
 	workPackage.Description = &dtos.LongTextDto{Format: "markdown", Raw: input}
 	return nil
 }
 
-func Create(projectId uint64, options map[CreateOption]string) (*models.WorkPackage, error) {
+func Create(projectId string, options map[CreateOption]string) (*models.WorkPackage, error) {
 	return create(projectId, options)
 }
 
-func create(projectId uint64, options map[CreateOption]string) (*models.WorkPackage, error) {
+func create(projectId string, options map[CreateOption]string) (*models.WorkPackage, error) {
 	workPackage := dtos.WorkPackageDto{}
 
 	for option, value := range options {

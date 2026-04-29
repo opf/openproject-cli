@@ -2,7 +2,6 @@ package project
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/spf13/cobra"
 
@@ -15,25 +14,24 @@ import (
 var openInBrowser bool
 
 var inspectCmd = &cobra.Command{
-	Use:   "inspect [id]",
+	Use:   "inspect [id|identifier]",
 	Short: "Show details about a project",
-	Long:  "Show detailed information of a project referenced by it's ID.",
+	Long:  "Show detailed information of a project referenced by its numeric ID or identifier.",
 	Run:   inspectProject,
 }
 
 func inspectProject(_ *cobra.Command, args []string) {
 	if len(args) != 1 {
-		printer.ErrorText(fmt.Sprintf("Expected 1 argument [id], but got %d", len(args)))
+		printer.ErrorText(fmt.Sprintf("Expected 1 argument [id|identifier], but got %d", len(args)))
 		return
 	}
 
-	id, err := strconv.ParseUint(args[0], 10, 64)
-	if err != nil {
-		printer.ErrorText(fmt.Sprintf("'%s' is an invalid project id. Must be a number.", args[0]))
+	if err := projects.ValidateIdentifier(args[0]); err != nil {
+		printer.ErrorText(err.Error())
 		return
 	}
 
-	project, err := projects.Lookup(id)
+	project, err := projects.Lookup(args[0])
 	if err != nil {
 		printer.Error(err)
 		return

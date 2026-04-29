@@ -57,19 +57,21 @@ func (r *JsonRenderer) WorkPackages(wps []*models.WorkPackage) {
 
 func (r *JsonRenderer) Project(p *models.Project) {
 	printJson(struct {
-		Id   uint64 `json:"id"`
-		Name string `json:"name"`
-	}{p.Id, p.Name})
+		Id         uint64 `json:"id"`
+		Identifier string `json:"identifier"`
+		Name       string `json:"name"`
+	}{p.Id, p.Identifier, p.Name})
 }
 
 func (r *JsonRenderer) Projects(ps []*models.Project) {
 	type item struct {
-		Id   uint64 `json:"id"`
-		Name string `json:"name"`
+		Id         uint64 `json:"id"`
+		Identifier string `json:"identifier"`
+		Name       string `json:"name"`
 	}
 	out := make([]item, len(ps))
 	for i, p := range ps {
-		out[i] = item{p.Id, p.Name}
+		out[i] = item{p.Id, p.Identifier, p.Name}
 	}
 	printJson(out)
 }

@@ -18,7 +18,7 @@ func Lookup(id uint64) (*models.Budget, error) {
 	return element.Convert(), nil
 }
 
-func AllForProject(projectId uint64) ([]*models.Budget, error) {
+func AllForProject(projectId string) ([]*models.Budget, error) {
 	query := requests.NewPaginatedQuery(-1, nil)
 	response, err := requests.Get(paths.ProjectBudgets(projectId), &query)
 	if err != nil {

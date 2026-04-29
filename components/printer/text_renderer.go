@@ -172,7 +172,7 @@ func printBudget(b *models.Budget, maxIdLength int) {
 
 func printProject(p *models.Project) {
 	id := fmt.Sprintf("#%d", p.Id)
-	activePrinter.Printf("%s %s\n", Red(id), Cyan(p.Name))
+	activePrinter.Printf("%s %s (%s)\n", Red(id), Cyan(p.Name), p.Identifier)
 }
 
 func printUser(u *models.User, maxIdLength int) {

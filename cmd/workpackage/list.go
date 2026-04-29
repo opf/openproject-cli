@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	opErrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
@@ -20,7 +21,7 @@ import (
 
 var listAssignee string
 var listParentId uint64
-var listProjectId uint64
+var listProjectId string
 var listShowTotal bool
 var listStatusFilter string
 var listTypeFilter string
@@ -47,6 +48,13 @@ func listWorkPackages(_ *cobra.Command, _ []string) {
 		return
 	}
 
+	if len(listProjectId) > 0 {
+		if err := projects.ValidateIdentifier(listProjectId); err != nil {
+			printer.ErrorText(fmt.Sprintf("--project: %s", err.Error()))
+			return
+		}
+	}
+
 	if listParentId > 0 {
 		if _, err := work_packages.Lookup(listParentId); err != nil {
 			printer.ErrorText(fmt.Sprintf("--parent-id: work package #%d not found.", listParentId))
@@ -66,6 +74,8 @@ func listWorkPackages(_ *cobra.Command, _ []string) {
 		printer.Number(collection.Total)
 	case err == nil:
 		printer.WorkPackages(collection.Items)
+	case isNotFound(err) && len(listProjectId) > 0:
+		printer.ErrorText(fmt.Sprintf("--project: no project found with identifier or ID '%s'", listProjectId))
 	default:
 		printer.Error(err)
 	}
@@ -73,15 +83,15 @@ func listWorkPackages(_ *cobra.Command, _ []string) {
 
 func validateCommandFlagComposition() (errorText string) {
 	switch {
-	case len(activeFilters["version"].Value()) != 0 && listProjectId == 0:
-		return "Version flag (--version) can only be used in conjunction with projectId flag (-p or --project-id)."
-	case len(activeFilters["notVersion"].Value()) != 0 && listProjectId == 0:
-		return "Not version filter flag (--not-version) can only be used in conjunction with projectId flag (-p or --project-id)."
+	case len(activeFilters["version"].Value()) != 0 && len(listProjectId) == 0:
+		return "Version flag (--version) can only be used in conjunction with project flag (-p or --project)."
+	case len(activeFilters["notVersion"].Value()) != 0 && len(listProjectId) == 0:
+		return "Not version filter flag (--not-version) can only be used in conjunction with project flag (-p or --project)."
 	case len(activeFilters["subProject"].Value()) > 0 || len(activeFilters["notSubProject"].Value()) > 0:
-		if !listIncludeSubProjects || listProjectId == 0 {
+		if !listIncludeSubProjects || len(listProjectId) == 0 {
 			return `Sub project filter flags (--sub-project or --not-sub-project) can only be used
 in conjunction with setting the flag --include-sub-projects and setting a
-project with the projectId flag (-p or --project-id).`
+project with the project flag (-p or --project).`
 		}
 	}
 
@@ -116,8 +126,8 @@ func filterOptions() *map[work_packages.FilterOption]string {
 		options[work_packages.Parent] = strconv.FormatUint(listParentId, 10)
 	}
 
-	if listProjectId > 0 {
-		options[work_packages.Project] = strconv.FormatUint(listProjectId, 10)
+	if len(listProjectId) > 0 {
+		options[work_packages.Project] = listProjectId
 	}
 
 	if len(listAssignee) > 0 {
@@ -141,7 +151,7 @@ func validatedVersionId(version string) string {
 		printer.Error(err)
 	}
 
-	versions, err := projects.AvailableVersions(project.Id)
+	versions, err := projects.AvailableVersions(project.Identifier)
 	if err != nil {
 		printer.Error(err)
 	}
@@ -152,9 +162,9 @@ func validatedVersionId(version string) string {
 
 	if len(filteredVersions) != 1 {
 		printer.Info(fmt.Sprintf(
-			"No unique available version from input %s found for projectId %s. Please use one of the versions listed below.",
+			"No unique available version from input %s found for project %s. Please use one of the versions listed below.",
 			printer.Cyan(version),
-			printer.Red(fmt.Sprintf("#%d", project.Id)),
+			printer.Red(project.Identifier),
 		))
 
 		printer.Versions(versions)
@@ -163,6 +173,13 @@ func validatedVersionId(version string) string {
 	}
 
 	return strconv.FormatUint(filteredVersions[0].Id, 10)
+}
+
+func isNotFound(err error) bool {
+	if respErr, ok := err.(*opErrors.ResponseError); ok {
+		return respErr.Status() == 404
+	}
+	return false
 }
 
 func validateFilterValue(filter work_packages.FilterOption, value string) string {

@@ -223,7 +223,9 @@ of examples, that might be useful for a great number of people.
 # Creating a work package in a project only by subject.
 # Work package is created with many default values (as for type and status),
 # very similar to how a work package is created inline in a work package table.
+# --project accepts either a numeric ID or the project identifier from the URL.
 op work-package create --project 11 'Document new CLI tool'
+op work-package create --project my-project 'Document new CLI tool'
 
 # Same command with shorthands and directly open it in a browser to continue working on it.
 op work-package create -p11 'Document new CLI tool' -o

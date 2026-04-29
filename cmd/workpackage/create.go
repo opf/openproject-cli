@@ -8,11 +8,12 @@ import (
 
 	"github.com/opf/openproject-cli/components/launch"
 	"github.com/opf/openproject-cli/components/printer"
+	"github.com/opf/openproject-cli/components/resources/projects"
 	"github.com/opf/openproject-cli/components/resources/work_packages"
 	"github.com/opf/openproject-cli/components/routes"
 )
 
-var createProjectId uint64
+var createProjectId string
 var createOpenInBrowser bool
 var createTypeFlag string
 var createAssigneeFlag uint64
@@ -32,6 +33,11 @@ func createWorkPackage(cmd *cobra.Command, args []string) {
 	}
 
 	subject := args[0]
+	if err := projects.ValidateIdentifier(createProjectId); err != nil {
+		printer.ErrorText(fmt.Sprintf("--project: %s", err.Error()))
+		return
+	}
+
 	workPackage, err := work_packages.Create(createProjectId, createOptions(cmd, subject))
 	if err != nil {
 		printer.Error(err)

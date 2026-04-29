@@ -10,19 +10,19 @@ func Principals() string {
 	return Root() + "/principals"
 }
 
-func Project(id uint64) string {
-	return Projects() + fmt.Sprintf("/%d", id)
+func Project(id string) string {
+	return Projects() + "/" + id
 }
 
 func Projects() string {
 	return Root() + "/projects"
 }
 
-func ProjectVersions(projectId uint64) string {
+func ProjectVersions(projectId string) string {
 	return Project(projectId) + "/versions"
 }
 
-func ProjectWorkPackages(projectId uint64) string {
+func ProjectWorkPackages(projectId string) string {
 	return Project(projectId) + "/work_packages"
 }
 
@@ -34,7 +34,7 @@ func Budgets() string {
 	return Root() + "/budgets"
 }
 
-func ProjectBudgets(projectId uint64) string {
+func ProjectBudgets(projectId string) string {
 	return Project(projectId) + "/budgets"
 }
 

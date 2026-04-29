@@ -16,12 +16,12 @@ func initListFlags() {
 		0,
 		"Show only direct children of the specified work package ID")
 
-	listCmd.Flags().Uint64VarP(
+	listCmd.Flags().StringVarP(
 		&listProjectId,
-		"project-id",
+		"project",
 		"p",
-		0,
-		"Show only work packages within the specified projectId")
+		"",
+		"Show only work packages within the specified project (numeric ID or identifier)")
 
 	listCmd.Flags().StringVarP(
 		&listStatusFilter,

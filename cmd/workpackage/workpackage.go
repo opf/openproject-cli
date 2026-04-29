@@ -11,12 +11,12 @@ var RootCmd = &cobra.Command{
 func init() {
 	initListFlags()
 
-	createCmd.Flags().Uint64VarP(
+	createCmd.Flags().StringVarP(
 		&createProjectId,
 		"project",
 		"p",
-		0,
-		"Project ID to create the work package in",
+		"",
+		"Project numeric ID or identifier to create the work package in",
 	)
 	_ = createCmd.MarkFlagRequired("project")
 	createCmd.Flags().BoolVarP(

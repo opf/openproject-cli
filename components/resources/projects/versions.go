@@ -8,7 +8,7 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
-func AvailableVersions(projectId uint64) ([]*models.Version, error) {
+func AvailableVersions(projectId string) ([]*models.Version, error) {
 	response, err := requests.Get(paths.ProjectVersions(projectId), nil)
 	if err != nil {
 		return nil, err

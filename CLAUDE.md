@@ -80,6 +80,7 @@ API response → `parser.Parse[SomethingDto]()` → `dto.Convert()` → `models.
 - All API paths are defined in `components/paths/paths.go`
 - Functions are named after the resource: `WorkPackage(id)`, `WorkPackages()`, `ProjectWorkPackages(projectId)`
 - All paths are relative (no host), starting with `/api/v3`
+- Project path functions (`Project`, `ProjectWorkPackages`, `ProjectVersions`, `ProjectBudgets`) take a `string` that may be either a numeric ID (`"42"`) or a human-readable identifier (`"my-project"`); the OpenProject API accepts both forms at the same endpoints
 
 ### Printer conventions
 

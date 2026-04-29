@@ -21,6 +21,6 @@ func WorkPackageUrl(workPackage *models.WorkPackage) *url.URL {
 
 func ProjectUrl(project *models.Project) *url.URL {
 	routeUrl := *host
-	routeUrl.Path = fmt.Sprintf("projects/%d", project.Id)
+	routeUrl.Path = fmt.Sprintf("projects/%s", project.Identifier)
 	return &routeUrl
 }

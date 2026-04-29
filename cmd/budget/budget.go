@@ -9,12 +9,12 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
-	listCmd.Flags().Uint64VarP(
+	listCmd.Flags().StringVarP(
 		&listProjectId,
 		"project",
 		"p",
-		0,
-		"Project id",
+		"",
+		"Project numeric ID or identifier",
 	)
 
 	_ = listCmd.MarkFlagRequired("project")
