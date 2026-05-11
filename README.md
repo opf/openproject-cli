@@ -91,6 +91,18 @@ Open a new shell and completion should work by using the `TAB` key as usual.
 The OpenProject CLI commands are structured in a common, human-readable pattern. Every command is built
 as `op VERB RESOURCE [additional information]`. You will see plenty of examples within this section.
 
+### Login
+
+You are able to login interactively to your openproject instance by running:
+```shell
+op login
+```
+
+The login command takes the optional flags `--host` and `--api-key` in order to login non-interactively:
+```shell
+op login --host https://openproject.org --api-key aaaaabbbbbccccdddddeeeeefffffggggghhhhhiiiiijjjjjkkkkklllllmmmmm
+```
+
 ### Discoverability
 
 Discoverability is key. As we won't document every single command within this README, it is important for the CLI tool,
