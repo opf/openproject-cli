@@ -61,7 +61,7 @@ If you already have the Go toolchain installed on your system, you can install t
 command:
 
 ```shell
-go install github.com/opf/openproject-cli
+go install github.com/opf/openproject-cli@latest
 ```
 
 This will install the most current commit development version for now. Keep in mind that the resulting command is also
