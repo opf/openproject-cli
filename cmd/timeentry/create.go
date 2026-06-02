@@ -8,9 +8,10 @@ import (
 
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/resources/time_entries"
+	"github.com/opf/openproject-cli/components/resources/work_packages"
 )
 
-var createWorkPackageId uint64
+var createWorkPackageId string
 var createHours float64
 var createActivity string
 var createSpentOn string
@@ -25,8 +26,13 @@ var createCmd = &cobra.Command{
 }
 
 func createTimeEntry(cmd *cobra.Command, _ []string) {
+	if err := work_packages.ValidateIdentifier(createWorkPackageId); err != nil {
+		printer.ErrorText(err.Error())
+		return
+	}
+
 	options := map[time_entries.CreateOption]string{
-		time_entries.CreateWorkPackage: strconv.FormatUint(createWorkPackageId, 10),
+		time_entries.CreateWorkPackage: createWorkPackageId,
 		time_entries.CreateHours:       strconv.FormatFloat(createHours, 'f', -1, 64),
 	}
 

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/go-git/go-git/v5"
@@ -18,7 +17,7 @@ import (
 var startWorkPackageCmd = &cobra.Command{
 	Use:   "workpackage [id]",
 	Short: "Starts the work on a work package",
-	Long:  "Creates a branch based on the workpackage id, subject and type. Switches to the branch after creation.",
+	Long:  "Creates a branch based on the work package identifier (numeric ID or project-based, e.g. PROJ-123), subject and type. Switches to the branch after creation.",
 	Run:   startWorkPackage,
 }
 
@@ -54,19 +53,18 @@ func startWorkPackage(_ *cobra.Command, args []string) {
 	printer.Info(fmt.Sprintf("Switched to a new branch: %s", branchName))
 }
 
-func checkArgumentsForId(args []string) uint64 {
+func checkArgumentsForId(args []string) string {
 	if len(args) != 1 {
 		printer.ErrorText(fmt.Sprintf("Expected 1 argument [id], but got %d", len(args)))
 		os.Exit(1)
 	}
 
-	id, err := strconv.ParseUint(args[0], 10, 64)
-	if err != nil {
-		printer.ErrorText(fmt.Sprintf("'%s' is an invalid work package id. Must be a number.", args[0]))
+	if err := work_packages.ValidateIdentifier(args[0]); err != nil {
+		printer.ErrorText(err.Error())
 		os.Exit(1)
 	}
 
-	return id
+	return args[0]
 }
 
 func handleGitError(err error) {
@@ -76,7 +74,7 @@ func handleGitError(err error) {
 	}
 }
 
-func deriveBranchName(id uint64) (string, error) {
+func deriveBranchName(id string) (string, error) {
 	workPackage, err := work_packages.Lookup(id)
 	if err != nil {
 		return "", err

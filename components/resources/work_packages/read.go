@@ -8,7 +8,7 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
-func Lookup(id uint64) (*models.WorkPackage, error) {
+func Lookup(id string) (*models.WorkPackage, error) {
 	workPackage, err := fetch(id)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func All(filterOptions *map[FilterOption]string, query requests.Query, showOnlyT
 	return workPackageCollection.Convert(), nil
 }
 
-func AvailableTypes(id uint64) ([]*models.Type, error) {
+func AvailableTypes(id string) ([]*models.Type, error) {
 	workPackageDto, err := fetch(id)
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func AvailableTypes(id uint64) ([]*models.Type, error) {
 	return types.Convert(), nil
 }
 
-func fetch(id uint64) (*dtos.WorkPackageDto, error) {
+func fetch(id string) (*dtos.WorkPackageDto, error) {
 	response, err := requests.Get(paths.WorkPackage(id), nil)
 	if err != nil {
 		return nil, err

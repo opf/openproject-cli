@@ -9,12 +9,12 @@ func initListFlags() {
 		"Assignee of the work package (can be ID or 'me')",
 	)
 
-	listCmd.Flags().Uint64VarP(
+	listCmd.Flags().StringVarP(
 		&listParentId,
 		"parent-id",
 		"",
-		0,
-		"Show only direct children of the specified work package ID")
+		"",
+		"Show only direct children of the specified work package ID or identifier")
 
 	listCmd.Flags().StringVarP(
 		&listProjectId,

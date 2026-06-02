@@ -74,14 +74,14 @@ func Users() string {
 	return Root() + "/users"
 }
 
-func WorkPackage(id uint64) string {
-	return WorkPackages() + fmt.Sprintf("/%d", id)
+func WorkPackage(id string) string {
+	return WorkPackages() + "/" + id
 }
 
 func WorkPackages() string {
 	return Root() + "/work_packages"
 }
 
-func WorkPackageActivities(id uint64) string {
+func WorkPackageActivities(id string) string {
 	return WorkPackage(id) + "/activities"
 }

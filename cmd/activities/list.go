@@ -8,7 +8,7 @@ import (
 	"github.com/opf/openproject-cli/components/resources/work_packages"
 )
 
-var listWpId uint64
+var listWpId string
 
 var listCmd = &cobra.Command{
 	Use:   "list",
@@ -18,10 +18,14 @@ var listCmd = &cobra.Command{
 }
 
 func listActivities(_ *cobra.Command, _ []string) {
+	if err := work_packages.ValidateIdentifier(listWpId); err != nil {
+		printer.ErrorText(err.Error())
+		return
+	}
 	listWorkPackageActivities(listWpId)
 }
 
-func listWorkPackageActivities(wpId uint64) {
+func listWorkPackageActivities(wpId string) {
 	acts, err := work_packages.Activities(wpId)
 	if err != nil {
 		printer.ErrorText(err.Error())

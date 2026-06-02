@@ -2,7 +2,6 @@ package workpackage
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/spf13/cobra"
 
@@ -18,7 +17,7 @@ var inspectListAvailableTypes bool
 var inspectCmd = &cobra.Command{
 	Use:   "inspect [id]",
 	Short: "Show details about a work package",
-	Long:  "Show detailed information of a work package referenced by it's ID.",
+	Long:  "Show detailed information of a work package referenced by its numeric ID (e.g. 12345) or project-based identifier (e.g. PROJ-123).",
 	Run:   inspectWorkPackage,
 }
 
@@ -28,9 +27,9 @@ func inspectWorkPackage(_ *cobra.Command, args []string) {
 		return
 	}
 
-	id, err := strconv.ParseUint(args[0], 10, 64)
-	if err != nil {
-		printer.ErrorText(fmt.Sprintf("'%s' is an invalid work package id. Must be a number.", args[0]))
+	id := args[0]
+	if err := work_packages.ValidateIdentifier(id); err != nil {
+		printer.ErrorText(err.Error())
 		return
 	}
 
@@ -58,7 +57,7 @@ func inspectWorkPackage(_ *cobra.Command, args []string) {
 	}
 }
 
-func inspectAvailableTypes(id uint64) {
+func inspectAvailableTypes(id string) {
 	types, err := work_packages.AvailableTypes(id)
 	if err != nil {
 		printer.Error(err)

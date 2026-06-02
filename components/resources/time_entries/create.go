@@ -36,15 +36,12 @@ var createMap = map[CreateOption]func(entry *dtos.TimeEntryDto, input string) er
 	CreateComment:     commentCreate,
 }
 
+// input is validated by the caller via work_packages.ValidateIdentifier before reaching here
 func workPackageCreate(entry *dtos.TimeEntryDto, input string) error {
-	var id uint64
-	if _, err := fmt.Sscanf(input, "%d", &id); err != nil {
-		return fmt.Errorf("invalid work package id %q: must be a number", input)
-	}
 	if entry.Links == nil {
 		entry.Links = &dtos.TimeEntryLinksDto{}
 	}
-	entry.Links.WorkPackage = &dtos.LinkDto{Href: paths.WorkPackage(id)}
+	entry.Links.WorkPackage = &dtos.LinkDto{Href: paths.WorkPackage(input)}
 	return nil
 }
 

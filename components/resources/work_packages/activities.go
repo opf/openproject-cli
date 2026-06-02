@@ -9,7 +9,7 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
-func Activities(id uint64) (activites []*models.Activity, err error) {
+func Activities(id string) (activites []*models.Activity, err error) {
 	response, err := requests.Get(paths.WorkPackageActivities(id), nil)
 	if err != nil {
 		printer.Error(err)

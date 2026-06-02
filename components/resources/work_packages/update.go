@@ -35,7 +35,7 @@ var patchMap = map[UpdateOption]func(patch, workPackage *dtos.WorkPackageDto, in
 	UpdateSubject:     subjectPatch,
 }
 
-func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, error) {
+func Update(id string, options map[UpdateOption]string) (*models.WorkPackage, error) {
 	workPackage, err := fetch(id)
 	if err != nil {
 		return nil, err

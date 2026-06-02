@@ -20,7 +20,7 @@ var updateTypeFlag string
 var updateCmd = &cobra.Command{
 	Use:   "update [id]",
 	Short: "Updates the work package",
-	Long: `Update a work package. Each update
+	Long: `Update a work package referenced by its numeric ID (e.g. 12345) or project-based identifier (e.g. PROJ-123). Each update
 provided by a flag is executed on its own.`,
 	Run: updateWorkPackage,
 }
@@ -31,9 +31,9 @@ func updateWorkPackage(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	id, err := strconv.ParseUint(args[0], 10, 64)
-	if err != nil {
-		printer.ErrorText(fmt.Sprintf("'%s' is an invalid work package id. Must be a number.", args[0]))
+	id := args[0]
+	if err := work_packages.ValidateIdentifier(id); err != nil {
+		printer.ErrorText(err.Error())
 		return
 	}
 
