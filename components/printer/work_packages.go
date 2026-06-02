@@ -22,11 +22,24 @@ func idLength(id uint64) int {
 	return len(strconv.FormatUint(id, 10)) + 1
 }
 
+// formatDisplayId returns the display identifier: "SJF-13" for semantic IDs,
+// "#42" for numeric-only systems (where displayId equals the numeric id).
+func formatDisplayId(wp *models.WorkPackage) string {
+	if wp.DisplayId == strconv.FormatUint(wp.Id, 10) {
+		return fmt.Sprintf("#%d", wp.Id)
+	}
+	return wp.DisplayId
+}
+
+func displayIdLength(wp *models.WorkPackage) int {
+	return utf8.RuneCountInString(formatDisplayId(wp))
+}
+
 func printHeadline(workPackage *models.WorkPackage, maxIdLength, maxStatusLength, maxTypeLength int) {
 	var parts []string
 
-	diff := maxIdLength - idLength(workPackage.Id)
-	idStr := fmt.Sprintf("%s#%d", indent(diff), workPackage.Id)
+	diff := maxIdLength - displayIdLength(workPackage)
+	idStr := fmt.Sprintf("%s%s", indent(diff), formatDisplayId(workPackage))
 	parts = append(parts, Red(idStr))
 
 	diff = maxTypeLength - utf8.RuneCountInString(workPackage.Type)

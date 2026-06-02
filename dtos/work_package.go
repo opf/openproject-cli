@@ -17,6 +17,7 @@ type WorkPackageLinksDto struct {
 
 type WorkPackageDto struct {
 	Id          int64                `json:"id,omitempty"`
+	DisplayId   string               `json:"displayId,omitempty"`
 	Subject     string               `json:"subject,omitempty"`
 	Links       *WorkPackageLinksDto `json:"_links,omitempty"`
 	Description *LongTextDto         `json:"description,omitempty"`
@@ -66,6 +67,7 @@ func (dto *WorkPackageDto) Convert() *models.WorkPackage {
 
 	return &models.WorkPackage{
 		Id:          uint64(dto.Id),
+		DisplayId:   dto.DisplayId,
 		Subject:     dto.Subject,
 		Type:        wpType,
 		Assignee:    assignee,

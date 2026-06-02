@@ -15,7 +15,7 @@ func Init(h *url.URL) {
 
 func WorkPackageUrl(workPackage *models.WorkPackage) *url.URL {
 	routeUrl := *host
-	routeUrl.Path = fmt.Sprintf("work_packages/%d", workPackage.Id)
+	routeUrl.Path = fmt.Sprintf("wp/%s", workPackage.DisplayId)
 	return &routeUrl
 }
 

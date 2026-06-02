@@ -28,7 +28,7 @@ func (r *TextRenderer) Budgets(bs []*models.Budget) {
 }
 
 func (r *TextRenderer) WorkPackage(wp *models.WorkPackage) {
-	printHeadline(wp, idLength(wp.Id), 0, utf8.RuneCountInString(wp.Type))
+	printHeadline(wp, displayIdLength(wp), 0, utf8.RuneCountInString(wp.Type))
 	printAttributes(wp)
 	activePrinter.Println()
 	printOpenLink(wp)
@@ -41,7 +41,7 @@ func (r *TextRenderer) WorkPackages(wps []*models.WorkPackage) {
 	var maxTypeLength = 0
 	var maxStatusLength = 0
 	for _, w := range wps {
-		maxIdLength = common.Max(maxIdLength, idLength(w.Id))
+		maxIdLength = common.Max(maxIdLength, displayIdLength(w))
 		maxTypeLength = common.Max(maxTypeLength, utf8.RuneCountInString(w.Type))
 		maxStatusLength = common.Max(maxStatusLength, utf8.RuneCountInString(w.Status))
 	}

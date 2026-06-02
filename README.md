@@ -241,14 +241,18 @@ op notification list --reason mentioned
 op work-package list --assignee me
 
 # Get a list of direct children of a work package
+# --parent-id accepts either a numeric ID or a project-based identifier (e.g. PROJ-123)
 op work-package list --parent-id 42
+op work-package list --parent-id PROJ-123
 ```
 
 #### Updating
 
 ```shell
 # Executing a custom action on a work package
+# The ID argument accepts either a numeric ID or a project-based identifier (e.g. PROJ-123)
 op work-package update 42 --action Claim
+op work-package update PROJ-123 --action Claim
 
 # Batch updating some properties of a work package
 # Valid input will get processed, while invalid (e.g. wrongly typed) input will get omitted
@@ -263,7 +267,9 @@ op work-package update 42 --attach ./Downloads/Report.pdf
 ```shell
 # Inspecting a work package with more details,
 # then in the work package list command
+# Accepts either a numeric ID or a project-based identifier (e.g. PROJ-123)
 op work-package inspect 42
+op work-package inspect PROJ-123
 ```
 
 ## Creating a release

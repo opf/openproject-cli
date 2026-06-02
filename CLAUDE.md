@@ -48,6 +48,7 @@ API response → `parser.Parse[SomethingDto]()` → `dto.Convert()` → `models.
 - Every DTO implements `Convert() *models.Something` to produce a domain model
 - Collections follow the pattern: `<Resource>CollectionDto` with `Embedded.<Resource>Elements`
 - `omitempty` on all JSON fields in DTOs used for POST/PATCH bodies
+- `WorkPackageDto` includes a `displayId` field (camelCase, from the API) mapped to `DisplayId` on the model; always present — holds the semantic identifier (e.g. `PROJ-123`) when project-based identifiers are enabled, or the numeric id as a string otherwise
 
 ### Command conventions
 
@@ -89,6 +90,8 @@ API response → `parser.Parse[SomethingDto]()` → `dto.Convert()` → `models.
 - Color scheme: Red = ID, Green = type, Cyan = subject/name, Yellow = status
 - `printer.Error(err)` for errors, `printer.ErrorText(msg)` for plain error strings
 - `printer.Info(msg)` for progress messages, `printer.Done()` after successful mutations
+- Work packages display `DisplayId` from the API: semantic form (e.g. `PROJ-123`) when project-based identifiers are enabled, `#N` for numeric-only systems (where `displayId` equals the numeric id)
+- Work package browser URLs use the short `wp/<displayId>` form (e.g. `wp/PROJ-123` or `wp/42`)
 
 ## Testing conventions
 

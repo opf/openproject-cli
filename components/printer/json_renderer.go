@@ -32,25 +32,27 @@ func (r *JsonRenderer) Budgets(bs []*models.Budget) {
 func (r *JsonRenderer) WorkPackage(wp *models.WorkPackage) {
 	printJson(struct {
 		Id          uint64 `json:"id"`
+		DisplayId   string `json:"display_id,omitempty"`
 		Subject     string `json:"subject"`
 		Type        string `json:"type"`
 		Status      string `json:"status"`
 		Assignee    string `json:"assignee"`
 		Description string `json:"description"`
-	}{wp.Id, wp.Subject, wp.Type, wp.Status, wp.Assignee, wp.Description})
+	}{wp.Id, wp.DisplayId, wp.Subject, wp.Type, wp.Status, wp.Assignee, wp.Description})
 }
 
 func (r *JsonRenderer) WorkPackages(wps []*models.WorkPackage) {
 	type item struct {
-		Id       uint64 `json:"id"`
-		Subject  string `json:"subject"`
-		Type     string `json:"type"`
-		Status   string `json:"status"`
-		Assignee string `json:"assignee"`
+		Id        uint64 `json:"id"`
+		DisplayId string `json:"display_id,omitempty"`
+		Subject   string `json:"subject"`
+		Type      string `json:"type"`
+		Status    string `json:"status"`
+		Assignee  string `json:"assignee"`
 	}
 	out := make([]item, len(wps))
 	for i, wp := range wps {
-		out[i] = item{wp.Id, wp.Subject, wp.Type, wp.Status, wp.Assignee}
+		out[i] = item{wp.Id, wp.DisplayId, wp.Subject, wp.Type, wp.Status, wp.Assignee}
 	}
 	printJson(out)
 }
