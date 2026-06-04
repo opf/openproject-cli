@@ -2,7 +2,6 @@ package printer
 
 import (
 	"encoding/json"
-	"fmt"
 	"sort"
 
 	"github.com/opf/openproject-cli/models"
@@ -253,8 +252,8 @@ func (r *JsonRenderer) Number(n int64) {
 func printJson(v any) {
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
-		fmt.Printf("{\"error\": \"failed to serialize output: %s\"}\n", err)
+		activePrinter.Printf("{\"error\": \"failed to serialize output: %s\"}\n", err)
 		return
 	}
-	fmt.Println(string(b))
+	activePrinter.Println(string(b))
 }

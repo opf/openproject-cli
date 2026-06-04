@@ -68,7 +68,11 @@ projects of your OpenProject instance.`,
 			os.Exit(1)
 		}
 
-		parse, _ := url.Parse(host)
+		parse, err := url.Parse(host)
+		if err != nil {
+			printer.ErrorText(fmt.Sprintf("invalid host URL %q: %s", host, err))
+			os.Exit(1)
+		}
 		requests.Init(parse, token, Verbose)
 		routes.Init(parse)
 		return nil

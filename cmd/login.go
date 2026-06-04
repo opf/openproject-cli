@@ -70,7 +70,7 @@ func login(cmd *cobra.Command, _ []string) {
 	}
 
 	for {
-		fmt.Printf("OpenProject API Token (Visit %s/my/access_tokens to generate one): ", hostUrl)
+		printer.Input(fmt.Sprintf("OpenProject API Token (Visit %s/my/access_tokens to generate one): ", hostUrl))
 		ok, t := requestApiToken()
 		if !ok {
 			printer.ErrorText(tokenInputError)

@@ -15,6 +15,8 @@ func Init(h *url.URL) {
 
 func WorkPackageUrl(workPackage *models.WorkPackage) *url.URL {
 	routeUrl := *host
+	// DisplayId is always non-empty: the server code sets it to `identifier.presence || id`
+	// (in WorkPackage::SemanticIdentifier), so it falls back to the numeric id automatically.
 	routeUrl.Path = fmt.Sprintf("wp/%s", workPackage.DisplayId)
 	return &routeUrl
 }
