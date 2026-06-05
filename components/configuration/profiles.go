@@ -187,8 +187,9 @@ func (f *iniFile) marshal() []byte {
 func readOrMigrate(data []byte) (*iniFile, bool) {
 	content := strings.TrimSpace(string(data))
 
-	// Old format: no section headers
-	if !strings.Contains(content, "[") && content != "" {
+	// Old format: no section headers. Check prefix rather than Contains so that
+	// IPv6 host URLs (e.g. http://[::1]) are not mis-detected as INI files.
+	if !strings.HasPrefix(content, "[") && content != "" {
 		clean := common.SanitizeLineBreaks(content)
 		parts := strings.SplitN(clean, " ", 2)
 		if len(parts) == 2 && parts[0] != "" && parts[1] != "" {

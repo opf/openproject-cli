@@ -18,6 +18,9 @@ type BudgetCollectionDto struct {
 /////////////// MODEL CONVERSION ///////////////
 
 func (dto *BudgetCollectionDto) Convert() []*models.Budget {
+	if dto.Embedded == nil {
+		return []*models.Budget{}
+	}
 	budgets := make([]*models.Budget, len(dto.Embedded.Elements))
 	for i, b := range dto.Embedded.Elements {
 		budgets[i] = b.Convert()

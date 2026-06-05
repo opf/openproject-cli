@@ -345,6 +345,22 @@ func TestMigration_oldFormatMigratedToDefault(t *testing.T) {
 	}
 }
 
+func TestMigration_IPv6HostMigratedCorrectly(t *testing.T) {
+	setupTempConfig(t)
+	writeRaw(t, "http://[::1]:8080 mytoken")
+
+	host, token, err := configuration.ReadConfig("default")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if host != "http://[::1]:8080" {
+		t.Errorf("host = %q, want %q", host, "http://[::1]:8080")
+	}
+	if token != "mytoken" {
+		t.Errorf("token = %q, want %q", token, "mytoken")
+	}
+}
+
 func TestMigration_oldFormatRewrittenAsIni(t *testing.T) {
 	setupTempConfig(t)
 	writeRaw(t, "https://legacy.example.com legacytoken")

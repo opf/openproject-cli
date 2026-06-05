@@ -60,10 +60,12 @@ func listWorkPackages(_ *cobra.Command, _ []string) {
 			printer.ErrorText(fmt.Sprintf("--parent-id: %s", err.Error()))
 			return
 		}
-		if _, err := work_packages.Lookup(listParentId); err != nil {
+		parentWp, err := work_packages.Lookup(listParentId)
+		if err != nil {
 			printer.ErrorText(fmt.Sprintf("--parent-id: work package %s not found.", listParentId))
 			return
 		}
+		listParentId = fmt.Sprintf("%d", parentWp.Id)
 	}
 
 	query, err := buildQuery()

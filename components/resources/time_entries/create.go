@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"strconv"
 	"strings"
 	"time"
 
@@ -46,8 +47,8 @@ func workPackageCreate(entry *dtos.TimeEntryDto, input string) error {
 }
 
 func hoursCreate(entry *dtos.TimeEntryDto, input string) error {
-	var hours float64
-	if _, err := fmt.Sscanf(input, "%f", &hours); err != nil {
+	hours, err := strconv.ParseFloat(input, 64)
+	if err != nil {
 		return fmt.Errorf("invalid hours %q: must be a number", input)
 	}
 	if hours <= 0 {
@@ -119,8 +120,8 @@ func spentOnCreate(entry *dtos.TimeEntryDto, input string) error {
 }
 
 func userCreate(entry *dtos.TimeEntryDto, input string) error {
-	var id uint64
-	if _, err := fmt.Sscanf(input, "%d", &id); err != nil {
+	id, err := strconv.ParseUint(input, 10, 64)
+	if err != nil {
 		return fmt.Errorf("invalid user id %q: must be a number", input)
 	}
 	if entry.Links == nil {
