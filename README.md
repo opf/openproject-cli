@@ -121,6 +121,7 @@ op work-package
 create  -- Create work package in project
 inspect -- Inspect a work package
 list    -- Lists work packages
+search  -- Searches for work packages
 update  -- Update a work package
 
 # Discover flags: hitting completion key after
@@ -260,6 +261,15 @@ op work-package update 42 --subject 'The new subject' --status 'In Progress' --t
 
 # Uploading an attachment to a work package
 op work-package update 42 --attach ./Downloads/Report.pdf
+```
+
+#### Searching
+
+```shell
+# Search work packages by subject, type, status, project name, or identifier.
+# Multiple words are ANDed: all terms must match. Returns up to 100 results.
+op work-package search cascade
+op work-package search fix login
 ```
 
 #### Inspecting

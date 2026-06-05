@@ -99,5 +99,5 @@ func init() {
 		"List the available types on the work package.",
 	)
 
-	RootCmd.AddCommand(listCmd, createCmd, updateCmd, inspectCmd)
+	RootCmd.AddCommand(listCmd, createCmd, updateCmd, inspectCmd, searchCmd)
 }
