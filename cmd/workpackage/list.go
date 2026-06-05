@@ -8,7 +8,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	opErrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
@@ -181,12 +180,6 @@ func validatedVersionId(version string) string {
 	return strconv.FormatUint(filteredVersions[0].Id, 10)
 }
 
-func isNotFound(err error) bool {
-	if respErr, ok := err.(*opErrors.ResponseError); ok {
-		return respErr.Status() == 404
-	}
-	return false
-}
 
 func validateFilterValue(filter work_packages.FilterOption, value string) string {
 	matched, err := regexp.Match(work_packages.InputValidationExpression[filter], []byte(value))

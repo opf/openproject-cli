@@ -7,8 +7,11 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/opf/openproject-cli/components/printer"
+	"github.com/opf/openproject-cli/components/resources/projects"
 	"github.com/opf/openproject-cli/components/resources/work_packages"
 )
+
+var searchProjectId string
 
 var searchCmd = &cobra.Command{
 	Use:   "search <query>...",
@@ -19,19 +22,32 @@ Multiple words are ANDed: all terms must match. Returns up to 100 results.`,
 }
 
 func searchWorkPackages(_ *cobra.Command, args []string) {
-	if len(args) == 0 {
-		printer.ErrorText("Expected at least 1 argument [searchInput], but got 0")
+	query := strings.Join(args, " ")
+	if strings.TrimSpace(query) == "" {
+		printer.ErrorText("Search query cannot be blank")
 		return
 	}
 
-	collection, err := work_packages.Search(strings.Join(args, " "))
+	isProjectScoped := len(searchProjectId) > 0
+	if isProjectScoped {
+		if err := projects.ValidateIdentifier(searchProjectId); err != nil {
+			printer.ErrorText(fmt.Sprintf("--project: %s", err.Error()))
+			return
+		}
+	}
+
+	collection, err := work_packages.Search(query, searchProjectId)
 	if err != nil {
-		printer.Error(err)
+		if isNotFound(err) && isProjectScoped {
+			printer.ErrorText(fmt.Sprintf("--project: no project found with identifier or ID '%s'", searchProjectId))
+		} else {
+			printer.Error(err)
+		}
 		return
 	}
 
 	if len(collection) == 0 {
-		printer.Info(fmt.Sprintf("No work package found for search input %s.", printer.Cyan(args[0])))
+		printer.Info(fmt.Sprintf("No work package found for search input %s.", printer.Cyan(query)))
 	} else {
 		printer.WorkPackages(collection)
 	}

@@ -9,11 +9,16 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
-func Search(input string) ([]*models.WorkPackage, error) {
+func Search(input string, projectId string) ([]*models.WorkPackage, error) {
 	filters := []requests.Filter{resources.TypeAheadFilter(input)}
 	query := requests.NewFilterQuery(filters)
 
-	response, err := requests.Get(paths.WorkPackages(), &query)
+	requestUrl := paths.WorkPackages()
+	if projectId != "" {
+		requestUrl = paths.ProjectWorkPackages(projectId)
+	}
+
+	response, err := requests.Get(requestUrl, &query)
 	if err != nil {
 		return nil, err
 	}

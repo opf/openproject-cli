@@ -270,6 +270,10 @@ op work-package update 42 --attach ./Downloads/Report.pdf
 # Multiple words are ANDed: all terms must match. Returns up to 100 results.
 op work-package search cascade
 op work-package search fix login
+
+# Limit search to a specific project (numeric ID or identifier)
+op work-package search cascade --project my-project
+op work-package search cascade -p 11
 ```
 
 #### Inspecting

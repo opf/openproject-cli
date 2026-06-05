@@ -99,5 +99,13 @@ func init() {
 		"List the available types on the work package.",
 	)
 
+	searchCmd.Flags().StringVarP(
+		&searchProjectId,
+		"project",
+		"p",
+		"",
+		"Limit search to a project (numeric ID or identifier)",
+	)
+
 	RootCmd.AddCommand(listCmd, createCmd, updateCmd, inspectCmd, searchCmd)
 }
