@@ -37,6 +37,7 @@ func TestValidateIdentifier(t *testing.T) {
 		{"SJF_13", "underscore instead of hyphen separator"},
 		{"ABCDEFGHIJK-1", "project identifier exceeds 10 characters"},
 		{"SJF 13", "space"},
+		{"SJ+F-13", "plus sign in project identifier"},
 	}
 
 	for _, tc := range invalid {

@@ -11,10 +11,8 @@ func TestValidateIdentifier(t *testing.T) {
 		"devops",
 		"my-project",
 		"project_name",
-		"project+extra",
 		"42",
 		"ABC123",
-		"a-b_c+d",
 	}
 
 	for _, id := range valid {
@@ -33,6 +31,7 @@ func TestValidateIdentifier(t *testing.T) {
 		{"proj@name", "at sign"},
 		{"proj.name", "dot"},
 		{"proj!name", "exclamation mark"},
+		{"project+extra", "plus sign"},
 	}
 
 	for _, tc := range invalid {

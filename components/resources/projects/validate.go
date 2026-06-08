@@ -7,7 +7,8 @@ import (
 	"github.com/opf/openproject-cli/components/errors"
 )
 
-var invalidIdentifierChars = regexp.MustCompile(`[^a-zA-Z0-9\-_+]`)
+// Dashes are allowed for old project identifiers; semantic identifiers only allow letters, numbers and underscores.
+var invalidIdentifierChars = regexp.MustCompile(`[^a-zA-Z0-9\-_]`)
 
 func ValidateIdentifier(identifier string) error {
 	if identifier == "" {
@@ -15,7 +16,7 @@ func ValidateIdentifier(identifier string) error {
 	}
 	if invalidIdentifierChars.MatchString(identifier) {
 		return errors.Custom(fmt.Sprintf(
-			"invalid project %q: only letters, numbers, -, _, and + are allowed",
+			"invalid project %q: only letters, numbers, - and _ are allowed",
 			identifier,
 		))
 	}
