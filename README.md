@@ -286,6 +286,38 @@ op work-package inspect 42
 op work-package inspect PROJ-123
 ```
 
+## AI agent integration (Claude Code)
+
+The repository ships a [`.claude/op.md`](.claude/op.md) reference file that teaches Claude Code how to use `op`. Once set up, the agent will use `op` proactively whenever you discuss work packages, projects, or anything OpenProject-related.
+
+`~/.claude/CLAUDE.md` is Claude Code's global instruction file — create it if it doesn't exist yet.
+
+### Option A — available across all your projects (recommended)
+
+Symlink the file into your Claude configuration directory from the repo root:
+
+```shell
+ln -s $(pwd)/.claude/op.md ~/.claude/op.md
+```
+
+Then add a line to `~/.claude/CLAUDE.md`:
+
+```markdown
+Use `op.md` as a reference for all `op` CLI commands (work packages, projects, time entries, search, profiles…). Read it whenever the user asks about OpenProject or wants to use `op`.
+```
+
+The symlink keeps the file in sync automatically as you pull new versions.
+
+### Option B — available in this project only
+
+Add a line to the project's `CLAUDE.md` at the repo root:
+
+```markdown
+Use `.claude/op.md` as a reference for all `op` CLI commands (work packages, projects, time entries, search, profiles…). Read it whenever the user asks about OpenProject or wants to use `op`.
+```
+
+No copy or symlink needed — the path is relative to the project root.
+
 ## Creating a release
 
 Releases are triggered by pushing a git tag. The tag name becomes the version string embedded in the binaries.
