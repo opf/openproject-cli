@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -182,25 +183,53 @@ func (f *iniFile) marshal() []byte {
 	return []byte(sb.String())
 }
 
+// looksLikeHost reports whether s parses as an absolute URL with a scheme and
+// host. Used to distinguish a genuine old-format "host token" line from a
+// corrupt file, so garbage is not silently migrated into bogus credentials.
+func looksLikeHost(s string) bool {
+	u, err := url.Parse(s)
+	return err == nil && u.Scheme != "" && u.Host != ""
+}
+
 // readOrMigrate reads the config file and migrates it from the old
 // single-line "host token" format when needed. Returns (ini, migrated, error).
-func readOrMigrate(data []byte) (*iniFile, bool) {
+// A non-empty file that is neither valid INI nor a well-formed old-format line
+// is reported as corrupt rather than silently yielding empty/bogus credentials.
+func readOrMigrate(data []byte) (*iniFile, bool, error) {
 	content := strings.TrimSpace(string(data))
+	if content == "" {
+		return newIniFile(), false, nil
+	}
 
 	// Old format: no section headers. Check prefix rather than Contains so that
 	// IPv6 host URLs (e.g. http://[::1]) are not mis-detected as INI files.
-	if !strings.HasPrefix(content, "[") && content != "" {
+	if !strings.HasPrefix(content, "[") {
 		clean := common.SanitizeLineBreaks(content)
 		parts := strings.SplitN(clean, " ", 2)
-		if len(parts) == 2 && parts[0] != "" && parts[1] != "" {
+		// Require the first field to look like a real host URL, so a corrupt
+		// file is not migrated into bogus credentials just because it happens
+		// to contain a space.
+		if len(parts) == 2 && looksLikeHost(parts[0]) && parts[1] != "" {
 			f := newIniFile()
 			f.set(DefaultProfile, "host", parts[0])
 			f.set(DefaultProfile, "token", parts[1])
-			return f, true
+			return f, true, nil
 		}
+		return nil, false, invalidConfigError()
 	}
 
-	return parseIni(data), false
+	f := parseIni(data)
+	if len(f.sections) == 0 {
+		return nil, false, invalidConfigError()
+	}
+	return f, false, nil
+}
+
+func invalidConfigError() error {
+	return errors.Custom(fmt.Sprintf(
+		"invalid config file at %s. Please remove the file and run `op login` again.",
+		configFile(),
+	))
 }
 
 func readOrMigrateFile() (*iniFile, error) {
@@ -212,7 +241,10 @@ func readOrMigrateFile() (*iniFile, error) {
 		return nil, err
 	}
 
-	f, migrated := readOrMigrate(data)
+	f, migrated, err := readOrMigrate(data)
+	if err != nil {
+		return nil, err
+	}
 	if migrated {
 		if err := os.WriteFile(configFile(), f.marshal(), 0644); err != nil {
 			return nil, err
@@ -265,7 +297,12 @@ func deleteProfile(profile string) error {
 	if err != nil {
 		return err
 	}
-	f, _ := readOrMigrate(data)
+	f, _, err := readOrMigrate(data)
+	if err != nil {
+		// Corrupt file: nothing meaningful to delete, but removing a profile
+		// must stay idempotent, so report the corruption rather than panicking.
+		return err
+	}
 	f.delete(profile)
 	return os.WriteFile(configFile(), f.marshal(), 0644)
 }
