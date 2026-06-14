@@ -58,14 +58,31 @@ func hoursCreate(entry *dtos.TimeEntryDto, input string) error {
 	return nil
 }
 
+// hoursToISO8601 formats a number of hours as an ISO 8601 time-only duration
+// (e.g. PT1H30M, PT45M, PT8H). Seconds are included so sub-minute entries are
+// not silently rounded away to a zero-length duration. Hours are kept as a flat
+// hour count (no day/week roll-up) because OpenProject time entries are
+// expressed in hours.
 func hoursToISO8601(hours float64) string {
-	totalMinutes := int(math.Round(hours * 60))
-	h := totalMinutes / 60
-	m := totalMinutes % 60
-	if m == 0 {
-		return fmt.Sprintf("PT%dH", h)
+	totalSeconds := int64(math.Round(hours * 3600))
+	h := totalSeconds / 3600
+	m := (totalSeconds % 3600) / 60
+	s := totalSeconds % 60
+
+	out := "PT"
+	if h > 0 {
+		out += fmt.Sprintf("%dH", h)
 	}
-	return fmt.Sprintf("PT%dH%dM", h, m)
+	if m > 0 {
+		out += fmt.Sprintf("%dM", m)
+	}
+	if s > 0 {
+		out += fmt.Sprintf("%dS", s)
+	}
+	if out == "PT" {
+		return "PT0S"
+	}
+	return out
 }
 
 func activityCreate(entry *dtos.TimeEntryDto, input string) error {
