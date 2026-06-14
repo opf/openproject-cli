@@ -101,8 +101,8 @@ op user search <query>                            # Find a user
 op status list                                    # List work package statuses
 op type list                                      # List work package types
 
-op activities list                                # All activities
-op activities list --work-package <wp-id>         # Activities for a specific work package
+op activity list                                  # All activities
+op activity list --work-package <wp-id>           # Activities for a specific work package
 ```
 
 ## Git integration

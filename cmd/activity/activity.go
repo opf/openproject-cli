@@ -1,9 +1,9 @@
-package activities
+package activity
 
 import "github.com/spf13/cobra"
 
 var RootCmd = &cobra.Command{
-	Use:   "activities [verb]",
+	Use:   "activity [verb]",
 	Short: "Manage activities",
 	Long:  "List activities scoped by work package, project, or globally.",
 }

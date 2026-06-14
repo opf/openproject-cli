@@ -1,4 +1,4 @@
-package activities
+package activity
 
 import (
 	"github.com/spf13/cobra"
