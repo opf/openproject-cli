@@ -262,7 +262,7 @@ func readOrMigrateFile() (*iniFile, error) {
 		return nil, err
 	}
 	if migrated {
-		if err := os.WriteFile(configFile(), f.marshal(), 0644); err != nil {
+		if err := os.WriteFile(configFile(), f.marshal(), 0600); err != nil {
 			return nil, err
 		}
 	}
@@ -302,7 +302,7 @@ func writeProfile(profile, host, token string) error {
 	}
 	f.set(profile, "host", host)
 	f.set(profile, "token", token)
-	return os.WriteFile(configFile(), f.marshal(), 0644)
+	return os.WriteFile(configFile(), f.marshal(), 0600)
 }
 
 func deleteProfile(profile string) error {
@@ -320,5 +320,5 @@ func deleteProfile(profile string) error {
 		return err
 	}
 	f.delete(profile)
-	return os.WriteFile(configFile(), f.marshal(), 0644)
+	return os.WriteFile(configFile(), f.marshal(), 0600)
 }
