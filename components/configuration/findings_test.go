@@ -48,6 +48,47 @@ func TestFinding_MalformedOldFormatReportsError(t *testing.T) {
 	}
 }
 
+// Finding #1 (follow-up): an INI section that parses but is missing host or
+// token — e.g. because a malformed line was silently dropped — must be reported
+// as invalid rather than handed back as empty credentials.
+func TestFinding_SectionMissingCredentialReportsError(t *testing.T) {
+	cases := []struct {
+		name    string
+		content string
+	}{
+		{"malformed host line dropped", "[default]\nhost broken\ntoken = tok"},
+		{"missing token", "[default]\nhost = https://example.com"},
+		{"missing host", "[default]\ntoken = tok"},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			setupTempConfig(t)
+			writeRaw(t, c.content)
+
+			if _, _, err := configuration.ReadConfig("default"); err == nil {
+				t.Errorf("expected an error for incomplete profile section %q, got nil", c.content)
+			}
+		})
+	}
+}
+
+// A section with usable host and token must still succeed even if it carries an
+// extra unrecognised line — completeness of credentials is what matters, not
+// line-by-line syntax pedantry.
+func TestFinding_CompleteSectionWithStrayLineStillWorks(t *testing.T) {
+	setupTempConfig(t)
+	writeRaw(t, "[default]\nhost = https://example.com\ntoken = tok\nstrayline\n")
+
+	host, token, err := configuration.ReadConfig("default")
+	if err != nil {
+		t.Fatalf("complete section should read cleanly, got error: %v", err)
+	}
+	if host != "https://example.com" || token != "tok" {
+		t.Errorf("got host=%q token=%q", host, token)
+	}
+}
+
 // A well-formed old file ("host token") must still migrate cleanly.
 func TestFinding_WellFormedOldFormatStillMigrates(t *testing.T) {
 	setupTempConfig(t)

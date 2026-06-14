@@ -145,6 +145,11 @@ func (f *iniFile) get(section, key string) (string, bool) {
 	return v, ok
 }
 
+func (f *iniFile) hasSection(section string) bool {
+	_, ok := f.index[section]
+	return ok
+}
+
 func (f *iniFile) set(section, key, val string) {
 	idx, ok := f.index[section]
 	if !ok {
@@ -276,6 +281,13 @@ func readConfigForProfile(profile string) (host, token string, err error) {
 	}
 	host, _ = f.get(profile, "host")
 	token, _ = f.get(profile, "token")
+	// An absent profile is a normal "not logged in" state. But a section that
+	// exists yet is missing host or token is corrupt (e.g. a malformed line was
+	// dropped during parsing) and must be reported rather than handed back as
+	// empty credentials.
+	if f.hasSection(profile) && (host == "" || token == "") {
+		return "", "", invalidConfigError()
+	}
 	return host, token, nil
 }
 
