@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/opf/openproject-cli/components/common"
@@ -174,10 +175,25 @@ func (f *iniFile) marshal() []byte {
 			sb.WriteString("\n")
 		}
 		sb.WriteString(fmt.Sprintf("[%s]\n", s.name))
+		// host and token first for stable, readable ordering.
+		written := make(map[string]bool)
 		for _, key := range []string{"host", "token"} {
 			if v, ok := s.kv[key]; ok {
 				sb.WriteString(fmt.Sprintf("%s = %s\n", key, v))
+				written[key] = true
 			}
+		}
+		// Preserve any other keys (sorted for deterministic output) so data the
+		// CLI does not recognise is not silently dropped on rewrite.
+		rest := make([]string, 0, len(s.kv))
+		for k := range s.kv {
+			if !written[k] {
+				rest = append(rest, k)
+			}
+		}
+		sort.Strings(rest)
+		for _, k := range rest {
+			sb.WriteString(fmt.Sprintf("%s = %s\n", k, s.kv[k]))
 		}
 	}
 	return []byte(sb.String())
