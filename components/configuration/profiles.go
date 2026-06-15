@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 
@@ -82,6 +83,31 @@ func DeleteProfile(profile string) error {
 		return err
 	}
 	return deleteProfile(profile)
+}
+
+// ConfigFilePath returns the path of the config file. It honours
+// $XDG_CONFIG_HOME/$HOME, so it is absolute only when those are. Exposed so
+// callers can name the file in user-facing messages.
+func ConfigFilePath() string {
+	return configFile()
+}
+
+// InsecureConfigPermissions reports whether the config file exists with
+// permissions that let group or other users access it. The file stores API
+// tokens (and is written with mode 0600), so callers should warn the user when
+// this returns true. The second value is the file's permission bits. Unix
+// permission bits are not meaningful on Windows, so it always reports false
+// there; a missing or unreadable file is likewise not reported as insecure.
+func InsecureConfigPermissions() (insecure bool, mode os.FileMode) {
+	if runtime.GOOS == "windows" {
+		return false, 0
+	}
+	info, err := os.Stat(configFile())
+	if err != nil {
+		return false, 0
+	}
+	mode = info.Mode().Perm()
+	return mode&0077 != 0, mode
 }
 
 // AllProfiles returns every profile stored in the config file.

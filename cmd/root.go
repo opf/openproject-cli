@@ -60,6 +60,14 @@ projects of your OpenProject instance.`,
 			os.Exit(1)
 		}
 
+		if insecure, mode := configuration.InsecureConfigPermissions(); insecure {
+			path := configuration.ConfigFilePath()
+			printer.Warning(fmt.Sprintf(
+				"config file %s is accessible by other users (mode %#o); it stores your API token. Run 'chmod 600 \"%s\"' to restrict access.",
+				path, mode, path,
+			))
+		}
+
 		if host == "" && explicit {
 			printer.Error(openerrors.Custom(fmt.Sprintf(
 				"Profile %q not found. Run 'op login --profile %s' to create it.",
