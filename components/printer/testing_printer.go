@@ -18,6 +18,12 @@ func (printer *TestingPrinter) Println(a ...any) (n int, err error) {
 	return len(printer.Result), nil
 }
 
+func (printer *TestingPrinter) Eprintln(a ...any) (n int, err error) {
+	printer.Result += fmt.Sprintln(a...)
+
+	return len(printer.Result), nil
+}
+
 func (printer *TestingPrinter) Reset() {
 	printer.Result = ""
 }

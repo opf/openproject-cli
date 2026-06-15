@@ -2,6 +2,7 @@ package printer
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/opf/openproject-cli/components/errors"
 )
@@ -18,6 +19,12 @@ func Info(msg string) {
 
 func Input(prompt string) {
 	activePrinter.Printf(prompt)
+}
+
+// Warning writes a non-fatal diagnostic to standard error so it never corrupts
+// machine-readable output (e.g. JSON) written to standard out.
+func Warning(msg string) {
+	activePrinter.Eprintln(fmt.Sprintf("%s %s", Yellow("[WARNING]"), msg))
 }
 
 func Done() {
