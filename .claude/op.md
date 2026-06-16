@@ -20,9 +20,55 @@ op whoami --profile <name>         # Same for a specific profile
 op project list                    # Discover available projects (get IDs for other commands)
 ```
 
+## Identifiers
+
+OpenProject has different identifiers for project and work packages. Mixing them up causes silent wrong-WP bugs.
+
+Since 17.5, semantic identifiers can be enabled. Once enabled, work packages have project-based identifiers like Jira.
+
+### Project id
+
+The internal integer primary key of the database. Examples: `141` or `239`. In JSON output, the **`id`** field on a *project* object.
+
+### Project identifier
+
+The human-readable short string identifying the project uniquely. Unique across all projects of the instance. When semantic identifiers are enabled on the instance, they are alphanumeric characters (e.g., `OP`, `PROJ`, `JIM`). When not, they are slugs (e.g., `openproject`, `stream-jira-exit`, `jira-migrator`). In JSON output, the **`identifier`** field on a *project* object.
+
+### Work package id
+
+The internal integer primary key (e.g., `71305`). Unique across all projects on the instance. Always present regardless of instance configuration. This is the number in `/wp/71305` URLs. In JSON output: the **`id`** field of a *work-package* object.
+
+```bash
+op work-package inspect 71305
+op work-package inspect --format json 71305 | jq .id    # → 71305
+```
+
+### Work package semantic identifier (aka display ID, aka project-based identifier)
+
+When enabled by an administrator, each work package gets a project-scoped human label of the form `{PREFIX}-{N}` (e.g., `SJF-6`, `AGILE-54`, `OP-18917`, `JIM-43`). The prefix is the project identifier. Designed to support Jira migrations (existing Jira issue keys can be preserved). Historical numerical IDs remain valid and continue resolving to the same work packages.
+
+When enabled, the CLI and list output show these instead of bare numbers. In JSON output: the **`display_id`** field of a *work-package* object (same as `id` on instances where the feature is off).
+
+```bash
+op work-package inspect --format json 71305 | jq .display_id    # → "AGILE-54" (if enabled)
+                                                                # → "71305" (if not enabled)
+```
+
+> **Gotcha — never strip the display ID prefix:** when project-based identifiers are enabled, list output shows `OP-7756` or `AGILE-32`. Pass these as-is to `inspect` — stripping the prefix gives a bare integer that resolves to a completely different WP:
+> ```bash
+> op work-package inspect --format json OP-7756   # correct
+> op work-package inspect --format json 7756      # WRONG — different unrelated WP
+> ```
+
+### Choosing between id and identifier
+
+Prefer the numeric id in scripts, prefer the semantic identifier in human-facing output like changelogs.
+
+---
+
 ## Work packages
 
-IDs accept either a numeric ID (`42`) or a project-based identifier (`PROJ-123`) everywhere.
+IDs accept either an ID (`42`) or an identifier (`PROJ-123`, when enabled) everywhere.
 
 ```bash
 op work-package list                              # All visible work packages
