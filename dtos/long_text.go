@@ -5,7 +5,7 @@ import "github.com/opf/openproject-cli/models"
 type LongTextDto struct {
 	Format string `json:"format"`
 	Raw    string `json:"raw"`
-	Html   string `json:"html"`
+	Html   string `json:"html,omitempty"`
 }
 
 // ///////////// MODEL CONVERSION ///////////////

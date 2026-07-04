@@ -125,12 +125,15 @@ projects       -- Lists projects
 workpackages   -- Lists work packages
 
 # Discover flags: hitting completion key after
-op update workpackge 42 -
+op update workpackage 42 -
 # returns
 --action    -a  -- Executes a custom action on a work package
 --assignee      -- Assign a user to the work package
 --attach        -- Attach a file to the work package
+--description   -- Change the work package description
+--description-file -- Read the work package description from a file
 --help      -h  -- help for workpackage
+--parent        -- Move the work package below another work package
 --subject       -- Change the subject of the work package
 --type      -t  -- Change the work package type
 ```
@@ -146,10 +149,16 @@ of examples, that might be useful for a great number of people.
 # Creating a work package in a project only by subject.
 # Work package is created with many default values (as for type and status),
 # very similar to how a work package is created inline in a work package table.
-op create workpackge --project 11 'Document new CLI tool'
+op create workpackage --project 11 'Document new CLI tool'
 
 # Same command with shorthands and directly open it in a browser to continue working on it.
-op create workpackge -p11 'Document new CLI tool' -o
+op create workpackage -p11 'Document new CLI tool' -o
+
+# Create a feature below an epic.
+op create workpackage -p11 --type Feature --parent 42 'Build export flow'
+
+# Create a work package with a markdown description from a file.
+op create workpackage -p11 --description-file ./description.md 'Document new CLI tool'
 ```
 
 #### Listing
@@ -170,7 +179,13 @@ op update workpackage 42 --action Claim
 
 # Batch updating some properties of a work package
 # Valid input will get processed, while invalid (e.g. wrongly typed) input will get omitted
-op update workpackage 42 --subject 'The new subject' --status 'In Progress' --type Implementation
+op update workpackage 42 --subject 'The new subject' --type Implementation
+
+# Move a work package below another work package
+op update workpackage 42 --parent 12
+
+# Updating the description of a work package
+op update workpackage 42 --description-file ./description.md
 
 # Uploading an attachment to a work package
 op update workpackage 42 --attach ./Downloads/Report.pdf

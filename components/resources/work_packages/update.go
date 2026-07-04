@@ -23,14 +23,20 @@ const (
 	UpdateAttachment
 	UpdateSubject
 	UpdateType
+	UpdateDescription
+	UpdateDescriptionFile
+	UpdateParent
 )
 
-var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType, UpdateAssignee}
+var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType, UpdateAssignee, UpdateDescription, UpdateDescriptionFile, UpdateParent}
 
 var patchMap = map[UpdateOption]func(patch, workPackage *dtos.WorkPackageDto, input string) (string, error){
-	UpdateAssignee: assigneePatch,
-	UpdateType:     typePatch,
-	UpdateSubject:  subjectPatch,
+	UpdateAssignee:        assigneePatch,
+	UpdateType:            typePatch,
+	UpdateSubject:         subjectPatch,
+	UpdateDescription:     descriptionPatch,
+	UpdateDescriptionFile: descriptionFilePatch,
+	UpdateParent:          parentPatch,
 }
 
 func Update(id uint64, options map[UpdateOption]string) (*models.WorkPackage, error) {
@@ -148,6 +154,35 @@ func typePatch(patch, workPackage *dtos.WorkPackageDto, input string) (string, e
 func subjectPatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
 	patch.Subject = input
 	return fmt.Sprintf("Subject -> %s", input), nil
+}
+
+func descriptionPatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
+	patch.Description = description(input)
+	return "Description -> updated", nil
+}
+
+func descriptionFilePatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
+	description, err := descriptionFromFile(input)
+	if err != nil {
+		return "", err
+	}
+
+	patch.Description = description
+	return fmt.Sprintf("Description -> %s", input), nil
+}
+
+func parentPatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
+	parent, err := parentLink(input)
+	if err != nil {
+		return "", err
+	}
+
+	if patch.Links == nil {
+		patch.Links = &dtos.WorkPackageLinksDto{}
+	}
+
+	patch.Links.Parent = parent
+	return fmt.Sprintf("Parent -> #%s", input), nil
 }
 
 func assigneePatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {

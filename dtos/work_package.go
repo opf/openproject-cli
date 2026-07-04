@@ -9,6 +9,7 @@ type WorkPackageLinksDto struct {
 	AddAttachment     *LinkDto   `json:"addAttachment,omitempty"`
 	Status            *LinkDto   `json:"status,omitempty"`
 	Project           *LinkDto   `json:"project,omitempty"`
+	Parent            *LinkDto   `json:"parent,omitempty"`
 	Assignee          *LinkDto   `json:"assignee,omitempty"`
 	Type              *LinkDto   `json:"type,omitempty"`
 	CustomActions     []*LinkDto `json:"customActions,omitempty"`
@@ -21,7 +22,7 @@ type WorkPackageDto struct {
 	Links       *WorkPackageLinksDto `json:"_links,omitempty"`
 	Description *LongTextDto         `json:"description,omitempty"`
 	Embedded    *embeddedDto         `json:"_embedded,omitempty"`
-	LockVersion int                  `json:"lockVersion,omitempty"`
+	LockVersion int                  `json:"lockVersion"`
 }
 
 type embeddedDto struct {
@@ -48,13 +49,18 @@ type CreateWorkPackageDto struct {
 /////////////// MODEL CONVERSION ///////////////
 
 func (dto *WorkPackageDto) Convert() *models.WorkPackage {
+	description := ""
+	if dto.Description != nil {
+		description = dto.Description.Raw
+	}
+
 	return &models.WorkPackage{
 		Id:          uint64(dto.Id),
 		Subject:     dto.Subject,
 		Type:        dto.Links.Type.Title,
 		Assignee:    dto.Links.Assignee.Title,
 		Status:      dto.Links.Status.Title,
-		Description: dto.Description.Raw,
+		Description: description,
 		LockVersion: dto.LockVersion,
 	}
 }

@@ -11,11 +11,14 @@ import (
 )
 
 var (
-	actionFlag   string
-	assigneeFlag uint64
-	attachFlag   string
-	subjectFlag  string
-	typeFlag     string
+	actionFlag          string
+	assigneeFlag        uint64
+	attachFlag          string
+	subjectFlag         string
+	typeFlag            string
+	descriptionFlag     string
+	descriptionFileFlag string
+	parentFlag          uint64
 )
 
 var workPackageCmd = &cobra.Command{
@@ -62,6 +65,15 @@ func updateOptions() map[work_packages.UpdateOption]string {
 	}
 	if len(typeFlag) > 0 {
 		options[work_packages.UpdateType] = typeFlag
+	}
+	if len(descriptionFlag) > 0 {
+		options[work_packages.UpdateDescription] = descriptionFlag
+	}
+	if len(descriptionFileFlag) > 0 {
+		options[work_packages.UpdateDescriptionFile] = descriptionFileFlag
+	}
+	if parentFlag > 0 {
+		options[work_packages.UpdateParent] = strconv.FormatUint(parentFlag, 10)
 	}
 
 	return options

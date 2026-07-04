@@ -50,4 +50,23 @@ func addWorkPackageFlags() {
 		"",
 		"Change the work package type",
 	)
+	workPackageCmd.Flags().StringVar(
+		&descriptionFlag,
+		"description",
+		"",
+		"Change the work package description",
+	)
+	workPackageCmd.Flags().StringVar(
+		&descriptionFileFlag,
+		"description-file",
+		"",
+		"Read the work package description from a file",
+	)
+	workPackageCmd.MarkFlagsMutuallyExclusive("description", "description-file")
+	workPackageCmd.Flags().Uint64Var(
+		&parentFlag,
+		"parent",
+		0,
+		"Move the work package below another work package",
+	)
 }

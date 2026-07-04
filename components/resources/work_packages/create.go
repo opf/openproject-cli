@@ -18,11 +18,17 @@ type CreateOption int
 const (
 	CreateSubject CreateOption = iota
 	CreateType
+	CreateDescription
+	CreateDescriptionFile
+	CreateParent
 )
 
 var createMap = map[CreateOption]func(projectId uint64, workPackage *dtos.WorkPackageDto, input string) error{
-	CreateSubject: subjectCreate,
-	CreateType:    typeCreate,
+	CreateSubject:         subjectCreate,
+	CreateType:            typeCreate,
+	CreateDescription:     descriptionCreate,
+	CreateDescriptionFile: descriptionFileCreate,
+	CreateParent:          parentCreate,
 }
 
 func subjectCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) error {
@@ -57,6 +63,36 @@ func typeCreate(projectId uint64, workPackage *dtos.WorkPackageDto, input string
 
 	workPackage.Links.Type = foundType.Links.Self
 
+	return nil
+}
+
+func descriptionCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) error {
+	workPackage.Description = description(input)
+
+	return nil
+}
+
+func descriptionFileCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) error {
+	description, err := descriptionFromFile(input)
+	if err != nil {
+		return err
+	}
+
+	workPackage.Description = description
+	return nil
+}
+
+func parentCreate(_ uint64, workPackage *dtos.WorkPackageDto, input string) error {
+	parent, err := parentLink(input)
+	if err != nil {
+		return err
+	}
+
+	if workPackage.Links == nil {
+		workPackage.Links = &dtos.WorkPackageLinksDto{}
+	}
+
+	workPackage.Links.Parent = parent
 	return nil
 }
 

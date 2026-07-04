@@ -34,5 +34,27 @@ func init() {
 		"Change the work package type",
 	)
 
+	createWorkPackageCmd.Flags().StringVar(
+		&descriptionFlag,
+		"description",
+		"",
+		"Set the work package description",
+	)
+
+	createWorkPackageCmd.Flags().StringVar(
+		&descriptionFileFlag,
+		"description-file",
+		"",
+		"Read the work package description from a file",
+	)
+	createWorkPackageCmd.MarkFlagsMutuallyExclusive("description", "description-file")
+
+	createWorkPackageCmd.Flags().Uint64Var(
+		&parentFlag,
+		"parent",
+		0,
+		"Create the work package below another work package",
+	)
+
 	RootCmd.AddCommand(createWorkPackageCmd)
 }

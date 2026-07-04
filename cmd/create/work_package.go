@@ -2,6 +2,7 @@ package create
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/spf13/cobra"
 
@@ -14,6 +15,9 @@ import (
 var projectId uint64
 var shouldOpenWorkPackageInBrowser bool
 var typeFlag string
+var descriptionFlag string
+var descriptionFileFlag string
+var parentFlag uint64
 
 var createWorkPackageCmd = &cobra.Command{
 	Use:   "workpackage [subject]",
@@ -52,6 +56,15 @@ func createOptions(subject string) map[work_packages.CreateOption]string {
 
 	if len(typeFlag) > 0 {
 		options[work_packages.CreateType] = typeFlag
+	}
+	if len(descriptionFlag) > 0 {
+		options[work_packages.CreateDescription] = descriptionFlag
+	}
+	if len(descriptionFileFlag) > 0 {
+		options[work_packages.CreateDescriptionFile] = descriptionFileFlag
+	}
+	if parentFlag > 0 {
+		options[work_packages.CreateParent] = strconv.FormatUint(parentFlag, 10)
 	}
 
 	return options
