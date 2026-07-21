@@ -44,25 +44,25 @@ func Update(id string, options map[UpdateOption]string) (*models.WorkPackage, er
 	if customAction, ok := options[UpdateCustomAction]; ok {
 		err = action(workPackage, customAction)
 		if err != nil {
-			printer.Error(err)
-		} else {
-			// reload work package to get new lock version
-			workPackage, err = fetch(id)
-			if err != nil {
-				return nil, err
-			}
+			return nil, err
+		}
+
+		// reload work package to get new lock version
+		workPackage, err = fetch(id)
+		if err != nil {
+			return nil, err
 		}
 	}
 
 	err = patch(workPackage, options)
 	if err != nil {
-		printer.Error(err)
+		return nil, err
 	}
 
 	if file, ok := options[UpdateAttachment]; ok {
 		err = upload(workPackage, file)
 		if err != nil {
-			printer.Error(err)
+			return nil, err
 		}
 	}
 
@@ -102,8 +102,7 @@ func patch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) er
 		return nil
 	}
 
-	printer.Info(fmt.Sprintf("Updating work package with patch ..."))
-	printer.Info(updateString)
+	printer.Info("Updating work package with patch ...")
 
 	marshal, err := json.Marshal(patchDto)
 	if err != nil {
@@ -115,6 +114,7 @@ func patch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) er
 		return err
 	}
 
+	printer.Info(updateString)
 	printer.Done()
 	return nil
 }

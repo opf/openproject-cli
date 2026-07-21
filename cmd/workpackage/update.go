@@ -2,6 +2,7 @@ package workpackage
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -28,13 +29,13 @@ provided by a flag is executed on its own.`,
 func updateWorkPackage(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		printer.ErrorText(fmt.Sprintf("Expected 1 argument [id], but got %d", len(args)))
-		return
+		os.Exit(1)
 	}
 
 	id := args[0]
 	if err := work_packages.ValidateIdentifier(id); err != nil {
 		printer.ErrorText(err.Error())
-		return
+		os.Exit(1)
 	}
 
 	if workPackage, err := work_packages.Update(id, updateOptions(cmd)); err == nil {
@@ -42,6 +43,7 @@ func updateWorkPackage(cmd *cobra.Command, args []string) {
 		printer.WorkPackage(workPackage)
 	} else {
 		printer.Error(err)
+		os.Exit(1)
 	}
 }
 
