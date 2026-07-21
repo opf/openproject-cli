@@ -19,6 +19,13 @@ func readEnvironment() (ok bool, host, token string) {
 	return
 }
 
+// HasEnvironmentConfig reports whether OP_CLI_HOST and OP_CLI_TOKEN are both
+// set, in which case they override every stored profile.
+func HasEnvironmentConfig() bool {
+	ok, _, _ := readEnvironment()
+	return ok
+}
+
 func ensureConfigDir() error {
 	if _, err := os.Stat(configFileDir()); os.IsNotExist(err) {
 		err = os.MkdirAll(configFileDir(), 0700)

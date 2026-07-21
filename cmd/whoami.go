@@ -23,6 +23,12 @@ var whoamiCmd = &cobra.Command{
 }
 
 func whoami(cmd *cobra.Command, _ []string) error {
+	// OP_CLI_HOST/OP_CLI_TOKEN override every stored profile, so listing file
+	// profiles would just query the same server under different labels.
+	if configuration.HasEnvironmentConfig() {
+		return whoamiOne("environment")
+	}
+
 	profile, explicit := resolvedProfile(cmd)
 
 	if explicit {
@@ -41,16 +47,20 @@ func whoami(cmd *cobra.Command, _ []string) error {
 		return openerrors.ErrHandled
 	}
 
+	var entries []printer.WhoamiEntry
 	var failed bool
-	for i, p := range profiles {
-		if i > 0 {
-			printer.Info("")
-		}
-		if err := whoamiOne(p.Name); err != nil {
+	for _, p := range profiles {
+		entry, err := whoamiEntry(p.Name)
+		if err != nil {
 			failed = true
+			continue
 		}
+		entries = append(entries, entry)
 	}
 
+	if len(entries) > 0 {
+		printer.WhoamiList(entries)
+	}
 	if failed {
 		return openerrors.ErrHandled
 	}
@@ -58,21 +68,32 @@ func whoami(cmd *cobra.Command, _ []string) error {
 }
 
 func whoamiOne(profile string) error {
+	entry, err := whoamiEntry(profile)
+	if err != nil {
+		return err
+	}
+	printer.Whoami(entry.Profile, entry.Host, entry.User)
+	return nil
+}
+
+func whoamiEntry(profile string) (printer.WhoamiEntry, error) {
+	var entry printer.WhoamiEntry
+
 	host, token, err := configuration.ReadConfig(profile)
 	if err != nil {
 		printer.Error(err)
-		return openerrors.ErrHandled
+		return entry, openerrors.ErrHandled
 	}
 
 	if host == "" {
 		printer.ErrorText("Profile \"" + profile + "\" is not configured. Run `op login --profile " + profile + "` to authenticate.")
-		return openerrors.ErrHandled
+		return entry, openerrors.ErrHandled
 	}
 
 	parse, err := url.Parse(host)
 	if err != nil {
 		printer.Error(err)
-		return openerrors.ErrHandled
+		return entry, openerrors.ErrHandled
 	}
 	requests.Init(parse, token, Verbose)
 	routes.Init(parse)
@@ -86,9 +107,8 @@ func whoamiOne(profile string) error {
 		} else {
 			printer.Error(err)
 		}
-		return openerrors.ErrHandled
+		return entry, openerrors.ErrHandled
 	}
 
-	printer.Whoami(profile, host, user)
-	return nil
+	return printer.WhoamiEntry{Profile: profile, Host: host, User: user}, nil
 }

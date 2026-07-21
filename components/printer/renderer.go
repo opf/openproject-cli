@@ -26,6 +26,7 @@ type Renderer interface {
 	CustomActions([]*models.CustomAction)
 	Number(int64)
 	Whoami(profile, host string, user *models.User)
+	WhoamiList(entries []WhoamiEntry)
 }
 
 var activeRenderer Renderer = &TextRenderer{}

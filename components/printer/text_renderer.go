@@ -160,6 +160,15 @@ func (r *TextRenderer) Whoami(profile, host string, user *models.User) {
 	activePrinter.Printf("User:    %s %s\n", Red(fmt.Sprintf("#%d", user.Id)), Cyan(user.Name))
 }
 
+func (r *TextRenderer) WhoamiList(entries []WhoamiEntry) {
+	for i, entry := range entries {
+		if i > 0 {
+			activePrinter.Println()
+		}
+		r.Whoami(entry.Profile, entry.Host, entry.User)
+	}
+}
+
 func (r *TextRenderer) Number(n int64) {
 	activePrinter.Printf("%s\n", Cyan(strconv.FormatInt(n, 10)))
 }
