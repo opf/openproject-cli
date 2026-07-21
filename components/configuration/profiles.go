@@ -58,14 +58,20 @@ func ValidateProfileName(name string) error {
 	return nil
 }
 
-// ReadConfig returns host and token for profile.
-// OP_CLI_HOST and OP_CLI_TOKEN always take precedence over the file.
+// ReadConfig returns the host and token for profile. Environment credentials
+// take precedence and do not require the config directory to be accessible.
 func ReadConfig(profile string) (host, token string, err error) {
+	if ok, h, t := readEnvironment(); ok {
+		if err := validateHost(h); err != nil {
+			return "", "", errors.Custom(fmt.Sprintf(
+				"environment variable OP_CLI_HOST has an invalid host %q: %v",
+				h, err,
+			))
+		}
+		return h, t, nil
+	}
 	if err = ensureConfigDir(); err != nil {
 		return "", "", err
-	}
-	if ok, h, t := readEnvironment(); ok {
-		return h, t, nil
 	}
 	return readConfigForProfile(profile)
 }
@@ -245,12 +251,26 @@ func (f *iniFile) marshal() []byte {
 	return []byte(sb.String())
 }
 
-// looksLikeHost reports whether s parses as an absolute URL with a scheme and
-// host. Used to distinguish a genuine old-format "host token" line from a
-// corrupt file, so garbage is not silently migrated into bogus credentials.
+// looksLikeHost reports whether s is an absolute HTTP(S) URL. It distinguishes
+// the legacy "host token" format from corrupt configuration content.
 func looksLikeHost(s string) bool {
+	return validateHost(s) == nil
+}
+
+// validateHost rejects relative URLs and schemes the HTTP client cannot use.
+func validateHost(s string) error {
 	u, err := url.Parse(s)
-	return err == nil && u.Scheme != "" && u.Host != ""
+	if err != nil {
+		return fmt.Errorf("invalid host URL: %w", err)
+	}
+	if u.Scheme == "" || u.Host == "" {
+		return fmt.Errorf("expected an absolute URL like https://example.openproject.com")
+	}
+	scheme := strings.ToLower(u.Scheme)
+	if scheme != "http" && scheme != "https" {
+		return fmt.Errorf("unsupported protocol scheme %q: only http and https are allowed", u.Scheme)
+	}
+	return nil
 }
 
 // readOrMigrate reads the config file and migrates it from the old
@@ -360,14 +380,13 @@ func readConfigForProfile(profile string) (host, token string, err error) {
 	if f.hasSection(profile) && (host == "" || token == "") {
 		return "", "", invalidConfigError()
 	}
-	// Reject junk hosts here with a clear message; url.Parse alone accepts
-	// almost anything as a relative URL, which would surface later as a
-	// confusing request failure.
-	if host != "" && !looksLikeHost(host) {
-		return "", "", errors.Custom(fmt.Sprintf(
-			"profile %q has an invalid host %q: expected an absolute URL like https://example.openproject.com",
-			profile, host,
-		))
+	if host != "" {
+		if err := validateHost(host); err != nil {
+			return "", "", errors.Custom(fmt.Sprintf(
+				"profile %q has an invalid host %q: %v",
+				profile, host, err,
+			))
+		}
 	}
 	return host, token, nil
 }

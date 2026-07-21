@@ -99,3 +99,66 @@ func TestReadConfig_rejectsInvalidHost(t *testing.T) {
 		t.Errorf("error should mention invalid host, got: %v", err)
 	}
 }
+
+func TestReadConfig_EnvironmentDoesNotRequireConfigDirectory(t *testing.T) {
+	configRoot := filepath.Join(t.TempDir(), "not-a-directory")
+	if err := os.WriteFile(configRoot, []byte("occupied"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("XDG_CONFIG_HOME", configRoot)
+	t.Setenv("OP_CLI_HOST", "https://env.example.com")
+	t.Setenv("OP_CLI_TOKEN", "env-token")
+
+	host, token, err := configuration.ReadConfig("default")
+	if err != nil {
+		t.Fatalf("ReadConfig with environment credentials: %v", err)
+	}
+	if host != "https://env.example.com" || token != "env-token" {
+		t.Errorf("got host %q token %q", host, token)
+	}
+}
+
+func TestReadConfig_rejectsUnsupportedEnvironmentScheme(t *testing.T) {
+	setupTempConfig(t)
+	t.Setenv("OP_CLI_HOST", "ftp://env.example.com")
+	t.Setenv("OP_CLI_TOKEN", "env-token")
+
+	_, _, err := configuration.ReadConfig("default")
+	if err == nil {
+		t.Fatal("expected error for unsupported environment host scheme")
+	}
+	if !strings.Contains(err.Error(), "only http and https") {
+		t.Errorf("error should describe supported schemes, got: %v", err)
+	}
+	if !strings.Contains(err.Error(), "OP_CLI_HOST") {
+		t.Errorf("error should name OP_CLI_HOST as the source, got: %v", err)
+	}
+}
+
+// Scheme comparison must be case-insensitive: URL schemes are defined as
+// case-insensitive, and hosts pasted from other tools may be upper-cased.
+func TestReadConfig_acceptsMixedCaseScheme(t *testing.T) {
+	setupTempConfig(t)
+	writeRaw(t, "[default]\nhost = HTTPS://file.example.com\ntoken = file-token\n")
+
+	host, token, err := configuration.ReadConfig("default")
+	if err != nil {
+		t.Fatalf("ReadConfig with mixed-case scheme: %v", err)
+	}
+	if host != "HTTPS://file.example.com" || token != "file-token" {
+		t.Errorf("got host %q token %q", host, token)
+	}
+}
+
+func TestReadConfig_rejectsUnsupportedProfileScheme(t *testing.T) {
+	setupTempConfig(t)
+	writeRaw(t, "[default]\nhost = ftp://file.example.com\ntoken = file-token\n")
+
+	_, _, err := configuration.ReadConfig("default")
+	if err == nil {
+		t.Fatal("expected error for unsupported profile host scheme")
+	}
+	if !strings.Contains(err.Error(), "only http and https") {
+		t.Errorf("error should describe supported schemes, got: %v", err)
+	}
+}
