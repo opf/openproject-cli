@@ -1,11 +1,13 @@
 package requests
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/opf/openproject-cli/components/common"
 	"net/url"
 	"slices"
 	"strings"
+
+	"github.com/opf/openproject-cli/components/common"
 )
 
 type Query struct {
@@ -20,12 +22,23 @@ type Filter struct {
 }
 
 func (filter Filter) String() string {
-	return fmt.Sprintf(
-		"{\"%s\":{\"operator\":\"%s\",\"values\":[\"%s\"]}}",
-		filter.Name,
-		filter.Operator,
-		strings.Join(filter.Values, "\",\""),
-	)
+	values := filter.Values
+	if values == nil {
+		values = []string{}
+	}
+	// Marshal instead of string interpolation so quotes, backslashes and
+	// control characters in values cannot produce malformed filter JSON.
+	payload := map[string]any{
+		filter.Name: map[string]any{
+			"operator": filter.Operator,
+			"values":   values,
+		},
+	}
+	b, err := json.Marshal(payload)
+	if err != nil {
+		return "{}"
+	}
+	return string(b)
 }
 
 func (filter Filter) Equals(other Filter) bool {

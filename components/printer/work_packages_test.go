@@ -3,6 +3,7 @@ package printer_test
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/opf/openproject-cli/components/printer"
@@ -196,5 +197,19 @@ func TestWorkPackages_WithSemanticDisplayId(t *testing.T) {
 
 	if testingPrinter.Result != expected {
 		t.Errorf("\nExpected:\n%sbut got:\n%s", expected, testingPrinter.Result)
+	}
+}
+
+// Older servers omit displayId entirely; output must fall back to the
+// numeric id instead of printing an empty identifier.
+func TestWorkPackages_EmptyDisplayIdFallsBackToNumericId(t *testing.T) {
+	testingPrinter.Reset()
+
+	printer.WorkPackages([]*models.WorkPackage{
+		{Id: 42, DisplayId: "", Subject: "Legacy", Type: "TASK", Status: "New"},
+	})
+
+	if !strings.Contains(testingPrinter.Result, "#42") {
+		t.Errorf("expected fallback to #42, got: %q", testingPrinter.Result)
 	}
 }

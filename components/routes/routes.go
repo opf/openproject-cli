@@ -3,6 +3,7 @@ package routes
 import (
 	"fmt"
 	"net/url"
+	"strconv"
 
 	"github.com/opf/openproject-cli/models"
 )
@@ -15,9 +16,13 @@ func Init(h *url.URL) {
 
 func WorkPackageUrl(workPackage *models.WorkPackage) *url.URL {
 	routeUrl := *host
-	// DisplayId is always non-empty: the server code sets it to `identifier.presence || id`
-	// (in WorkPackage::SemanticIdentifier), so it falls back to the numeric id automatically.
-	routeUrl.Path = fmt.Sprintf("wp/%s", workPackage.DisplayId)
+	// Current servers always set displayId (`identifier.presence || id`), but
+	// older versions omit it, so fall back to the numeric id.
+	displayId := workPackage.DisplayId
+	if displayId == "" {
+		displayId = strconv.FormatUint(workPackage.Id, 10)
+	}
+	routeUrl.Path = fmt.Sprintf("wp/%s", displayId)
 	return &routeUrl
 }
 

@@ -1,13 +1,21 @@
 package printer
 
 import (
+	"cmp"
+	"slices"
 	"strings"
 
 	"github.com/opf/openproject-cli/models"
 )
 
 func Activities(activities []*models.Activity, users []*models.User) {
-	activeRenderer.Activities(activities, users)
+	// The renderers resolve actors with a binary search over user IDs; the
+	// API guarantees no response order, so sort a copy here.
+	sorted := slices.Clone(users)
+	slices.SortFunc(sorted, func(a, b *models.User) int {
+		return cmp.Compare(a.Id, b.Id)
+	})
+	activeRenderer.Activities(activities, sorted)
 }
 
 func printActivityHeadline(activity *models.Activity, user *models.User) {

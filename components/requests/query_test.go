@@ -1,6 +1,7 @@
 package requests_test
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -184,5 +185,24 @@ func TestQuery_Merge(t *testing.T) {
 	result := query1.Merge(query2)
 	if !result.Equals(query3) {
 		t.Errorf("Expected %+v, but got %+v", query3, result)
+	}
+}
+
+func TestFilter_String_EscapesSpecialCharacters(t *testing.T) {
+	filter := requests.Filter{
+		Name:     "subject",
+		Operator: "**",
+		Values:   []string{`foo"bar\baz`},
+	}
+
+	var parsed map[string]struct {
+		Operator string   `json:"operator"`
+		Values   []string `json:"values"`
+	}
+	if err := json.Unmarshal([]byte(filter.String()), &parsed); err != nil {
+		t.Fatalf("Filter.String() is not valid JSON: %v\ngot: %s", err, filter.String())
+	}
+	if parsed["subject"].Values[0] != `foo"bar\baz` {
+		t.Errorf("value round-trip mismatch: got %q", parsed["subject"].Values[0])
 	}
 }

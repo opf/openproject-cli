@@ -23,9 +23,10 @@ func idLength(id uint64) int {
 }
 
 // formatDisplayId returns the display identifier: "SJF-13" for semantic IDs,
-// "#42" for numeric-only systems (where displayId equals the numeric id).
+// "#42" for numeric-only systems (where displayId equals the numeric id) and
+// for servers that omit displayId entirely.
 func formatDisplayId(wp *models.WorkPackage) string {
-	if wp.DisplayId == strconv.FormatUint(wp.Id, 10) {
+	if wp.DisplayId == "" || wp.DisplayId == strconv.FormatUint(wp.Id, 10) {
 		return fmt.Sprintf("#%d", wp.Id)
 	}
 	return wp.DisplayId

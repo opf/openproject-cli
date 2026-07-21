@@ -47,6 +47,11 @@ projects of your OpenProject instance.`,
 			return nil
 		}
 
+		// Offline commands must work without a valid configuration.
+		if isOfflineCommand(cmd) {
+			return nil
+		}
+
 		profile, explicit := resolvedProfile(cmd)
 
 		if err := configuration.ValidateProfileName(profile); err != nil {
@@ -103,6 +108,20 @@ projects of your OpenProject instance.`,
 
 		cmd.Help()
 	},
+}
+
+// isOfflineCommand reports whether cmd needs no API access: shell completion
+// generation (including cobra's hidden __complete machinery) and `op
+// --version`. These must not fail on a missing or corrupt configuration.
+func isOfflineCommand(cmd *cobra.Command) bool {
+	switch cmd.Name() {
+	case "completion", cobra.ShellCompRequestCmd, cobra.ShellCompNoDescRequestCmd:
+		return true
+	}
+	if parent := cmd.Parent(); parent != nil && parent.Name() == "completion" {
+		return true
+	}
+	return cmd == cmd.Root() && showVersionFlag
 }
 
 // resolvedProfile returns the effective profile name for the current

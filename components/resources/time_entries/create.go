@@ -51,10 +51,17 @@ func hoursCreate(entry *dtos.TimeEntryDto, input string) error {
 	if err != nil {
 		return fmt.Errorf("invalid hours %q: must be a number", input)
 	}
+	if math.IsNaN(hours) || math.IsInf(hours, 0) {
+		return fmt.Errorf("invalid hours %q: must be a finite number", input)
+	}
 	if hours <= 0 {
 		return fmt.Errorf("hours must be greater than 0")
 	}
-	entry.Hours = hoursToISO8601(hours)
+	duration := hoursToISO8601(hours)
+	if duration == "PT0S" {
+		return fmt.Errorf("hours %q is too small: the minimum bookable duration is one second", input)
+	}
+	entry.Hours = duration
 	return nil
 }
 
@@ -93,7 +100,19 @@ func activityCreate(entry *dtos.TimeEntryDto, input string) error {
 		return fmt.Errorf("activity lookup failed")
 	}
 
-	found := findActivity(input, activities)
+	if strings.TrimSpace(input) == "" {
+		return fmt.Errorf("activity cannot be empty")
+	}
+
+	found, candidates := findActivity(input, activities)
+	if found == nil && len(candidates) > 1 {
+		printer.ErrorText(fmt.Sprintf("Activity %q is ambiguous.", input))
+		printer.Info("Matching activities:")
+		for _, a := range candidates {
+			printer.Info(fmt.Sprintf("  - %s", a.Name))
+		}
+		return fmt.Errorf("activity %q is ambiguous", input)
+	}
 	if found == nil {
 		printer.ErrorText(fmt.Sprintf("No activity matching %q found.", input))
 		if len(activities) > 0 {
@@ -112,20 +131,27 @@ func activityCreate(entry *dtos.TimeEntryDto, input string) error {
 	return nil
 }
 
-func findActivity(input string, activities []*models.TimeEntryActivity) *models.TimeEntryActivity {
+// findActivity resolves input to an activity: an exact (case-insensitive)
+// name match wins; otherwise a prefix match is accepted only when unique.
+// When the prefix is ambiguous it returns nil plus all candidates.
+func findActivity(input string, activities []*models.TimeEntryActivity) (*models.TimeEntryActivity, []*models.TimeEntryActivity) {
 	lower := strings.ToLower(input)
 	for _, a := range activities {
 		if strings.ToLower(a.Name) == lower {
-			return a
+			return a, nil
 		}
 	}
-	// partial match fallback
+
+	var candidates []*models.TimeEntryActivity
 	for _, a := range activities {
 		if strings.HasPrefix(strings.ToLower(a.Name), lower) {
-			return a
+			candidates = append(candidates, a)
 		}
 	}
-	return nil
+	if len(candidates) == 1 {
+		return candidates[0], nil
+	}
+	return nil, candidates
 }
 
 func spentOnCreate(entry *dtos.TimeEntryDto, input string) error {
