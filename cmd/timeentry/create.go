@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	openerrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/resources/time_entries"
 	"github.com/opf/openproject-cli/components/resources/work_packages"
@@ -22,13 +23,13 @@ var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a time entry",
 	Long:  "Log time spent on a work package.",
-	Run:   createTimeEntry,
+	RunE:  createTimeEntry,
 }
 
-func createTimeEntry(cmd *cobra.Command, _ []string) {
+func createTimeEntry(cmd *cobra.Command, _ []string) error {
 	if err := work_packages.ValidateIdentifier(createWorkPackageId); err != nil {
 		printer.ErrorText(err.Error())
-		return
+		return openerrors.ErrHandled
 	}
 
 	options := map[time_entries.CreateOption]string{
@@ -57,9 +58,10 @@ func createTimeEntry(cmd *cobra.Command, _ []string) {
 	entry, err := time_entries.Create(options)
 	if err != nil {
 		printer.Error(err)
-		return
+		return openerrors.ErrHandled
 	}
 
 	printer.TimeEntry(entry)
 	printer.Done()
+	return nil
 }

@@ -3,6 +3,7 @@ package activity
 import (
 	"github.com/spf13/cobra"
 
+	openerrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/resources/users"
 	"github.com/opf/openproject-cli/components/resources/work_packages"
@@ -14,22 +15,22 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Lists activities",
 	Long:  "Get a list of activities, scoped by the provided flag (e.g. --work-package).",
-	Run:   listActivities,
+	RunE:  listActivities,
 }
 
-func listActivities(_ *cobra.Command, _ []string) {
+func listActivities(_ *cobra.Command, _ []string) error {
 	if err := work_packages.ValidateIdentifier(listWpId); err != nil {
 		printer.ErrorText(err.Error())
-		return
+		return openerrors.ErrHandled
 	}
-	listWorkPackageActivities(listWpId)
+	return listWorkPackageActivities(listWpId)
 }
 
-func listWorkPackageActivities(wpId string) {
+func listWorkPackageActivities(wpId string) error {
 	acts, err := work_packages.Activities(wpId)
 	if err != nil {
 		printer.ErrorText(err.Error())
-		return
+		return openerrors.ErrHandled
 	}
 
 	var userIds []uint64
@@ -41,4 +42,5 @@ func listWorkPackageActivities(wpId string) {
 
 	userList := users.ByIds(userIds)
 	printer.Activities(acts, userList)
+	return nil
 }

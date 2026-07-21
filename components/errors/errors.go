@@ -1,5 +1,12 @@
 package errors
 
+import "errors"
+
+// ErrHandled signals that an error was already reported to the user via the
+// printer. Commands return it from RunE so the process exits nonzero without
+// printing the error a second time in main.
+var ErrHandled = errors.New("error already reported")
+
 type customError struct {
 	text string
 }

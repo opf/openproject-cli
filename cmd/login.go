@@ -12,6 +12,7 @@ import (
 
 	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/configuration"
+	openerrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/printer"
@@ -27,7 +28,7 @@ var loginCmd = &cobra.Command{
 this tool for a specific OpenProject instance. The login
 needs the host URL of the OpenProject instance and a
 generated API token.`,
-	Run: login,
+	RunE: login,
 }
 
 const (
@@ -37,11 +38,11 @@ const (
 	tokenInputError    = "There was a problem parsing the token input. Please try again."
 )
 
-func login(cmd *cobra.Command, _ []string) {
+func login(cmd *cobra.Command, _ []string) error {
 	profile, err := resolveLoginProfile(cmd)
 	if err != nil {
 		printer.Error(err)
-		return
+		return openerrors.ErrHandled
 	}
 
 	var hostUrl *url.URL
@@ -94,7 +95,7 @@ func login(cmd *cobra.Command, _ []string) {
 		break
 	}
 
-	storeLoginData(profile, hostUrl, token)
+	return storeLoginData(profile, hostUrl, token)
 }
 
 // resolveLoginProfile determines the profile name for the login command.
@@ -239,11 +240,11 @@ func confirmOverwrite(profile string) (bool, error) {
 	return answer == "y" || answer == "yes", nil
 }
 
-func storeLoginData(profile string, host *url.URL, token string) {
+func storeLoginData(profile string, host *url.URL, token string) error {
 	profiles, err := configuration.AllProfiles()
 	if err != nil {
 		printer.Error(err)
-		return
+		return openerrors.ErrHandled
 	}
 
 	for _, p := range profiles {
@@ -251,11 +252,11 @@ func storeLoginData(profile string, host *url.URL, token string) {
 			ok, err := confirmOverwrite(profile)
 			if err != nil {
 				printer.Error(err)
-				return
+				return openerrors.ErrHandled
 			}
 			if !ok {
 				printer.Info("Login cancelled.")
-				return
+				return nil
 			}
 			break
 		}
@@ -263,7 +264,8 @@ func storeLoginData(profile string, host *url.URL, token string) {
 
 	if err := configuration.WriteConfigForProfile(profile, host.String(), token); err != nil {
 		printer.Error(err)
-		return
+		return openerrors.ErrHandled
 	}
 	printer.Done()
+	return nil
 }

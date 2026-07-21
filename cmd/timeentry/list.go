@@ -3,6 +3,7 @@ package timeentry
 import (
 	"github.com/spf13/cobra"
 
+	openerrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
 	"github.com/opf/openproject-cli/components/resources"
@@ -18,21 +19,23 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Lists time entries",
 	Long:  "Get a list of all time entries.",
-	Run:   listTimeEntries,
+	RunE:  listTimeEntries,
 }
 
-func listTimeEntries(_ *cobra.Command, _ []string) {
+func listTimeEntries(_ *cobra.Command, _ []string) error {
 	query, err := buildTimeEntriesQuery()
 	if err != nil {
 		printer.ErrorText(err.Error())
-		return
+		return openerrors.ErrHandled
 	}
 
 	if all, err := time_entries.All(query); err == nil {
 		printer.TimeEntryList(all)
 	} else {
 		printer.Error(err)
+		return openerrors.ErrHandled
 	}
+	return nil
 }
 
 func buildTimeEntriesQuery() (requests.Query, error) {

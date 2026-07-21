@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	openerrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/resources/projects"
 	"github.com/opf/openproject-cli/components/resources/work_packages"
@@ -18,21 +19,21 @@ var searchCmd = &cobra.Command{
 	Short: "Searches for work packages",
 	Long: `Searches for work packages by subject, type, status, project name, or identifier.
 Multiple words are ANDed: all terms must match. Returns up to 100 results.`,
-	Run: searchWorkPackages,
+	RunE: searchWorkPackages,
 }
 
-func searchWorkPackages(_ *cobra.Command, args []string) {
+func searchWorkPackages(_ *cobra.Command, args []string) error {
 	query := strings.Join(args, " ")
 	if strings.TrimSpace(query) == "" {
 		printer.ErrorText("Search query cannot be blank")
-		return
+		return openerrors.ErrHandled
 	}
 
 	isProjectScoped := len(searchProjectId) > 0
 	if isProjectScoped {
 		if err := projects.ValidateIdentifier(searchProjectId); err != nil {
 			printer.ErrorText(fmt.Sprintf("--project: %s", err.Error()))
-			return
+			return openerrors.ErrHandled
 		}
 	}
 
@@ -43,7 +44,7 @@ func searchWorkPackages(_ *cobra.Command, args []string) {
 		} else {
 			printer.Error(err)
 		}
-		return
+		return openerrors.ErrHandled
 	}
 
 	if len(collection) == 0 {
@@ -51,4 +52,5 @@ func searchWorkPackages(_ *cobra.Command, args []string) {
 	} else {
 		printer.WorkPackages(collection)
 	}
+	return nil
 }

@@ -2,11 +2,11 @@ package workpackage
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/spf13/cobra"
 
+	openerrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/resources/work_packages"
 )
@@ -23,28 +23,30 @@ var updateCmd = &cobra.Command{
 	Short: "Updates the work package",
 	Long: `Update a work package referenced by its numeric ID (e.g. 12345) or project-based identifier (e.g. PROJ-123). Each update
 provided by a flag is executed on its own.`,
-	Run: updateWorkPackage,
+	RunE: updateWorkPackage,
 }
 
-func updateWorkPackage(cmd *cobra.Command, args []string) {
+func updateWorkPackage(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		printer.ErrorText(fmt.Sprintf("Expected 1 argument [id], but got %d", len(args)))
-		os.Exit(1)
+		return openerrors.ErrHandled
 	}
 
 	id := args[0]
 	if err := work_packages.ValidateIdentifier(id); err != nil {
 		printer.ErrorText(err.Error())
-		os.Exit(1)
+		return openerrors.ErrHandled
 	}
 
-	if workPackage, err := work_packages.Update(id, updateOptions(cmd)); err == nil {
-		printer.Info("-- ")
-		printer.WorkPackage(workPackage)
-	} else {
+	workPackage, err := work_packages.Update(id, updateOptions(cmd))
+	if err != nil {
 		printer.Error(err)
-		os.Exit(1)
+		return openerrors.ErrHandled
 	}
+
+	printer.Info("-- ")
+	printer.WorkPackage(workPackage)
+	return nil
 }
 
 func updateOptions(cmd *cobra.Command) map[work_packages.UpdateOption]string {

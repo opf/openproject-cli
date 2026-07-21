@@ -51,13 +51,13 @@ projects of your OpenProject instance.`,
 
 		if err := configuration.ValidateProfileName(profile); err != nil {
 			printer.Error(err)
-			os.Exit(1)
+			return openerrors.ErrHandled
 		}
 
 		host, token, err := configuration.ReadConfig(profile)
 		if err != nil {
 			printer.Error(err)
-			os.Exit(1)
+			return openerrors.ErrHandled
 		}
 
 		if insecure, mode := configuration.InsecureConfigPermissions(); insecure {
@@ -73,13 +73,13 @@ projects of your OpenProject instance.`,
 				"Profile %q not found. Run 'op login --profile %s' to create it.",
 				profile, profile,
 			)))
-			os.Exit(1)
+			return openerrors.ErrHandled
 		}
 
 		parse, err := url.Parse(host)
 		if err != nil {
 			printer.ErrorText(fmt.Sprintf("invalid host URL %q: %s", host, err))
-			os.Exit(1)
+			return openerrors.ErrHandled
 		}
 		requests.Init(parse, token, Verbose)
 		routes.Init(parse)

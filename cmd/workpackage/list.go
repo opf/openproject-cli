@@ -2,12 +2,12 @@ package workpackage
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"strconv"
 
 	"github.com/spf13/cobra"
 
+	openerrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
 	"github.com/opf/openproject-cli/components/resources"
@@ -36,31 +36,35 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Lists work packages",
 	Long:  "Get a list of visible work packages. Filter flags can be applied.",
-	Run:   listWorkPackages,
+	RunE:  listWorkPackages,
 }
 
-func listWorkPackages(_ *cobra.Command, _ []string) {
+func listWorkPackages(_ *cobra.Command, _ []string) error {
 	if errorText := validateCommandFlagComposition(); len(errorText) > 0 {
 		printer.ErrorText(errorText)
-		return
+		return openerrors.ErrHandled
 	}
 
 	if len(listProjectId) > 0 {
 		if err := projects.ValidateIdentifier(listProjectId); err != nil {
 			printer.ErrorText(fmt.Sprintf("--project: %s", err.Error()))
-			return
+			return openerrors.ErrHandled
 		}
 	}
 
 	if len(listParentId) > 0 {
 		if err := work_packages.ValidateIdentifier(listParentId); err != nil {
 			printer.ErrorText(fmt.Sprintf("--parent-id: %s", err.Error()))
-			return
+			return openerrors.ErrHandled
 		}
 		parentWp, err := work_packages.Lookup(listParentId)
 		if err != nil {
-			printer.ErrorText(fmt.Sprintf("--parent-id: work package %s not found.", listParentId))
-			return
+			if isNotFound(err) {
+				printer.ErrorText(fmt.Sprintf("--parent-id: work package %s not found.", listParentId))
+			} else {
+				printer.Error(err)
+			}
+			return openerrors.ErrHandled
 		}
 		listParentId = fmt.Sprintf("%d", parentWp.Id)
 	}
@@ -68,10 +72,16 @@ func listWorkPackages(_ *cobra.Command, _ []string) {
 	query, err := buildQuery()
 	if err != nil {
 		printer.ErrorText(err.Error())
-		return
+		return openerrors.ErrHandled
 	}
 
-	collection, err := work_packages.All(filterOptions(), query, listShowTotal)
+	options, err := filterOptions()
+	if err != nil {
+		printer.ErrorText(err.Error())
+		return openerrors.ErrHandled
+	}
+
+	collection, err := work_packages.All(options, query, listShowTotal)
 	switch {
 	case err == nil && listShowTotal:
 		printer.Number(collection.Total)
@@ -79,9 +89,12 @@ func listWorkPackages(_ *cobra.Command, _ []string) {
 		printer.WorkPackages(collection.Items)
 	case isNotFound(err) && len(listProjectId) > 0:
 		printer.ErrorText(fmt.Sprintf("--project: no project found with identifier or ID '%s'", listProjectId))
+		return openerrors.ErrHandled
 	default:
 		printer.Error(err)
+		return openerrors.ErrHandled
 	}
+	return nil
 }
 
 func validateCommandFlagComposition() (errorText string) {
@@ -120,7 +133,7 @@ func buildQuery() (requests.Query, error) {
 	return q, nil
 }
 
-func filterOptions() *map[work_packages.FilterOption]string {
+func filterOptions() (*map[work_packages.FilterOption]string, error) {
 	options := make(map[work_packages.FilterOption]string)
 
 	options[work_packages.IncludeSubProjects] = strconv.FormatBool(listIncludeSubProjects)
@@ -138,26 +151,33 @@ func filterOptions() *map[work_packages.FilterOption]string {
 	}
 
 	if len(listStatusFilter) > 0 {
-		options[work_packages.Status] = validateFilterValue(work_packages.Status, listStatusFilter)
+		value, err := validateFilterValue(work_packages.Status, listStatusFilter)
+		if err != nil {
+			return nil, err
+		}
+		options[work_packages.Status] = value
 	}
 
 	if len(listTypeFilter) > 0 {
-		options[work_packages.Type] = validateFilterValue(work_packages.Type, listTypeFilter)
+		value, err := validateFilterValue(work_packages.Type, listTypeFilter)
+		if err != nil {
+			return nil, err
+		}
+		options[work_packages.Type] = value
 	}
 
-	return &options
+	return &options, nil
 }
 
-func validateFilterValue(filter work_packages.FilterOption, value string) string {
+func validateFilterValue(filter work_packages.FilterOption, value string) (string, error) {
 	matched, err := regexp.Match(work_packages.InputValidationExpression[filter], []byte(value))
 	if err != nil {
-		printer.Error(err)
+		return "", err
 	}
 
 	if !matched {
-		printer.ErrorText(fmt.Sprintf("Invalid %s value %s.", filter, printer.Yellow(value)))
-		os.Exit(-1)
+		return "", fmt.Errorf("invalid %s value %s", filter, printer.Yellow(value))
 	}
 
-	return value
+	return value, nil
 }

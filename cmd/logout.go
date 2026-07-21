@@ -10,6 +10,7 @@ import (
 
 	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/configuration"
+	openerrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/printer"
 )
 
@@ -17,27 +18,28 @@ var logoutCmd = &cobra.Command{
 	Use:   "logout",
 	Short: "Removes a stored profile",
 	Long:  "Removes the credentials for the given profile (defaults to 'default').",
-	Run:   logout,
+	RunE:  logout,
 }
 
-func logout(cmd *cobra.Command, _ []string) {
+func logout(cmd *cobra.Command, _ []string) error {
 	profile, _ := resolvedProfile(cmd)
 
 	ok, err := confirmRemove(profile)
 	if err != nil {
 		printer.Error(err)
-		return
+		return openerrors.ErrHandled
 	}
 	if !ok {
-		return
+		return nil
 	}
 
 	if err := configuration.DeleteProfile(profile); err != nil {
 		printer.Error(err)
-		return
+		return openerrors.ErrHandled
 	}
 
 	printer.Done()
+	return nil
 }
 
 func confirmRemove(profile string) (bool, error) {

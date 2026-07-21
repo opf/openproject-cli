@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	openerrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/launch"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/resources/work_packages"
@@ -18,33 +19,33 @@ var inspectCmd = &cobra.Command{
 	Use:   "inspect [id]",
 	Short: "Show details about a work package",
 	Long:  "Show detailed information of a work package referenced by its numeric ID (e.g. 12345) or project-based identifier (e.g. PROJ-123).",
-	Run:   inspectWorkPackage,
+	RunE:  inspectWorkPackage,
 }
 
-func inspectWorkPackage(_ *cobra.Command, args []string) {
+func inspectWorkPackage(_ *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		printer.ErrorText(fmt.Sprintf("Expected 1 argument [id], but got %d", len(args)))
-		return
+		return openerrors.ErrHandled
 	}
 
 	id := args[0]
 	if err := work_packages.ValidateIdentifier(id); err != nil {
 		printer.ErrorText(err.Error())
-		return
+		return openerrors.ErrHandled
 	}
 
 	if inspectHasListingFlag() {
 		switch {
 		case inspectListAvailableTypes:
-			inspectAvailableTypes(id)
+			return inspectAvailableTypes(id)
 		}
-		return
+		return nil
 	}
 
 	workPackage, err := work_packages.Lookup(id)
 	if err != nil {
 		printer.Error(err)
-		return
+		return openerrors.ErrHandled
 	}
 
 	if inspectOpenInBrowser {
@@ -55,15 +56,17 @@ func inspectWorkPackage(_ *cobra.Command, args []string) {
 	} else {
 		printer.WorkPackage(workPackage)
 	}
+	return nil
 }
 
-func inspectAvailableTypes(id string) {
+func inspectAvailableTypes(id string) error {
 	types, err := work_packages.AvailableTypes(id)
 	if err != nil {
 		printer.Error(err)
-		return
+		return openerrors.ErrHandled
 	}
 	printer.Types(types)
+	return nil
 }
 
 func inspectHasListingFlag() bool {

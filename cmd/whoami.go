@@ -19,53 +19,60 @@ var whoamiCmd = &cobra.Command{
 	Use:   "whoami",
 	Short: "Show current user and server",
 	Long:  "Display the configured OpenProject server and the currently authenticated user.",
-	Run:   whoami,
+	RunE:  whoami,
 }
 
-func whoami(cmd *cobra.Command, _ []string) {
+func whoami(cmd *cobra.Command, _ []string) error {
 	profile, explicit := resolvedProfile(cmd)
 
 	if explicit {
-		whoamiOne(profile)
-		return
+		return whoamiOne(profile)
 	}
 
 	// No profile specified: show all profiles
 	profiles, err := configuration.AllProfiles()
 	if err != nil {
 		printer.Error(err)
-		return
+		return openerrors.ErrHandled
 	}
 
 	if len(profiles) == 0 {
 		printer.ErrorText("No profiles configured. Run `op login` to authenticate.")
-		return
+		return openerrors.ErrHandled
 	}
 
+	var failed bool
 	for i, p := range profiles {
 		if i > 0 {
 			printer.Info("")
 		}
-		whoamiOne(p.Name)
+		if err := whoamiOne(p.Name); err != nil {
+			failed = true
+		}
 	}
+
+	if failed {
+		return openerrors.ErrHandled
+	}
+	return nil
 }
 
-func whoamiOne(profile string) {
+func whoamiOne(profile string) error {
 	host, token, err := configuration.ReadConfig(profile)
 	if err != nil {
 		printer.Error(err)
-		return
+		return openerrors.ErrHandled
 	}
 
 	if host == "" {
 		printer.ErrorText("Profile \"" + profile + "\" is not configured. Run `op login --profile " + profile + "` to authenticate.")
-		return
+		return openerrors.ErrHandled
 	}
 
 	parse, err := url.Parse(host)
 	if err != nil {
 		printer.Error(err)
-		return
+		return openerrors.ErrHandled
 	}
 	requests.Init(parse, token, Verbose)
 	routes.Init(parse)
@@ -79,8 +86,9 @@ func whoamiOne(profile string) {
 		} else {
 			printer.Error(err)
 		}
-		return
+		return openerrors.ErrHandled
 	}
 
 	printer.Whoami(profile, host, user)
+	return nil
 }
