@@ -31,7 +31,7 @@ type Renderer interface {
 
 var activeRenderer Renderer = &TextRenderer{}
 
-func InitRenderer(format string) {
+func InitRenderer(format string) error {
 	switch format {
 	case "json":
 		activeRenderer = &JsonRenderer{}
@@ -39,6 +39,8 @@ func InitRenderer(format string) {
 		activeRenderer = &TextRenderer{}
 	default:
 		activeRenderer = &TextRenderer{}
-		ErrorText(fmt.Sprintf("unknown output format %q, falling back to text", format))
+		ErrorText(fmt.Sprintf("unknown output format %q", format))
+		return fmt.Errorf("unknown output format %q", format)
 	}
+	return nil
 }

@@ -40,7 +40,9 @@ projects of your OpenProject instance.`,
 	SilenceErrors: true,
 	SilenceUsage:  true,
 	PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-		printer.InitRenderer(outputFormat)
+		if err := printer.InitRenderer(outputFormat); err != nil {
+			return openerrors.ErrHandled
+		}
 
 		// login and logout manage their own profile and requests setup
 		if cmd.Name() == "login" || cmd.Name() == "logout" {
