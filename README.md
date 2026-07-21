@@ -96,15 +96,21 @@ as `op NOUN VERB [additional information]`. You will see plenty of examples with
 Earlier releases (up to 0.5.5) used verb-first commands. These have been replaced without aliases;
 scripts need to migrate:
 
-| Old (verb-first)          | New (noun-first)          |
-|---------------------------|---------------------------|
-| `op list workpackages`    | `op work-package list`    |
-| `op create workpackage`   | `op work-package create`  |
-| `op update workpackage`   | `op work-package update`  |
-| `op inspect workpackage`  | `op work-package inspect` |
-| `op search workpackages`  | `op work-package search`  |
-| `op list projects`        | `op project list`         |
-| `op list notifications`   | `op notification list`    |
+| Old (verb-first)          | New (noun-first)                     |
+|---------------------------|--------------------------------------|
+| `op list workpackages`    | `op work-package list`               |
+| `op create workpackage`   | `op work-package create`             |
+| `op update workpackage`   | `op work-package update`             |
+| `op inspect workpackage`  | `op work-package inspect`            |
+| `op search workpackages`  | `op work-package search`             |
+| `op list projects`        | `op project list`                    |
+| `op inspect project 42`   | `op project inspect 42`              |
+| `op list notifications`   | `op notification list`               |
+| `op list activities 42`   | `op activity list --work-package 42` |
+| `op list status`          | `op status list`                     |
+| `op list types`           | `op type list`                       |
+| `op list timeentries`     | `op time-entry list`                 |
+| `op search user X`        | `op user search X`                   |
 
 ### Discoverability
 
@@ -272,8 +278,11 @@ op work-package update 42 --action Claim
 op work-package update PROJ-123 --action Claim
 
 # Batch updating some properties of a work package
-# Valid input will get processed, while invalid (e.g. wrongly typed) input will get omitted
 op work-package update 42 --subject 'The new subject' --type Implementation
+
+# Local inputs are validated before the first change is sent. Each API action
+# remains a separate request, so an earlier change may remain if a later
+# request fails.
 
 # Uploading an attachment to a work package
 op work-package update 42 --attach ./Downloads/Report.pdf

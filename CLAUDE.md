@@ -95,10 +95,11 @@ API response → `parser.Parse[SomethingDto]()` → `dto.Convert()` → `models.
 
 ## Testing conventions
 
-- Test files use external test packages: `package printer_test`, `package requests_test`
+- Component tests use external test packages (`package printer_test`, `package requests_test`, `package work_packages_test`); cmd-layer tests use internal packages (`package workpackage`) because they exercise unexported command handlers and flag variables
 - `TestMain` in `printer_test` initializes shared state (routes, printer) for the package
 - Tests use plain `t.Errorf` — no test framework, no assertions library
-- Tests only exist for `printer`, `requests`, `common`, and `configuration` — no tests on `cmd/` or `resources/`
+- Tests exist for `printer`, `requests`, `common`, `configuration`, `components/resources/work_packages`, and the `cmd/` packages (root, `activity`, `project`, `user`, `workpackage`)
+- Regression tests for command/resource behaviour use `httptest` localhost servers and count mutating requests to assert no-mutation guarantees
 - When adding a new printer function, add a corresponding test in `components/printer/`
 - When adding a new configuration function, add a corresponding test in `components/configuration/`
 
