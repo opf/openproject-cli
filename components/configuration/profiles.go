@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"sort"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/errors"
+	"github.com/opf/openproject-cli/components/printer"
 )
 
 const (
@@ -76,8 +78,9 @@ func WriteConfigForProfile(profile, host, token string) error {
 	return writeProfile(profile, host, token)
 }
 
-// DeleteProfile removes profile from the config file.
-// It is idempotent: returns nil even when the profile does not exist.
+// DeleteProfile removes profile from the config file, including any
+// duplicate sections with the same name. It returns an error when the
+// profile does not exist, so callers do not report success for a no-op.
 func DeleteProfile(profile string) error {
 	if err := ensureConfigDir(); err != nil {
 		return err
@@ -187,16 +190,28 @@ func (f *iniFile) set(section, key, val string) {
 	f.sections[idx].kv[key] = val
 }
 
-func (f *iniFile) delete(section string) {
-	idx, ok := f.index[section]
-	if !ok {
-		return
+// delete removes every section named section (duplicate sections can exist in
+// hand-edited files; leaving one behind would silently keep its credentials
+// active). Reports whether anything was removed.
+func (f *iniFile) delete(section string) bool {
+	kept := f.sections[:0]
+	removed := false
+	for _, s := range f.sections {
+		if s.name == section {
+			removed = true
+			continue
+		}
+		kept = append(kept, s)
 	}
-	f.sections = append(f.sections[:idx], f.sections[idx+1:]...)
-	delete(f.index, section)
+	if !removed {
+		return false
+	}
+	f.sections = kept
+	f.index = make(map[string]int, len(f.sections))
 	for i, s := range f.sections {
 		f.index[s.name] = i
 	}
+	return true
 }
 
 func (f *iniFile) marshal() []byte {
@@ -279,6 +294,33 @@ func invalidConfigError() error {
 	))
 }
 
+// writeConfigFile atomically replaces the config file: it writes a temporary
+// file in the same directory (created with mode 0600) and renames it over the
+// target. An interrupted write cannot leave a truncated config, and a
+// permissive mode on the old file (e.g. 0644 from earlier CLI versions) is
+// not carried over.
+func writeConfigFile(data []byte) error {
+	target := configFile()
+	tmp, err := os.CreateTemp(filepath.Dir(target), "config-*.tmp")
+	if err != nil {
+		return err
+	}
+	if _, err := tmp.Write(data); err != nil {
+		_ = tmp.Close()
+		_ = os.Remove(tmp.Name())
+		return err
+	}
+	if err := tmp.Close(); err != nil {
+		_ = os.Remove(tmp.Name())
+		return err
+	}
+	if err := os.Rename(tmp.Name(), target); err != nil {
+		_ = os.Remove(tmp.Name())
+		return err
+	}
+	return nil
+}
+
 func readOrMigrateFile() (*iniFile, error) {
 	data, err := os.ReadFile(configFile())
 	if os.IsNotExist(err) {
@@ -293,8 +335,12 @@ func readOrMigrateFile() (*iniFile, error) {
 		return nil, err
 	}
 	if migrated {
-		if err := os.WriteFile(configFile(), f.marshal(), 0600); err != nil {
-			return nil, err
+		// Best effort: a config that cannot be rewritten (e.g. read-only
+		// location) must not block reading the credentials it holds.
+		if err := writeConfigFile(f.marshal()); err != nil {
+			printer.Warning(fmt.Sprintf(
+				"could not rewrite config file %s in the new format: %s", configFile(), err,
+			))
 		}
 	}
 	return f, nil
@@ -313,6 +359,15 @@ func readConfigForProfile(profile string) (host, token string, err error) {
 	// empty credentials.
 	if f.hasSection(profile) && (host == "" || token == "") {
 		return "", "", invalidConfigError()
+	}
+	// Reject junk hosts here with a clear message; url.Parse alone accepts
+	// almost anything as a relative URL, which would surface later as a
+	// confusing request failure.
+	if host != "" && !looksLikeHost(host) {
+		return "", "", errors.Custom(fmt.Sprintf(
+			"profile %q has an invalid host %q: expected an absolute URL like https://example.openproject.com",
+			profile, host,
+		))
 	}
 	return host, token, nil
 }
@@ -340,23 +395,27 @@ func writeProfile(profile, host, token string) error {
 	}
 	f.set(profile, "host", host)
 	f.set(profile, "token", token)
-	return os.WriteFile(configFile(), f.marshal(), 0600)
+	return writeConfigFile(f.marshal())
+}
+
+func profileNotFoundError(profile string) error {
+	return errors.Custom(fmt.Sprintf("profile %q not found", profile))
 }
 
 func deleteProfile(profile string) error {
 	data, err := os.ReadFile(configFile())
 	if os.IsNotExist(err) {
-		return nil
+		return profileNotFoundError(profile)
 	}
 	if err != nil {
 		return err
 	}
 	f, _, err := readOrMigrate(data)
 	if err != nil {
-		// Corrupt file: nothing meaningful to delete, but removing a profile
-		// must stay idempotent, so report the corruption rather than panicking.
 		return err
 	}
-	f.delete(profile)
-	return os.WriteFile(configFile(), f.marshal(), 0600)
+	if !f.delete(profile) {
+		return profileNotFoundError(profile)
+	}
+	return writeConfigFile(f.marshal())
 }

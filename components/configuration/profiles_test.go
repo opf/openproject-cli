@@ -313,17 +313,20 @@ func TestDeleteProfile_removesProfile(t *testing.T) {
 	}
 }
 
-func TestDeleteProfile_idempotent(t *testing.T) {
+func TestDeleteProfile_missingProfileErrors(t *testing.T) {
 	setupTempConfig(t)
 
-	// Delete on non-existent profile must not error
-	if err := configuration.DeleteProfile("nonexistent"); err != nil {
-		t.Errorf("DeleteProfile on missing profile should not error, got: %v", err)
+	// Delete with no config file at all must report the profile as missing,
+	// so logout cannot claim success for a no-op.
+	if err := configuration.DeleteProfile("default"); err == nil {
+		t.Error("DeleteProfile with no config file should error")
 	}
 
-	// Delete on missing file must not error
-	if err := configuration.DeleteProfile("default"); err != nil {
-		t.Errorf("DeleteProfile with no config file should not error, got: %v", err)
+	if err := configuration.WriteConfigForProfile("default", "https://a.example.com", "tok-a"); err != nil {
+		t.Fatal(err)
+	}
+	if err := configuration.DeleteProfile("nonexistent"); err == nil {
+		t.Error("DeleteProfile on missing profile should error")
 	}
 }
 

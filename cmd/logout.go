@@ -24,6 +24,11 @@ var logoutCmd = &cobra.Command{
 func logout(cmd *cobra.Command, _ []string) error {
 	profile, _ := resolvedProfile(cmd)
 
+	if err := configuration.ValidateProfileName(profile); err != nil {
+		printer.Error(err)
+		return openerrors.ErrHandled
+	}
+
 	ok, err := confirmRemove(profile)
 	if err != nil {
 		printer.Error(err)
