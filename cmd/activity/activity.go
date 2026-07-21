@@ -5,7 +5,7 @@ import "github.com/spf13/cobra"
 var RootCmd = &cobra.Command{
 	Use:   "activity [verb]",
 	Short: "Manage activities",
-	Long:  "List activities scoped by work package, project, or globally.",
+	Long:  "List activities of a work package (--work-package).",
 }
 
 func init() {

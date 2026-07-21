@@ -90,7 +90,7 @@ op work-package search <query>...                 # Search by subject, type, sta
 op work-package search <query>... -p <project>    # Limit search to a project; multiple words are ANDed; up to 100 results
 
 op work-package inspect <id>                      # Full details of one work package
-op work-package inspect <id> --types              # Also list available types on the work package
+op work-package inspect <id> --types              # List available types instead of showing the work package
 op work-package inspect <id> --open               # Open in default browser
 
 op work-package create "Subject" -p <id>          # Create (project accepts numeric ID or slug)
@@ -147,8 +147,7 @@ op user search <query>                            # Find a user
 op status list                                    # List work package statuses
 op type list                                      # List work package types
 
-op activity list                                  # All activities
-op activity list --work-package <wp-id>           # Activities for a specific work package
+op activity list --work-package <wp-id>           # Activities for a work package (flag is required)
 ```
 
 ## Git integration

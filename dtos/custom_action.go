@@ -30,5 +30,5 @@ func (dto *CustomActionDto) Convert() *models.CustomAction {
 	return &models.CustomAction{
 		Id:   parser.IdFromLink(dto.Links.Self.Href),
 		Name: dto.Name,
-		}
+	}
 }

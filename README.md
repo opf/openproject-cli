@@ -91,6 +91,21 @@ Open a new shell and completion should work by using the `TAB` key as usual.
 The OpenProject CLI commands are structured in a common, human-readable pattern. Every command is built
 as `op NOUN VERB [additional information]`. You will see plenty of examples within this section.
 
+### Breaking change: noun-first commands
+
+Earlier releases (up to 0.5.5) used verb-first commands. These have been replaced without aliases;
+scripts need to migrate:
+
+| Old (verb-first)          | New (noun-first)          |
+|---------------------------|---------------------------|
+| `op list workpackages`    | `op work-package list`    |
+| `op create workpackage`   | `op work-package create`  |
+| `op update workpackage`   | `op work-package update`  |
+| `op inspect workpackage`  | `op work-package inspect` |
+| `op search workpackages`  | `op work-package search`  |
+| `op list projects`        | `op project list`         |
+| `op list notifications`   | `op notification list`    |
+
 ### Discoverability
 
 Discoverability is key. As we won't document every single command within this README, it is important for the CLI tool,
@@ -210,8 +225,9 @@ op logout --profile work
 
 #### Profile names
 
-Profile names may only contain letters, digits, `-` and `_`. When prompted
-interactively the CLI suggests a sanitized version of any invalid input.
+Profile names may only contain letters, digits, `-` and `_`; hyphens must not
+be consecutive, leading, or trailing. When prompted interactively the CLI
+suggests a sanitized version of any invalid input.
 
 ### Prominent examples
 
@@ -257,7 +273,7 @@ op work-package update PROJ-123 --action Claim
 
 # Batch updating some properties of a work package
 # Valid input will get processed, while invalid (e.g. wrongly typed) input will get omitted
-op work-package update 42 --subject 'The new subject' --status 'In Progress' --type Implementation
+op work-package update 42 --subject 'The new subject' --type Implementation
 
 # Uploading an attachment to a work package
 op work-package update 42 --attach ./Downloads/Report.pdf

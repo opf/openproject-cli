@@ -3,10 +3,10 @@ package dtos
 import "github.com/opf/openproject-cli/models"
 
 type TimeEntryActivityDto struct {
-	Id      uint64                      `json:"id,omitempty"`
-	Name    string                      `json:"name,omitempty"`
-	Default bool                        `json:"default,omitempty"`
-	Links   *timeEntryActivityLinksDto  `json:"_links,omitempty"`
+	Id      uint64                     `json:"id,omitempty"`
+	Name    string                     `json:"name,omitempty"`
+	Default bool                       `json:"default,omitempty"`
+	Links   *timeEntryActivityLinksDto `json:"_links,omitempty"`
 }
 
 type timeEntryActivityElements struct {
