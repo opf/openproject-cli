@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/opf/openproject-cli/components/common"
+	openerrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
@@ -14,7 +15,7 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
-func action(workPackage *dtos.WorkPackageDto, action string) error {
+func resolveAction(workPackage *dtos.WorkPackageDto, action string) (*dtos.CustomActionDto, error) {
 	foundAction := findAction(action, workPackage.Embedded.CustomActions)
 	if foundAction == nil {
 		printer.ErrorText("Failed to execute work package custom action.")
@@ -31,10 +32,10 @@ func action(workPackage *dtos.WorkPackageDto, action string) error {
 			[]*models.CustomAction{},
 		)
 		printer.CustomActions(availableActions)
-		return nil
+		return nil, openerrors.ErrHandled
 	}
 
-	return executeAction(workPackage, foundAction)
+	return foundAction, nil
 }
 
 func findAction(actionInput string, availableActions []*dtos.CustomActionDto) *dtos.CustomActionDto {

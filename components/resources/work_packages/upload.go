@@ -13,11 +13,9 @@ import (
 	"github.com/opf/openproject-cli/dtos"
 )
 
+// upload assumes validateAttachment already confirmed the work package
+// accepts direct uploads (addAttachment link present, no fog storage).
 func upload(dto *dtos.WorkPackageDto, path string) error {
-	if dto.Links.PrepareAttachment != nil {
-		printer.ErrorText(fmt.Sprintf("Uploads to fog storages are currently not supported. :("))
-	}
-
 	printer.Info(fmt.Sprintf("Uploading %s to work package ...", printer.Yellow(filepath.Base(path))))
 	link := dto.Links.AddAttachment
 	reader, contentType, err := bodyReader(path)

@@ -1,10 +1,14 @@
 package workpackage
 
 import (
+	"errors"
+	"strings"
 	"testing"
 
 	"github.com/spf13/cobra"
 
+	openerrors "github.com/opf/openproject-cli/components/errors"
+	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/resources/work_packages"
 )
 
@@ -63,5 +67,33 @@ func TestUpdateOptions_DescriptionProvided(t *testing.T) {
 
 	if _, ok := options[work_packages.UpdateDescription]; !ok {
 		t.Error("expected UpdateDescription to be present when flag explicitly provided with empty string")
+	}
+}
+
+func TestUpdateWithoutOptionsStopsBeforeRequest(t *testing.T) {
+	updateActionFlag = ""
+	updateAssigneeFlag = 0
+	updateAttachFlag = ""
+	updateDescriptionFlag = ""
+	updateSubjectFlag = ""
+	updateTypeFlag = ""
+
+	cmd := newCmdWithDescriptionFlag(&updateDescriptionFlag)
+	if err := cmd.Flags().Parse(nil); err != nil {
+		t.Fatal(err)
+	}
+
+	testingPrinter := &printer.TestingPrinter{}
+	printer.Init(testingPrinter)
+
+	err := updateWorkPackage(cmd, []string{"42"})
+	if !errors.Is(err, openerrors.ErrHandled) {
+		t.Fatalf("updateWorkPackage error = %v, want ErrHandled", err)
+	}
+	if !strings.Contains(testingPrinter.ErrResult, "No update options provided") {
+		t.Errorf("stderr = %q, want no-options diagnostic", testingPrinter.ErrResult)
+	}
+	if strings.Contains(testingPrinter.ErrResult, "Cannot execute requests") {
+		t.Errorf("command attempted a request: %q", testingPrinter.ErrResult)
 	}
 }

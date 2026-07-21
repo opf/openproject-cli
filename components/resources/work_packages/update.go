@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/opf/openproject-cli/components/common"
+	openerrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/printer"
@@ -41,8 +43,27 @@ func Update(id string, options map[UpdateOption]string) (*models.WorkPackage, er
 		return nil, err
 	}
 
-	if customAction, ok := options[UpdateCustomAction]; ok {
-		err = action(workPackage, customAction)
+	var customAction *dtos.CustomActionDto
+	if input, ok := options[UpdateCustomAction]; ok {
+		customAction, err = resolveAction(workPackage, input)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	patchDto, updateString, patchNeeded, err := preparePatch(workPackage, options)
+	if err != nil {
+		return nil, err
+	}
+
+	if file, ok := options[UpdateAttachment]; ok {
+		if err := validateAttachment(workPackage, file); err != nil {
+			return nil, err
+		}
+	}
+
+	if customAction != nil {
+		err = executeAction(workPackage, customAction)
 		if err != nil {
 			return nil, err
 		}
@@ -54,9 +75,11 @@ func Update(id string, options map[UpdateOption]string) (*models.WorkPackage, er
 		}
 	}
 
-	err = patch(workPackage, options)
-	if err != nil {
-		return nil, err
+	if patchNeeded {
+		patchDto.LockVersion = workPackage.LockVersion
+		if err := executePatch(workPackage, patchDto, updateString); err != nil {
+			return nil, err
+		}
 	}
 
 	if file, ok := options[UpdateAttachment]; ok {
@@ -74,9 +97,9 @@ func Update(id string, options map[UpdateOption]string) (*models.WorkPackage, er
 	return workPackage.Convert(), nil
 }
 
-func patch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) error {
+func preparePatch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) (*dtos.WorkPackageDto, string, bool, error) {
 	var patchNeeded = false
-	patchDto := dtos.WorkPackageDto{LockVersion: workPackage.LockVersion}
+	patchDto := &dtos.WorkPackageDto{}
 	var updateString string
 
 	for option, value := range options {
@@ -85,9 +108,9 @@ func patch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) er
 		}
 
 		patchNeeded = true
-		updateStringLine, err := patchMap[option](&patchDto, workPackage, value)
+		updateStringLine, err := patchMap[option](patchDto, workPackage, value)
 		if err != nil {
-			return err
+			return nil, "", false, err
 		}
 
 		if len(updateStringLine) > 0 {
@@ -98,10 +121,10 @@ func patch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) er
 		}
 	}
 
-	if !patchNeeded {
-		return nil
-	}
+	return patchDto, updateString, patchNeeded, nil
+}
 
+func executePatch(workPackage, patchDto *dtos.WorkPackageDto, updateString string) error {
 	printer.Info("Updating work package with patch ...")
 
 	marshal, err := json.Marshal(patchDto)
@@ -116,6 +139,30 @@ func patch(workPackage *dtos.WorkPackageDto, options map[UpdateOption]string) er
 
 	printer.Info(updateString)
 	printer.Done()
+	return nil
+}
+
+func validateAttachment(workPackage *dtos.WorkPackageDto, path string) error {
+	if workPackage.Links.PrepareAttachment != nil {
+		return fmt.Errorf("uploads to fog storages are currently not supported")
+	}
+	if workPackage.Links.AddAttachment == nil {
+		return fmt.Errorf("this work package does not accept attachments (missing permission?)")
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = file.Close() }()
+
+	info, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	if info.IsDir() {
+		return fmt.Errorf("attachment path %q is a directory", path)
+	}
 	return nil
 }
 
@@ -136,7 +183,7 @@ func typePatch(patch, workPackage *dtos.WorkPackageDto, input string) (string, e
 
 		printer.Types(types.Convert())
 
-		return "", nil
+		return "", openerrors.ErrHandled
 	}
 
 	if patch.Links == nil {

@@ -1,6 +1,7 @@
 package workpackage
 
 import (
+	stderrors "errors"
 	"fmt"
 	"strconv"
 
@@ -38,9 +39,17 @@ func updateWorkPackage(cmd *cobra.Command, args []string) error {
 		return openerrors.ErrHandled
 	}
 
-	workPackage, err := work_packages.Update(id, updateOptions(cmd))
+	options := updateOptions(cmd)
+	if len(options) == 0 {
+		printer.ErrorText("No update options provided. Use --help to see available flags.")
+		return openerrors.ErrHandled
+	}
+
+	workPackage, err := work_packages.Update(id, options)
 	if err != nil {
-		printer.Error(err)
+		if !stderrors.Is(err, openerrors.ErrHandled) {
+			printer.Error(err)
+		}
 		return openerrors.ErrHandled
 	}
 
