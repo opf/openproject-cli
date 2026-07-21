@@ -25,8 +25,9 @@ func searchUser(_ *cobra.Command, args []string) error {
 		printer.ErrorText(fmt.Sprintf("Expected 1 argument [searchInput], but got %d", len(args)))
 		return openerrors.ErrHandled
 	}
+	query := args[0]
 
-	if common.Contains(keywords, args[0]) {
+	if common.Contains(keywords, query) {
 		me, err := users.Me()
 		if err != nil {
 			printer.Error(err)
@@ -36,16 +37,15 @@ func searchUser(_ *cobra.Command, args []string) error {
 		return nil
 	}
 
-	collection, err := users.Search(args[0])
+	collection, err := users.Search(query)
 	if err != nil {
 		printer.Error(err)
 		return openerrors.ErrHandled
 	}
 
 	if len(collection) == 0 {
-		printer.Info(fmt.Sprintf("No user found for search input %s.", printer.Cyan(args[0])))
-	} else {
-		printer.Users(collection)
+		printer.Info(fmt.Sprintf("No user found for search input %s.", printer.Cyan(query)))
 	}
+	printer.Users(collection)
 	return nil
 }

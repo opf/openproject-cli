@@ -49,8 +49,7 @@ func searchWorkPackages(_ *cobra.Command, args []string) error {
 
 	if len(collection) == 0 {
 		printer.Info(fmt.Sprintf("No work package found for search input %s.", printer.Cyan(query)))
-	} else {
-		printer.WorkPackages(collection)
 	}
+	printer.WorkPackages(collection)
 	return nil
 }
