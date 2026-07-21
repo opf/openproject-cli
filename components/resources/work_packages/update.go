@@ -184,7 +184,7 @@ func typePatch(patch, workPackage *dtos.WorkPackageDto, input string) (string, e
 			printer.Red(fmt.Sprintf("#%d", parser.IdFromLink(workPackage.Links.Project.Href))),
 		))
 
-		printer.Types(types.Convert())
+		printer.AvailableTypes(types.Convert())
 
 		return "", openerrors.ErrHandled
 	}

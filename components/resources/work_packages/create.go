@@ -51,7 +51,7 @@ func typeCreate(projectId string, workPackage *dtos.WorkPackageDto, input string
 			printer.Cyan(input),
 			printer.Red(projectId),
 		))
-		printer.Types(types.Convert())
+		printer.AvailableTypes(types.Convert())
 		return openerrors.ErrHandled
 	}
 
