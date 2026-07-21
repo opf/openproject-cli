@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
+	openerrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/printer"
@@ -50,10 +51,8 @@ func typeCreate(projectId string, workPackage *dtos.WorkPackageDto, input string
 			printer.Cyan(input),
 			printer.Red(projectId),
 		))
-
 		printer.Types(types.Convert())
-
-		return nil
+		return openerrors.ErrHandled
 	}
 
 	if workPackage.Links == nil {

@@ -1,6 +1,7 @@
 package workpackage
 
 import (
+	stderrors "errors"
 	"fmt"
 	"strconv"
 
@@ -41,14 +42,16 @@ func createWorkPackage(cmd *cobra.Command, args []string) error {
 
 	workPackage, err := work_packages.Create(createProjectId, createOptions(cmd, subject))
 	if err != nil {
-		printer.Error(err)
+		if !stderrors.Is(err, openerrors.ErrHandled) {
+			printer.Error(err)
+		}
 		return openerrors.ErrHandled
 	}
 
 	if createOpenInBrowser {
 		err = launch.Browser(routes.WorkPackageUrl(workPackage))
 		if err != nil {
-			printer.ErrorText(fmt.Sprintf("Error opening browser: %+v", err))
+			printer.Warning(fmt.Sprintf("Error opening browser: %+v", err))
 		}
 	} else {
 		printer.WorkPackage(workPackage)
