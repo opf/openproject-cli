@@ -1,6 +1,8 @@
 package activity
 
 import (
+	stderrors "errors"
+
 	"github.com/spf13/cobra"
 
 	openerrors "github.com/opf/openproject-cli/components/errors"
@@ -29,7 +31,9 @@ func listActivities(_ *cobra.Command, _ []string) error {
 func listWorkPackageActivities(wpId string) error {
 	acts, err := work_packages.Activities(wpId)
 	if err != nil {
-		printer.ErrorText(err.Error())
+		if !stderrors.Is(err, openerrors.ErrHandled) {
+			printer.Error(err)
+		}
 		return openerrors.ErrHandled
 	}
 
@@ -40,7 +44,13 @@ func listWorkPackageActivities(wpId string) error {
 		}
 	}
 
-	userList := users.ByIds(userIds)
+	userList, err := users.ByIds(userIds)
+	if err != nil {
+		if !stderrors.Is(err, openerrors.ErrHandled) {
+			printer.Error(err)
+		}
+		return openerrors.ErrHandled
+	}
 	printer.Activities(acts, userList)
 	return nil
 }
