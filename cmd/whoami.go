@@ -26,13 +26,13 @@ func whoami(cmd *cobra.Command, _ []string) error {
 	// OP_CLI_HOST/OP_CLI_TOKEN override every stored profile, so listing file
 	// profiles would just query the same server under different labels.
 	if configuration.HasEnvironmentConfig() {
-		return whoamiOne("environment")
+		return whoamiSingle("environment")
 	}
 
 	profile, explicit := resolvedProfile(cmd)
 
 	if explicit {
-		return whoamiOne(profile)
+		return whoamiSingle(profile)
 	}
 
 	// No profile specified: show all profiles
@@ -67,12 +67,14 @@ func whoami(cmd *cobra.Command, _ []string) error {
 	return nil
 }
 
-func whoamiOne(profile string) error {
+// whoamiSingle renders exactly one profile as a list, so JSON output stays a
+// single-element array consistent with the all-profiles path.
+func whoamiSingle(profile string) error {
 	entry, err := whoamiEntry(profile)
 	if err != nil {
 		return err
 	}
-	printer.Whoami(entry.Profile, entry.Host, entry.User)
+	printer.WhoamiList([]printer.WhoamiEntry{entry})
 	return nil
 }
 
