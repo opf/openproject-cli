@@ -283,28 +283,27 @@ func readOrMigrate(data []byte) (*iniFile, bool, error) {
 		return newIniFile(), false, nil
 	}
 
-	// Old format: no section headers. Check prefix rather than Contains so that
-	// IPv6 host URLs (e.g. http://[::1]) are not mis-detected as INI files.
-	if !strings.HasPrefix(content, "[") {
-		clean := common.SanitizeLineBreaks(content)
-		parts := strings.SplitN(clean, " ", 2)
-		// Require the first field to look like a real host URL, so a corrupt
-		// file is not migrated into bogus credentials just because it happens
-		// to contain a space.
-		if len(parts) == 2 && looksLikeHost(parts[0]) && parts[1] != "" {
-			f := newIniFile()
-			f.set(DefaultProfile, "host", parts[0])
-			f.set(DefaultProfile, "token", parts[1])
-			return f, true, nil
-		}
-		return nil, false, invalidConfigError()
+	// Detect INI by parsing rather than a raw prefix check: parseIni skips
+	// comment and blank lines, so a valid INI file that opens with a comment
+	// still yields section headers. Any section present means INI format.
+	if f := parseIni(data); len(f.sections) > 0 {
+		return f, false, nil
 	}
 
-	f := parseIni(data)
-	if len(f.sections) == 0 {
-		return nil, false, invalidConfigError()
+	// Old format: no section headers, so treat the content as a single
+	// "host token" line. Require the first field to look like a real host URL,
+	// so a corrupt file is not migrated into bogus credentials just because it
+	// happens to contain a space. looksLikeHost accepts IPv6 host URLs
+	// (e.g. http://[::1]).
+	clean := common.SanitizeLineBreaks(content)
+	parts := strings.SplitN(clean, " ", 2)
+	if len(parts) == 2 && looksLikeHost(parts[0]) && parts[1] != "" {
+		f := newIniFile()
+		f.set(DefaultProfile, "host", parts[0])
+		f.set(DefaultProfile, "token", parts[1])
+		return f, true, nil
 	}
-	return f, false, nil
+	return nil, false, invalidConfigError()
 }
 
 func invalidConfigError() error {

@@ -382,3 +382,22 @@ func TestMigration_oldFormatRewrittenAsIni(t *testing.T) {
 		t.Errorf("after migration: expected [default], got %v", profiles)
 	}
 }
+
+// A valid INI file may open with a comment line. parseIni skips comments, so
+// the reader must treat it as INI rather than mistaking it for the legacy
+// "host token" format and rejecting it as corrupt.
+func TestReadConfig_IniWithLeadingComment(t *testing.T) {
+	setupTempConfig(t)
+	writeRaw(t, "# my openproject config\n[default]\nhost = https://commented.example.com\ntoken = commenttoken\n")
+
+	host, token, err := configuration.ReadConfig("default")
+	if err != nil {
+		t.Fatalf("ReadConfig returned error for commented INI: %v", err)
+	}
+	if host != "https://commented.example.com" {
+		t.Errorf("host = %q, want %q", host, "https://commented.example.com")
+	}
+	if token != "commenttoken" {
+		t.Errorf("token = %q, want %q", token, "commenttoken")
+	}
+}
