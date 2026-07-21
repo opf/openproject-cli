@@ -8,14 +8,12 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
 	"github.com/opf/openproject-cli/components/resources"
 	"github.com/opf/openproject-cli/components/resources/projects"
 	"github.com/opf/openproject-cli/components/resources/work_packages"
 	"github.com/opf/openproject-cli/components/resources/work_packages/filters"
-	"github.com/opf/openproject-cli/models"
 )
 
 var listAssignee string
@@ -149,37 +147,6 @@ func filterOptions() *map[work_packages.FilterOption]string {
 
 	return &options
 }
-
-func validatedVersionId(version string) string {
-	project, err := projects.Lookup(listProjectId)
-	if err != nil {
-		printer.Error(err)
-	}
-
-	versions, err := projects.AvailableVersions(project.Identifier)
-	if err != nil {
-		printer.Error(err)
-	}
-
-	filteredVersions := common.Filter(versions, func(v *models.Version) bool {
-		return v.Name == version
-	})
-
-	if len(filteredVersions) != 1 {
-		printer.Info(fmt.Sprintf(
-			"No unique available version from input %s found for project %s. Please use one of the versions listed below.",
-			printer.Cyan(version),
-			printer.Red(project.Identifier),
-		))
-
-		printer.Versions(versions)
-
-		os.Exit(-1)
-	}
-
-	return strconv.FormatUint(filteredVersions[0].Id, 10)
-}
-
 
 func validateFilterValue(filter work_packages.FilterOption, value string) string {
 	matched, err := regexp.Match(work_packages.InputValidationExpression[filter], []byte(value))
