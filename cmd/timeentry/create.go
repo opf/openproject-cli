@@ -1,6 +1,7 @@
 package timeentry
 
 import (
+	stderrors "errors"
 	"strconv"
 	"time"
 
@@ -57,7 +58,9 @@ func createTimeEntry(cmd *cobra.Command, _ []string) error {
 
 	entry, err := time_entries.Create(options)
 	if err != nil {
-		printer.Error(err)
+		if !stderrors.Is(err, openerrors.ErrHandled) {
+			printer.Error(err)
+		}
 		return openerrors.ErrHandled
 	}
 

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	openerrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/printer"
@@ -97,7 +98,7 @@ func activityCreate(entry *dtos.TimeEntryDto, input string) error {
 	if err != nil {
 		printer.ErrorText(fmt.Sprintf("Could not fetch available activities: %s", err))
 		printer.Info("Use `op time-entry list` to see existing entries and their activities.")
-		return fmt.Errorf("activity lookup failed")
+		return openerrors.ErrHandled
 	}
 
 	if strings.TrimSpace(input) == "" {
@@ -111,7 +112,7 @@ func activityCreate(entry *dtos.TimeEntryDto, input string) error {
 		for _, a := range candidates {
 			printer.Info(fmt.Sprintf("  - %s", a.Name))
 		}
-		return fmt.Errorf("activity %q is ambiguous", input)
+		return openerrors.ErrHandled
 	}
 	if found == nil {
 		printer.ErrorText(fmt.Sprintf("No activity matching %q found.", input))
@@ -121,7 +122,7 @@ func activityCreate(entry *dtos.TimeEntryDto, input string) error {
 				printer.Info(fmt.Sprintf("  - %s", a.Name))
 			}
 		}
-		return fmt.Errorf("activity %q not found", input)
+		return openerrors.ErrHandled
 	}
 
 	if entry.Links == nil {
