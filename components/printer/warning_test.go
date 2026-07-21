@@ -12,10 +12,10 @@ func TestWarning(t *testing.T) {
 
 	printer.Warning("watch out")
 
-	if !strings.Contains(testingPrinter.Result, "[WARNING]") {
-		t.Errorf("warning missing [WARNING] tag: %q", testingPrinter.Result)
+	if !strings.Contains(testingPrinter.ErrResult, "[WARNING]") {
+		t.Errorf("warning missing [WARNING] tag: %q", testingPrinter.ErrResult)
 	}
-	if !strings.Contains(testingPrinter.Result, "watch out") {
-		t.Errorf("warning missing message: %q", testingPrinter.Result)
+	if !strings.Contains(testingPrinter.ErrResult, "watch out") {
+		t.Errorf("warning missing message: %q", testingPrinter.ErrResult)
 	}
 }

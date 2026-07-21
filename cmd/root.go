@@ -96,7 +96,7 @@ projects of your OpenProject instance.`,
 				runtime.Version(),
 			)
 
-			printer.Info(printer.Yellow(versionText))
+			printer.Output(printer.Yellow(versionText))
 
 			return
 		}

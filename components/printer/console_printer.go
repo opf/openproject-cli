@@ -18,3 +18,7 @@ func (printer *ConsolePrinter) Println(a ...any) (n int, err error) {
 func (printer *ConsolePrinter) Eprintln(a ...any) (n int, err error) {
 	return fmt.Fprintln(os.Stderr, a...)
 }
+
+func (printer *ConsolePrinter) Eprintf(format string, a ...any) (n int, err error) {
+	return fmt.Fprintf(os.Stderr, format, a...)
+}
