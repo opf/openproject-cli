@@ -143,6 +143,9 @@ func executePatch(workPackage, patchDto *dtos.WorkPackageDto, updateString strin
 }
 
 func validateAttachment(workPackage *dtos.WorkPackageDto, path string) error {
+	if workPackage.Links == nil {
+		return fmt.Errorf("this work package does not accept attachments (missing permission?)")
+	}
 	if workPackage.Links.PrepareAttachment != nil {
 		return fmt.Errorf("uploads to fog storages are currently not supported")
 	}
