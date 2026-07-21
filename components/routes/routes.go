@@ -28,6 +28,12 @@ func WorkPackageUrl(workPackage *models.WorkPackage) *url.URL {
 
 func ProjectUrl(project *models.Project) *url.URL {
 	routeUrl := *host
-	routeUrl.Path = fmt.Sprintf("projects/%s", project.Identifier)
+	// Current servers always set identifier, but fall back to the numeric id
+	// (also a valid /projects/ address) when it is missing.
+	identifier := project.Identifier
+	if identifier == "" {
+		identifier = strconv.FormatUint(project.Id, 10)
+	}
+	routeUrl.Path = fmt.Sprintf("projects/%s", identifier)
 	return &routeUrl
 }
