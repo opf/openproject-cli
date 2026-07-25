@@ -3,11 +3,17 @@
 [![CI](https://github.com/opf/openproject-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/opf/openproject-cli/actions/workflows/ci.yml)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/opf/openproject-cli)
 
+> [!WARNING]
+> **Please read before installing or upgrading to v0.6.**
+>
+> - **Breaking changes:** v0.6 restructures the CLI around noun-first commands (e.g. `op work-package list`). Scripts and workflows built on v0.5.x will need updating.
+> - **Maturity:** v0.6 was developed at a rapid pace — including with the assistance of AI coding tools — primarily for internal use. It is used daily by a number of developers on our team and works well for us, but it has not yet had the level of scrutiny required to consider it secure or stable enough for general usage. Use it with care and at your own risk.
+> - **Support:** As with all versions of this tool, this is unsupported software with no official technical support from OpenProject GmbH.
+>
+> If you value stability over new features, we recommend staying on [v0.5.5](https://github.com/opf/openproject-cli/releases/tag/v0.5.5) for now. It is equally unsupported, but has a smaller surface area and a longer track record.
+
 OpenProject CLI is a tool for operating your OpenProject instances from the command line. Therefore, it provides a
 subset of use cases for OpenProject.
-
-⚠️ **IMPORTANT**: This tool is currently in a pre-release phase. It is not meant to be full-featured, complete, nor will
-it have official technical support by the OpenProject GmbH.
 
 The OpenProject CLI is meant to be operated in a self-explanatory and easy-to-use way. It provides meaningful commands
 without abbreviations, that can be executed in a human-readable manner. For more experienced users, many commands
