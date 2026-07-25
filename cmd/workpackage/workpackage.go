@@ -84,6 +84,24 @@ func init() {
 		"",
 		"Change the work package type",
 	)
+	updateCmd.Flags().StringVar(
+		&updateStatusFlag,
+		"status",
+		"",
+		"Change the status of the work package by name",
+	)
+	updateCmd.Flags().StringArrayVar(
+		&updateSetFlags,
+		"set",
+		nil,
+		"Set a field by label or API name, e.g. --set \"Story points=5\"",
+	)
+	updateCmd.Flags().BoolVar(
+		&updateDryRun,
+		"dry-run",
+		false,
+		"Validate and show the resulting plan without applying changes",
+	)
 
 	inspectCmd.Flags().BoolVarP(
 		&inspectOpenInBrowser,

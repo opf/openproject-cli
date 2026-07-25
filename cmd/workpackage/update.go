@@ -18,6 +18,9 @@ var updateAttachFlag string
 var updateDescriptionFlag string
 var updateSubjectFlag string
 var updateTypeFlag string
+var updateStatusFlag string
+var updateSetFlags []string
+var updateDryRun bool
 
 var updateCmd = &cobra.Command{
 	Use:   "update [id]",
@@ -39,10 +42,48 @@ func updateWorkPackage(cmd *cobra.Command, args []string) error {
 		return openerrors.ErrHandled
 	}
 
+	if len(updateSetFlags) > 0 && updateHasFieldFlags(cmd) {
+		printer.ErrorText("cannot combine --set with other update flags")
+		return openerrors.ErrHandled
+	}
+
+	if len(updateSetFlags) > 0 {
+		if updateDryRun {
+			plan, err := work_packages.DryRunUpdateFields(id, updateSetFlags)
+			if err != nil {
+				printer.Error(err)
+				return openerrors.ErrHandled
+			}
+			printer.WorkPackageUpdatePlan(plan)
+			return nil
+		}
+		if err := work_packages.UpdateFields(id, updateSetFlags); err != nil {
+			printer.Error(err)
+			return openerrors.ErrHandled
+		}
+		payload, err := work_packages.Inspect(id)
+		if err != nil {
+			printer.Error(err)
+			return openerrors.ErrHandled
+		}
+		printer.WorkPackageDetails(payload)
+		return nil
+	}
+
 	options := updateOptions(cmd)
 	if len(options) == 0 {
 		printer.ErrorText("No update options provided. Use --help to see available flags.")
 		return openerrors.ErrHandled
+	}
+
+	if updateDryRun {
+		plan, err := work_packages.DryRunUpdate(id, options)
+		if err != nil {
+			printer.Error(err)
+			return openerrors.ErrHandled
+		}
+		printer.WorkPackageUpdatePlan(plan)
+		return nil
 	}
 
 	workPackage, err := work_packages.Update(id, options)
@@ -56,6 +97,15 @@ func updateWorkPackage(cmd *cobra.Command, args []string) error {
 	printer.Info("-- ")
 	printer.WorkPackage(workPackage)
 	return nil
+}
+
+func updateHasFieldFlags(cmd *cobra.Command) bool {
+	for _, name := range []string{"subject", "type", "assignee", "description", "status", "action", "attach"} {
+		if cmd.Flags().Changed(name) {
+			return true
+		}
+	}
+	return false
 }
 
 func updateOptions(cmd *cobra.Command) map[work_packages.UpdateOption]string {
@@ -77,6 +127,9 @@ func updateOptions(cmd *cobra.Command) map[work_packages.UpdateOption]string {
 	}
 	if len(updateTypeFlag) > 0 {
 		options[work_packages.UpdateType] = updateTypeFlag
+	}
+	if len(updateStatusFlag) > 0 {
+		options[work_packages.UpdateStatus] = updateStatusFlag
 	}
 	return options
 }
