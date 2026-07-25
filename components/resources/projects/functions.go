@@ -19,8 +19,11 @@ func All() ([]*models.Project, error) {
 	return element.Convert(), nil
 }
 
-func Lookup(id uint64) (*models.Project, error) {
-	response, err := requests.Get(paths.Project(id), nil)
+func Lookup(identifier string) (*models.Project, error) {
+	if err := ValidateIdentifier(identifier); err != nil {
+		return nil, err
+	}
+	response, err := requests.Get(paths.Project(identifier), nil)
 	if err != nil {
 		return nil, err
 	}

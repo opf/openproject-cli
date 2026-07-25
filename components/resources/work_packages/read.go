@@ -1,8 +1,6 @@
 package work_packages
 
 import (
-	"strconv"
-
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/requests"
@@ -10,7 +8,7 @@ import (
 	"github.com/opf/openproject-cli/models"
 )
 
-func Lookup(id uint64) (*models.WorkPackage, error) {
+func Lookup(id string) (*models.WorkPackage, error) {
 	workPackage, err := fetch(id)
 	if err != nil {
 		return nil, err
@@ -21,7 +19,7 @@ func Lookup(id uint64) (*models.WorkPackage, error) {
 
 func All(filterOptions *map[FilterOption]string, query requests.Query, showOnlyTotal bool) (*models.WorkPackageCollection, error) {
 	var filters []requests.Filter
-	var projectId *uint64
+	var projectId *string
 	var queryAttributes = make(map[string]string)
 
 	for updateOpt, value := range *filterOptions {
@@ -35,8 +33,9 @@ func All(filterOptions *map[FilterOption]string, query requests.Query, showOnlyT
 		case Type:
 			filters = append(filters, TypeFilter(value))
 		case Project:
-			n, _ := strconv.ParseUint(value, 10, 64)
-			projectId = &n
+			projectId = &value
+		case Parent:
+			filters = append(filters, ParentFilter(value))
 		}
 	}
 
@@ -64,7 +63,7 @@ func All(filterOptions *map[FilterOption]string, query requests.Query, showOnlyT
 	return workPackageCollection.Convert(), nil
 }
 
-func AvailableTypes(id uint64) ([]*models.Type, error) {
+func AvailableTypes(id string) ([]*models.Type, error) {
 	workPackageDto, err := fetch(id)
 	if err != nil {
 		return nil, err
@@ -78,7 +77,7 @@ func AvailableTypes(id uint64) ([]*models.Type, error) {
 	return types.Convert(), nil
 }
 
-func fetch(id uint64) (*dtos.WorkPackageDto, error) {
+func fetch(id string) (*dtos.WorkPackageDto, error) {
 	response, err := requests.Get(paths.WorkPackage(id), nil)
 	if err != nil {
 		return nil, err

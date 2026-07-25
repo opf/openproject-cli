@@ -4,16 +4,15 @@ import (
 	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/paths"
-	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
 	"github.com/opf/openproject-cli/components/resources"
 	"github.com/opf/openproject-cli/dtos"
 	"github.com/opf/openproject-cli/models"
 )
 
-func ByIds(ids []uint64) []*models.User {
+func ByIds(ids []uint64) ([]*models.User, error) {
 	if len(ids) == 0 {
-		return []*models.User{}
+		return []*models.User{}, nil
 	}
 	var filters []requests.Filter
 	filters = append(filters, IdFilter(ids))
@@ -24,11 +23,11 @@ func ByIds(ids []uint64) []*models.User {
 
 	response, err := requests.Get(requestUrl, &query)
 	if err != nil {
-		printer.Error(err)
+		return nil, err
 	}
 
 	userCollection := parser.Parse[dtos.UserCollectionDto](response)
-	return userCollection.Convert()
+	return userCollection.Convert(), nil
 }
 
 func Me() (*models.User, error) {

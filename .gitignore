@@ -2,8 +2,9 @@
 .fleet
 .idea
 
-# Compile output, if running `go build` on a linux/x64
+# Compile output
 openproject-cli
+op
 
 # If you prefer the allow list template instead of the deny list, see community template:
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
@@ -26,3 +27,6 @@ openproject-cli
 
 # Go workspace file
 go.work
+
+# Claude local settings file
+.claude/settings.local.json

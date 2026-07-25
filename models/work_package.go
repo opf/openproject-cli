@@ -2,6 +2,7 @@ package models
 
 type WorkPackage struct {
 	Id          uint64
+	DisplayId   string
 	Subject     string
 	Type        string
 	Assignee    string

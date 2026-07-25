@@ -1,0 +1,22 @@
+package activity
+
+import "github.com/spf13/cobra"
+
+var RootCmd = &cobra.Command{
+	Use:   "activity [verb]",
+	Short: "Manage activities",
+	Long:  "List activities of a work package (--work-package).",
+}
+
+func init() {
+	listCmd.Flags().StringVarP(
+		&listWpId,
+		"work-package",
+		"w",
+		"",
+		"Work package ID or identifier to list activities for",
+	)
+	_ = listCmd.MarkFlagRequired("work-package")
+
+	RootCmd.AddCommand(listCmd)
+}

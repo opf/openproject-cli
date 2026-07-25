@@ -17,11 +17,12 @@ type WorkPackageLinksDto struct {
 
 type WorkPackageDto struct {
 	Id          int64                `json:"id,omitempty"`
+	DisplayId   string               `json:"displayId,omitempty"`
 	Subject     string               `json:"subject,omitempty"`
 	Links       *WorkPackageLinksDto `json:"_links,omitempty"`
 	Description *LongTextDto         `json:"description,omitempty"`
 	Embedded    *embeddedDto         `json:"_embedded,omitempty"`
-	LockVersion int                  `json:"lockVersion,omitempty"`
+	LockVersion int                  `json:"lockVersion"`
 }
 
 type embeddedDto struct {
@@ -48,13 +49,30 @@ type CreateWorkPackageDto struct {
 /////////////// MODEL CONVERSION ///////////////
 
 func (dto *WorkPackageDto) Convert() *models.WorkPackage {
+	var wpType, assignee, status, description string
+	if dto.Links != nil {
+		if dto.Links.Type != nil {
+			wpType = dto.Links.Type.Title
+		}
+		if dto.Links.Assignee != nil {
+			assignee = dto.Links.Assignee.Title
+		}
+		if dto.Links.Status != nil {
+			status = dto.Links.Status.Title
+		}
+	}
+	if dto.Description != nil {
+		description = dto.Description.Raw
+	}
+
 	return &models.WorkPackage{
 		Id:          uint64(dto.Id),
+		DisplayId:   dto.DisplayId,
 		Subject:     dto.Subject,
-		Type:        dto.Links.Type.Title,
-		Assignee:    dto.Links.Assignee.Title,
-		Status:      dto.Links.Status.Title,
-		Description: dto.Description.Raw,
+		Type:        wpType,
+		Assignee:    assignee,
+		Status:      status,
+		Description: description,
 		LockVersion: dto.LockVersion,
 	}
 }

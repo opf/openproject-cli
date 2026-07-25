@@ -12,6 +12,7 @@ import (
 
 	"github.com/opf/openproject-cli/components/common"
 	"github.com/opf/openproject-cli/components/configuration"
+	openerrors "github.com/opf/openproject-cli/components/errors"
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/printer"
@@ -27,7 +28,7 @@ var loginCmd = &cobra.Command{
 this tool for a specific OpenProject instance. The login
 needs the host URL of the OpenProject instance and a
 generated API token.`,
-	Run: login,
+	RunE: login,
 }
 
 const (
@@ -37,7 +38,13 @@ const (
 	tokenInputError    = "There was a problem parsing the token input. Please try again."
 )
 
-func login(_ *cobra.Command, _ []string) {
+func login(cmd *cobra.Command, _ []string) error {
+	profile, err := resolveLoginProfile(cmd)
+	if err != nil {
+		printer.Error(err)
+		return openerrors.ErrHandled
+	}
+
 	var hostUrl *url.URL
 	var token string
 
@@ -64,10 +71,10 @@ func login(_ *cobra.Command, _ []string) {
 	}
 
 	for {
-		fmt.Printf("OpenProject API Token (Visit %s/my/access_tokens to generate one): ", hostUrl)
+		printer.Input(fmt.Sprintf("OpenProject API Token (Visit %s/my/access_tokens to generate one): ", hostUrl))
 		ok, t := requestApiToken()
 		if !ok {
-			fmt.Println(tokenInputError)
+			printer.ErrorText(tokenInputError)
 			continue
 		}
 
@@ -88,7 +95,64 @@ func login(_ *cobra.Command, _ []string) {
 		break
 	}
 
-	storeLoginData(hostUrl, token)
+	return storeLoginData(profile, hostUrl, token)
+}
+
+// resolveLoginProfile determines the profile name for the login command.
+//
+//   - If --profile was explicitly passed: validate the value immediately,
+//     display it, and use it without prompting.
+//   - If OP_CLI_PROFILE is set (but --profile was not): display the value
+//     and use it without prompting.
+//   - Otherwise: prompt the user interactively.
+func resolveLoginProfile(cmd *cobra.Command) (string, error) {
+	if cmd.Root().PersistentFlags().Changed("profile") {
+		if err := configuration.ValidateProfileName(profileName); err != nil {
+			return "", err
+		}
+		printer.Info(fmt.Sprintf("Profile: %s", profileName))
+		return profileName, nil
+	}
+
+	if env := os.Getenv(configuration.EnvProfile); env != "" {
+		if err := configuration.ValidateProfileName(env); err != nil {
+			return "", err
+		}
+		printer.Info(fmt.Sprintf("Profile: %s", env))
+		return env, nil
+	}
+
+	return promptProfileName(configuration.DefaultProfile)
+}
+
+// promptProfileName shows an interactive prompt, re-prompting on invalid input
+// and offering the sanitized form as the next default.
+func promptProfileName(defaultName string) (string, error) {
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		printer.Input(fmt.Sprintf("Profile name? [%s] ", defaultName))
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			return "", err
+		}
+
+		input = common.SanitizeLineBreaks(strings.TrimSpace(input))
+		if input == "" {
+			return defaultName, nil
+		}
+
+		if err := configuration.ValidateProfileName(input); err != nil {
+			sanitized := configuration.SanitizeProfileName(input)
+			printer.ErrorText(
+				"Invalid profile name. Only letters, numbers, - and _ are allowed (no leading/trailing hyphens).",
+			)
+			defaultName = sanitized
+			continue
+		}
+
+		return input, nil
+	}
 }
 
 func parseHostUrl() (ok bool, errMessage string, host *url.URL) {
@@ -165,9 +229,43 @@ func requestApiToken() (ok bool, token string) {
 	return true, input
 }
 
-func storeLoginData(host *url.URL, token string) {
-	err := configuration.WriteConfigFile(host.String(), token)
+func confirmOverwrite(profile string) (bool, error) {
+	reader := bufio.NewReader(os.Stdin)
+	printer.Input(fmt.Sprintf("Profile %q already exists, overwrite? [y/N] ", profile))
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		return false, err
+	}
+	answer := strings.ToLower(strings.TrimSpace(common.SanitizeLineBreaks(input)))
+	return answer == "y" || answer == "yes", nil
+}
+
+func storeLoginData(profile string, host *url.URL, token string) error {
+	profiles, err := configuration.AllProfiles()
 	if err != nil {
 		printer.Error(err)
+		return openerrors.ErrHandled
 	}
+
+	for _, p := range profiles {
+		if p.Name == profile {
+			ok, err := confirmOverwrite(profile)
+			if err != nil {
+				printer.Error(err)
+				return openerrors.ErrHandled
+			}
+			if !ok {
+				printer.Info("Login cancelled.")
+				return nil
+			}
+			break
+		}
+	}
+
+	if err := configuration.WriteConfigForProfile(profile, host.String(), token); err != nil {
+		printer.Error(err)
+		return openerrors.ErrHandled
+	}
+	printer.Done()
+	return nil
 }

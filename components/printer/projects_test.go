@@ -13,10 +13,10 @@ import (
 func TestProject(t *testing.T) {
 	testingPrinter.Reset()
 
-	project := models.Project{Id: 42, Name: "Example"}
+	project := models.Project{Id: 42, Identifier: "example", Name: "Example"}
 
 	idString := "#" + strconv.FormatUint(project.Id, 10)
-	expected := fmt.Sprintf("%s %s\n", printer.Red(idString), printer.Cyan(project.Name))
+	expected := fmt.Sprintf("%s %s (%s)\n", printer.Red(idString), printer.Cyan(project.Name), project.Identifier)
 
 	printer.Project(&project)
 
@@ -29,9 +29,9 @@ func TestProjects(t *testing.T) {
 	testingPrinter.Reset()
 
 	projects := []*models.Project{
-		{Id: 42, Name: "Foo"},
-		{Id: 45, Name: "Bar"},
-		{Id: 123, Name: "Baz"},
+		{Id: 42, Identifier: "foo", Name: "Foo"},
+		{Id: 45, Identifier: "bar", Name: "Bar"},
+		{Id: 123, Identifier: "baz", Name: "Baz"},
 	}
 
 	expected := common.Reduce[*models.Project, string](
@@ -39,7 +39,7 @@ func TestProjects(t *testing.T) {
 		func(state string, project *models.Project) string {
 			idString := "#" + strconv.FormatUint(project.Id, 10)
 
-			return state + fmt.Sprintf("%s %s\n", printer.Red(idString), printer.Cyan(project.Name))
+			return state + fmt.Sprintf("%s %s (%s)\n", printer.Red(idString), printer.Cyan(project.Name), project.Identifier)
 		},
 		"")
 

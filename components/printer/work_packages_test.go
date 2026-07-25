@@ -3,6 +3,7 @@ package printer_test
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/opf/openproject-cli/components/printer"
@@ -14,11 +15,12 @@ func TestWorkPackage(t *testing.T) {
 	testingPrinter.Reset()
 
 	workPackage := models.WorkPackage{
-		Id:       42,
-		Subject:  "Test",
-		Type:     "TASK",
-		Assignee: "Aaron",
-		Status:   "New",
+		Id:        42,
+		DisplayId: "42",
+		Subject:   "Test",
+		Type:      "TASK",
+		Assignee:  "Aaron",
+		Status:    "New",
 		Description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam non est sed nunc euismod luctus. Donec vehicula scelerisque efficitur. Nunc arcu ligula, dictum maximus consequat id, tincidunt vitae augue. Vestibulum ut tellus id nisi faucibus efficitur id eu tortor. Vestibulum sed vehicula turpis, sit amet eleifend massa. Proin eu quam justo. Nulla id libero sit amet turpis venenatis mollis. Quisque iaculis lectus non ligula faucibus, ut pellentesque velit sodales. Vivamus nibh est, molestie at laoreet nec, lacinia porttitor nisl. Nulla eget urna in enim porttitor tempus. Nullam velit nunc, ultrices eget molestie vitae, tincidunt vitae felis.
 
 Integer augue purus, mollis a vestibulum quis, sagittis ac lacus. Ut vitae tempor tellus. Cras neque turpis, malesuada nec tincidunt vel, mattis vel dolor. Ut hendrerit magna ac suscipit convallis. Ut quis nisi vel metus facilisis sagittis eu eget orci. Pellentesque laoreet metus vitae nulla fringilla, sed lacinia sem laoreet. Maecenas velit erat, luctus ac metus eget, hendrerit tincidunt dolor. Cras mattis orci sem, sed convallis arcu venenatis nec. Donec imperdiet mattis ante, quis euismod lorem viverra ac. Pellentesque in efficitur magna, at ullamcorper ipsum. Vivamus vulputate, tellus et blandit mollis, elit nisl posuere dui, nec molestie metus arcu in lectus. Vivamus eget congue libero, ut congue dolor. Interdum et malesuada fames ac ante ipsum primis in faucibus. Suspendisse blandit, velit quis euismod tincidunt, nunc lectus rutrum nisi, et commodo enim ligula nec sem. Pellentesque nec tincidunt sapien.`,
@@ -69,6 +71,7 @@ func TestWorkPackage_Assignee_With_Empty_String(t *testing.T) {
 
 	workPackage := models.WorkPackage{
 		Id:          42,
+		DisplayId:   "42",
 		Subject:     "Test",
 		Type:        "TASK",
 		Assignee:    "",
@@ -103,16 +106,18 @@ func TestWorkPackages_WithAccentedCharacters(t *testing.T) {
 	// gets one space too few with the broken code (diff=10-6=4 instead of correct 10-5=5).
 	workPackages := []*models.WorkPackage{
 		{
-			Id:      2,
-			Subject: "Subject A",
-			Type:    "Tâche",
-			Status:  "En cours",
+			Id:        2,
+			DisplayId: "2",
+			Subject:   "Subject A",
+			Type:      "Tâche",
+			Status:    "En cours",
 		},
 		{
-			Id:      10,
-			Subject: "Subject B",
-			Type:    "User Story",
-			Status:  "En cours de spécification",
+			Id:        10,
+			DisplayId: "10",
+			Subject:   "Subject B",
+			Type:      "User Story",
+			Status:    "En cours de spécification",
 		},
 	}
 
@@ -137,6 +142,7 @@ func TestWorkPackages(t *testing.T) {
 	workPackages := []*models.WorkPackage{
 		{
 			Id:          42,
+			DisplayId:   "42",
 			Subject:     "Test 1",
 			Type:        "PHASE",
 			Assignee:    "Obi-Wan",
@@ -146,6 +152,7 @@ func TestWorkPackages(t *testing.T) {
 		},
 		{
 			Id:          43,
+			DisplayId:   "43",
 			Subject:     "Test 2",
 			Type:        "TASK",
 			Assignee:    "Anakin",
@@ -166,5 +173,43 @@ func TestWorkPackages(t *testing.T) {
 
 	if testingPrinter.Result != expected {
 		t.Errorf("\nExpected:\n%sbut got:\n%s", expected, testingPrinter.Result)
+	}
+}
+
+func TestWorkPackages_WithSemanticDisplayId(t *testing.T) {
+	testingPrinter.Reset()
+
+	// Mix of semantic (SJF-13, 6 chars) and numeric (#10, 3 chars) display IDs.
+	// Numeric WP has DisplayId == strconv(Id) so it falls back to #10.
+	workPackages := []*models.WorkPackage{
+		{Id: 41855, DisplayId: "SJF-13", Subject: "Semantic WP", Type: "EPIC", Status: "Open"},
+		{Id: 10, DisplayId: "10", Subject: "Numeric WP", Type: "TASK", Status: "New"},
+	}
+
+	var expected string
+	// maxIdLength = max(6, 3) = 6 → "#10" gets 3 leading spaces
+	// maxTypeLength = max(4, 4) = 4
+	// maxStatusLength = max(4, 3) = 4
+	expected += fmt.Sprintf("%s %s [%s] %s\n", printer.Red("SJF-13"), printer.Green("EPIC"), printer.Yellow("Open"), printer.Cyan("Semantic WP"))
+	expected += fmt.Sprintf("%s %s [%s]  %s\n", printer.Red("   #10"), printer.Green("TASK"), printer.Yellow("New"), printer.Cyan("Numeric WP"))
+
+	printer.WorkPackages(workPackages)
+
+	if testingPrinter.Result != expected {
+		t.Errorf("\nExpected:\n%sbut got:\n%s", expected, testingPrinter.Result)
+	}
+}
+
+// Older servers omit displayId entirely; output must fall back to the
+// numeric id instead of printing an empty identifier.
+func TestWorkPackages_EmptyDisplayIdFallsBackToNumericId(t *testing.T) {
+	testingPrinter.Reset()
+
+	printer.WorkPackages([]*models.WorkPackage{
+		{Id: 42, DisplayId: "", Subject: "Legacy", Type: "TASK", Status: "New"},
+	})
+
+	if !strings.Contains(testingPrinter.Result, "#42") {
+		t.Errorf("expected fallback to #42, got: %q", testingPrinter.Result)
 	}
 }

@@ -48,5 +48,5 @@ func (dto *NotificationDto) Convert() *models.Notification {
 		Read:            dto.ReadIAN,
 		CreatedAt:       dto.CreatedAt,
 		UpdatedAt:       dto.UpdatedAt,
-		}
+	}
 }

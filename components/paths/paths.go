@@ -10,20 +10,32 @@ func Principals() string {
 	return Root() + "/principals"
 }
 
-func Project(id uint64) string {
-	return Projects() + fmt.Sprintf("/%d", id)
+func Project(id string) string {
+	return Projects() + "/" + id
 }
 
 func Projects() string {
 	return Root() + "/projects"
 }
 
-func ProjectVersions(projectId uint64) string {
+func ProjectVersions(projectId string) string {
 	return Project(projectId) + "/versions"
 }
 
-func ProjectWorkPackages(projectId uint64) string {
+func ProjectWorkPackages(projectId string) string {
 	return Project(projectId) + "/work_packages"
+}
+
+func Budget(id uint64) string {
+	return Budgets() + fmt.Sprintf("/%d", id)
+}
+
+func Budgets() string {
+	return Root() + "/budgets"
+}
+
+func ProjectBudgets(projectId string) string {
+	return Project(projectId) + "/budgets"
 }
 
 func Root() string {
@@ -36,6 +48,14 @@ func Status() string {
 
 func TimeEntries() string {
 	return Root() + "/time_entries"
+}
+
+func TimeEntry(id uint64) string {
+	return TimeEntries() + fmt.Sprintf("/%d", id)
+}
+
+func TimeEntryActivities() string {
+	return TimeEntries() + "/activities"
 }
 
 func Types() string {
@@ -54,14 +74,14 @@ func Users() string {
 	return Root() + "/users"
 }
 
-func WorkPackage(id uint64) string {
-	return WorkPackages() + fmt.Sprintf("/%d", id)
+func WorkPackage(id string) string {
+	return WorkPackages() + "/" + id
 }
 
 func WorkPackages() string {
 	return Root() + "/work_packages"
 }
 
-func WorkPackageActivities(id uint64) string {
+func WorkPackageActivities(id string) string {
 	return WorkPackage(id) + "/activities"
 }
