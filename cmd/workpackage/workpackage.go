@@ -45,6 +45,18 @@ func init() {
 		"",
 		"Description of the work package (markdown)",
 	)
+	createCmd.Flags().Uint64Var(
+		&createParentID,
+		"parent",
+		0,
+		"ID of the parent work package",
+	)
+	createCmd.Flags().BoolVar(
+		&createDryRun,
+		"dry-run",
+		false,
+		"Validate and show the resulting plan without creating the work package",
+	)
 
 	updateCmd.Flags().StringVarP(
 		&updateActionFlag,
