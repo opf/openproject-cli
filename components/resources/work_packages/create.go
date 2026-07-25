@@ -126,6 +126,20 @@ func DryRunCreate(projectId string, options map[CreateOption]string) (*models.Wo
 		}
 	}
 
+	if value, ok := options[CreateType]; ok {
+		types, err := availableTypes(&dtos.LinkDto{Href: paths.Project(projectId)})
+		if err != nil {
+			return nil, err
+		}
+
+		foundType := findType(value, types)
+		if foundType == nil {
+			return nil, fmt.Errorf("no unique available type from input %q found for project %s", value, projectId)
+		}
+
+		plan.WorkPackage.Type = foundType.Name
+	}
+
 	return plan, nil
 }
 

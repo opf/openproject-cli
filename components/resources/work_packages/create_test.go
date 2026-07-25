@@ -118,6 +118,86 @@ func TestDryRunCreateIncludesParentAndDescription(t *testing.T) {
 	}
 }
 
+func TestDryRunCreateWithTypeResolvesTypeName(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		response.Header().Set("Content-Type", "application/json")
+		switch request.URL.Path {
+		case "/api/v3/projects/1482":
+			_, _ = response.Write([]byte(`{
+				"id": 1482,
+				"_links": {"types": {"href": "/api/v3/projects/1482/types/available"}}
+			}`))
+		case "/api/v3/projects/1482/types/available":
+			_, _ = response.Write([]byte(`{
+				"_embedded": {
+					"elements": [
+						{"id": 7, "name": "Implementation", "_links": {"self": {"href": "/api/v3/types/7"}}},
+						{"id": 6, "name": "Feature", "_links": {"self": {"href": "/api/v3/types/6"}}}
+					]
+				}
+			}`))
+		default:
+			http.Error(response, "unexpected request", http.StatusNotFound)
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	host, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	requests.Init(host, "", false)
+
+	plan, err := work_packages.DryRunCreate("1482", map[work_packages.CreateOption]string{
+		work_packages.CreateSubject: "Build reusable skill",
+		work_packages.CreateType:    "Feature",
+	})
+	if err != nil {
+		t.Fatalf("DryRunCreate returned error: %v", err)
+	}
+	if plan.WorkPackage.Type != "Feature" {
+		t.Errorf("Type = %q, want %q", plan.WorkPackage.Type, "Feature")
+	}
+}
+
+func TestDryRunCreateReturnsErrorForUnresolvedType(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		response.Header().Set("Content-Type", "application/json")
+		switch request.URL.Path {
+		case "/api/v3/projects/1482":
+			_, _ = response.Write([]byte(`{
+				"id": 1482,
+				"_links": {"types": {"href": "/api/v3/projects/1482/types/available"}}
+			}`))
+		case "/api/v3/projects/1482/types/available":
+			_, _ = response.Write([]byte(`{
+				"_embedded": {
+					"elements": [
+						{"id": 7, "name": "Implementation", "_links": {"self": {"href": "/api/v3/types/7"}}}
+					]
+				}
+			}`))
+		default:
+			http.Error(response, "unexpected request", http.StatusNotFound)
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	host, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	requests.Init(host, "", false)
+
+	_, err = work_packages.DryRunCreate("1482", map[work_packages.CreateOption]string{
+		work_packages.CreateSubject: "Build reusable skill",
+		work_packages.CreateType:    "Missing",
+	})
+	if err == nil {
+		t.Fatal("expected error for unresolved type, got nil")
+	}
+}
+
 func TestDryRunCreateWithoutParentLeavesParentIDNil(t *testing.T) {
 	plan, err := work_packages.DryRunCreate("1482", map[work_packages.CreateOption]string{
 		work_packages.CreateSubject: "No parent",
