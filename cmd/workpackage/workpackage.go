@@ -98,6 +98,12 @@ func init() {
 		false,
 		"List the available types on the work package.",
 	)
+	inspectCmd.Flags().BoolVar(
+		&inspectWithChildren,
+		"children",
+		false,
+		"Include direct children and full field details in the output",
+	)
 
 	searchCmd.Flags().StringVarP(
 		&searchProjectId,
