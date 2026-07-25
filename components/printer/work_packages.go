@@ -18,6 +18,18 @@ func WorkPackages(wps []*models.WorkPackage) {
 	activeRenderer.WorkPackages(wps)
 }
 
+func WorkPackageDetails(p *models.WorkPackageInspectPayload) {
+	activeRenderer.WorkPackageDetails(p)
+}
+
+func WorkPackageCreatePlan(p *models.WorkPackageCreatePlan) {
+	activeRenderer.WorkPackageCreatePlan(p)
+}
+
+func WorkPackageUpdatePlan(p *models.WorkPackageUpdatePlan) {
+	activeRenderer.WorkPackageUpdatePlan(p)
+}
+
 func idLength(id uint64) int {
 	return len(strconv.FormatUint(id, 10)) + 1
 }

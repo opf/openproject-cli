@@ -57,6 +57,18 @@ func (r *JsonRenderer) WorkPackages(wps []*models.WorkPackage) {
 	printJson(out)
 }
 
+func (r *JsonRenderer) WorkPackageDetails(p *models.WorkPackageInspectPayload) {
+	printJson(p)
+}
+
+func (r *JsonRenderer) WorkPackageCreatePlan(p *models.WorkPackageCreatePlan) {
+	printJson(p)
+}
+
+func (r *JsonRenderer) WorkPackageUpdatePlan(p *models.WorkPackageUpdatePlan) {
+	printJson(p)
+}
+
 func (r *JsonRenderer) Project(p *models.Project) {
 	printJson(struct {
 		Id         uint64 `json:"id"`

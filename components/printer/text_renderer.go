@@ -50,6 +50,58 @@ func (r *TextRenderer) WorkPackages(wps []*models.WorkPackage) {
 	}
 }
 
+func (r *TextRenderer) WorkPackageDetails(p *models.WorkPackageInspectPayload) {
+	wp := p.WorkPackage
+	idStr := fmt.Sprintf("#%d", wp.ID)
+	activePrinter.Printf("%s %s %s\n", Red(idStr), Green(strings.ToUpper(wp.Type)), Cyan(wp.Subject))
+	activePrinter.Printf("[%s]\n", Yellow(wp.Status))
+
+	assigneeStr := wp.Assignee
+	if len(assigneeStr) == 0 {
+		assigneeStr = "-"
+	}
+	activePrinter.Printf("Assignee: %s\n", assigneeStr)
+	activePrinter.Printf("Project: %s (%s)\n", wp.Project.Name, wp.Project.Identifier)
+	if wp.ParentID != nil {
+		activePrinter.Printf("Parent: #%d\n", *wp.ParentID)
+	}
+
+	printCustomFields(wp.FieldLabels, wp.Fields)
+
+	activePrinter.Printf("Children (%d):\n", len(p.Children))
+	for _, child := range p.Children {
+		activePrinter.Printf("#%d [%s] %s\n", child.ID, child.Status, child.Subject)
+	}
+}
+
+func (r *TextRenderer) WorkPackageCreatePlan(p *models.WorkPackageCreatePlan) {
+	activePrinter.Println("Dry run — no changes applied.")
+	printPlanField("operation", p.Operation)
+	printPlanField("project_id", p.ProjectID)
+	if p.ParentID != nil {
+		printPlanField("parent_id", strconv.FormatUint(*p.ParentID, 10))
+	}
+	printPlanField("subject", p.WorkPackage.Subject)
+	printPlanField("type", p.WorkPackage.Type)
+	printPlanField("description", p.WorkPackage.Description)
+}
+
+func (r *TextRenderer) WorkPackageUpdatePlan(p *models.WorkPackageUpdatePlan) {
+	activePrinter.Println("Dry run — no changes applied.")
+	printPlanField("operation", p.Operation)
+	printPlanField("work_package_id", p.WorkPackageID)
+	printPlanField("subject", p.Subject)
+	printPlanField("type", p.Type)
+	printPlanField("assignee", p.Assignee)
+	printPlanField("status", p.Status)
+	if p.Description != nil {
+		printPlanField("description", *p.Description)
+	}
+	printPlanField("action", p.Action)
+	printPlanField("attach", p.Attach)
+	printResolvedFields(p.ResolvedFields)
+}
+
 func (r *TextRenderer) Project(p *models.Project) {
 	printProject(p)
 }
@@ -208,4 +260,47 @@ func printStatus(s *models.Status, maxIdLength int) {
 
 func printCustomAction(a *models.CustomAction) {
 	activePrinter.Printf("%s %s\n", Red(fmt.Sprintf("#%d", a.Id)), Cyan(a.Name))
+}
+
+// printCustomFields prints one "label: value" line per API field, sorted
+// first by label and then by API name so output stays deterministic even
+// though a single label can map to more than one API field.
+func printCustomFields(fieldLabels map[string][]string, fields map[string]any) {
+	labels := make([]string, 0, len(fieldLabels))
+	for label := range fieldLabels {
+		labels = append(labels, label)
+	}
+	sort.Strings(labels)
+
+	for _, label := range labels {
+		apiNames := append([]string(nil), fieldLabels[label]...)
+		sort.Strings(apiNames)
+		for _, apiName := range apiNames {
+			activePrinter.Printf("%s: %v\n", label, fields[apiName])
+		}
+	}
+}
+
+// printPlanField prints a single "name: value" line, skipping fields that
+// are empty or omitted from the dry-run plan.
+func printPlanField(name, value string) {
+	if len(value) == 0 {
+		return
+	}
+	activePrinter.Printf("%s: %s\n", name, value)
+}
+
+// printResolvedFields prints one line per schema-resolved custom field
+// assignment, sorted by key for deterministic output.
+func printResolvedFields(resolvedFields map[string]models.ResolvedField) {
+	keys := make([]string, 0, len(resolvedFields))
+	for key := range resolvedFields {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		field := resolvedFields[key]
+		activePrinter.Printf("%s (%s): %v\n", key, field.APIField, field.Value)
+	}
 }
