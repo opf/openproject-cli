@@ -82,7 +82,7 @@ func workPackageDetails(dto *dtos.WorkPackageDto, schema *Schema) models.WorkPac
 		Description: longTextRaw(dto.Description),
 		ParentID:    linkID(dto.Links, func(links *dtos.WorkPackageLinksDto) *dtos.LinkDto { return links.Parent }),
 		Project:     project,
-		Fields:      dto.CustomFields,
+		Fields:      normalizeCustomFields(dto.CustomFields, schema),
 		FieldLabels: schema.fieldLabels(),
 	}
 }
@@ -130,4 +130,43 @@ func linkID(links *dtos.WorkPackageLinksDto, selector func(*dtos.WorkPackageLink
 
 	id := parser.IdFromLink(link.Href)
 	return &id
+}
+
+func normalizeCustomFields(fields map[string]any, schema *Schema) map[string]any {
+	if len(fields) == 0 {
+		return fields
+	}
+
+	typesByAPIName := make(map[string]string, len(schema.Fields))
+	for _, field := range schema.Fields {
+		typesByAPIName[field.APIName] = field.Type
+	}
+
+	normalized := make(map[string]any, len(fields))
+	for apiName, value := range fields {
+		if typesByAPIName[apiName] == "Formattable" {
+			if rawValue, ok := rawLongTextValue(value); ok {
+				normalized[apiName] = rawValue
+				continue
+			}
+		}
+
+		normalized[apiName] = value
+	}
+
+	return normalized
+}
+
+func rawLongTextValue(value any) (string, bool) {
+	object, ok := value.(map[string]any)
+	if !ok {
+		return "", false
+	}
+
+	raw, ok := object["raw"].(string)
+	if !ok {
+		return "", false
+	}
+
+	return raw, true
 }

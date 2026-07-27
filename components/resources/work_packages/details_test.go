@@ -330,3 +330,186 @@ func TestInspectPreservesDuplicateFieldLabels(t *testing.T) {
 		t.Fatalf("expected duplicate KPI mappings, got %#v", payload.WorkPackage.FieldLabels)
 	}
 }
+
+func TestInspectNormalizesFormattableCustomFieldsToRawStrings(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v3/work_packages/74172":
+			_, _ = io.WriteString(w, `{
+				"id": 74172,
+				"subject": "Epic",
+				"customField401": {
+					"format": "markdown",
+					"html": "<p>Body</p>",
+					"raw": "Body"
+				},
+				"_links": {
+					"self": {"href": "/api/v3/work_packages/74172"},
+					"project": {"href": "/api/v3/projects/1482", "title": "CLI"},
+					"schema": {"href": "/api/v3/work_packages/schemas/1482-6"},
+					"status": {"href": "/api/v3/statuses/1", "title": "new"},
+					"type": {"href": "/api/v3/types/6", "title": "Epic"},
+					"assignee": {"href": null, "title": ""}
+				}
+			}`)
+		case "/api/v3/work_packages/schemas/1482-6":
+			_, _ = io.WriteString(w, `{
+				"customField401": {"name": "Acceptance criteria", "type": "Formattable", "writable": true}
+			}`)
+		default:
+			t.Fatalf("unexpected path %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+
+	host, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	requests.Init(host, "token", false)
+
+	payload, err := work_packages.Inspect("74172")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if payload.WorkPackage.Fields["customField401"] != "Body" {
+		t.Fatalf("expected Formattable field raw string, got %#v", payload.WorkPackage.Fields["customField401"])
+	}
+}
+
+func TestInspectPassesThroughNonFormattableDictCustomField(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v3/work_packages/74173":
+			_, _ = io.WriteString(w, `{
+				"id": 74173,
+				"subject": "Epic",
+				"customField402": {
+					"id": 9,
+					"name": "v1.0"
+				},
+				"_links": {
+					"self": {"href": "/api/v3/work_packages/74173"},
+					"project": {"href": "/api/v3/projects/1482", "title": "CLI"},
+					"schema": {"href": "/api/v3/work_packages/schemas/1482-6"},
+					"status": {"href": "/api/v3/statuses/1", "title": "new"},
+					"type": {"href": "/api/v3/types/6", "title": "Epic"},
+					"assignee": {"href": null, "title": ""}
+				}
+			}`)
+		case "/api/v3/work_packages/schemas/1482-6":
+			_, _ = io.WriteString(w, `{
+				"customField402": {"name": "Release", "type": "Version", "writable": true}
+			}`)
+		default:
+			t.Fatalf("unexpected path %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+
+	host, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	requests.Init(host, "token", false)
+
+	payload, err := work_packages.Inspect("74173")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	value, ok := payload.WorkPackage.Fields["customField402"].(map[string]any)
+	if !ok || value["name"] != "v1.0" {
+		t.Fatalf("expected non-Formattable dict value untouched, got %#v", payload.WorkPackage.Fields["customField402"])
+	}
+}
+
+func TestInspectPassesThroughFormattableFieldAlreadyAString(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v3/work_packages/74174":
+			_, _ = io.WriteString(w, `{
+				"id": 74174,
+				"subject": "Epic",
+				"customField401": "Already raw",
+				"_links": {
+					"self": {"href": "/api/v3/work_packages/74174"},
+					"project": {"href": "/api/v3/projects/1482", "title": "CLI"},
+					"schema": {"href": "/api/v3/work_packages/schemas/1482-6"},
+					"status": {"href": "/api/v3/statuses/1", "title": "new"},
+					"type": {"href": "/api/v3/types/6", "title": "Epic"},
+					"assignee": {"href": null, "title": ""}
+				}
+			}`)
+		case "/api/v3/work_packages/schemas/1482-6":
+			_, _ = io.WriteString(w, `{
+				"customField401": {"name": "Acceptance criteria", "type": "Formattable", "writable": true}
+			}`)
+		default:
+			t.Fatalf("unexpected path %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+
+	host, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	requests.Init(host, "token", false)
+
+	payload, err := work_packages.Inspect("74174")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if payload.WorkPackage.Fields["customField401"] != "Already raw" {
+		t.Fatalf("expected plain string Formattable field untouched, got %#v", payload.WorkPackage.Fields["customField401"])
+	}
+}
+
+func TestInspectHandlesEmptyCustomFieldsMap(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v3/work_packages/74175":
+			_, _ = io.WriteString(w, `{
+				"id": 74175,
+				"subject": "Epic",
+				"_links": {
+					"self": {"href": "/api/v3/work_packages/74175"},
+					"project": {"href": "/api/v3/projects/1482", "title": "CLI"},
+					"schema": {"href": "/api/v3/work_packages/schemas/1482-6"},
+					"status": {"href": "/api/v3/statuses/1", "title": "new"},
+					"type": {"href": "/api/v3/types/6", "title": "Epic"},
+					"assignee": {"href": null, "title": ""}
+				}
+			}`)
+		case "/api/v3/work_packages/schemas/1482-6":
+			_, _ = io.WriteString(w, `{
+				"customField401": {"name": "Acceptance criteria", "type": "Formattable", "writable": true}
+			}`)
+		default:
+			t.Fatalf("unexpected path %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+
+	host, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	requests.Init(host, "token", false)
+
+	payload, err := work_packages.Inspect("74175")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(payload.WorkPackage.Fields) != 0 {
+		t.Fatalf("expected empty fields map, got %#v", payload.WorkPackage.Fields)
+	}
+}
