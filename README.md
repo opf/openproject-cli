@@ -97,6 +97,9 @@ Open a new shell and completion should work by using the `TAB` key as usual.
 The OpenProject CLI commands are structured in a common, human-readable pattern. Every command is built
 as `op NOUN VERB [additional information]`. You will see plenty of examples within this section.
 
+Every command also accepts the global `--format` flag (`text`, the default, or `json`), so any command's
+output can be consumed by scripts or other tools, e.g. `op work-package inspect 42 --format json`.
+
 ### Breaking change: noun-first commands
 
 Earlier releases (up to 0.5.5) used verb-first commands. These have been replaced without aliases;
@@ -258,6 +261,14 @@ op work-package create --project my-project 'Document new CLI tool'
 
 # Same command with shorthands and directly open it in a browser to continue working on it.
 op work-package create -p11 'Document new CLI tool' -o
+
+# Creating a child work package. --project is still required (it determines
+# where the work package is created); --parent additionally links it as a child.
+op work-package create --project 11 --parent 42 --type Task 'Draft the outline'
+
+# --dry-run validates the input and shows the resulting plan without creating
+# anything. Combine with --format json for a machine-readable plan.
+op work-package create --project 11 --parent 42 'Draft the outline' --dry-run --format json
 ```
 
 #### Listing
@@ -292,6 +303,21 @@ op work-package update 42 --subject 'The new subject' --type Implementation
 
 # Uploading an attachment to a work package
 op work-package update 42 --attach ./Downloads/Report.pdf
+
+# Changing the status by name. The name is resolved against the work
+# package's available statuses before the request is sent.
+op work-package update 42 --status 'In progress'
+
+# Setting one or more custom fields by label or API name. --set is resolved
+# against the work package's schema and cannot be combined with the flags
+# above; repeat --set for multiple fields.
+op work-package update 42 --set 'Story points=5' --set 'Priority=High'
+
+# --dry-run resolves and validates the update without patching anything.
+# Works with both --set and the flags above; pair with --format json for a
+# machine-readable plan.
+op work-package update 42 --set 'Story points=5' --dry-run --format json
+op work-package update 42 --status 'Closed' --dry-run --format json
 ```
 
 #### Searching
@@ -315,7 +341,21 @@ op work-package search cascade -p 11
 # Accepts either a numeric ID or a project-based identifier (e.g. PROJ-123)
 op work-package inspect 42
 op work-package inspect PROJ-123
+
+# --children additionally resolves the full schema (so all custom field
+# values and labels are included) and lists the work package's direct
+# children. Cannot be combined with --open or --types.
+op work-package inspect 42 --children
+
+# Combine with the global --format flag for machine-readable output, e.g. to
+# script against the resolved custom fields or child work packages.
+op work-package inspect 42 --children --format json
 ```
+
+The global `--format json` flag composes with all of the flags above, so
+`inspect --children`, `update --set`/`--status`, and `create --parent` can
+all be scripted, and `--dry-run` plans can be validated as JSON before
+anything is written.
 
 ## AI agent integration (Claude Code)
 

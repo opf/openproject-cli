@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/opf/openproject-cli/components/common"
 	openerrors "github.com/opf/openproject-cli/components/errors"
@@ -13,6 +14,7 @@ import (
 	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/printer"
 	"github.com/opf/openproject-cli/components/requests"
+	"github.com/opf/openproject-cli/components/resources/status"
 	"github.com/opf/openproject-cli/dtos"
 	"github.com/opf/openproject-cli/models"
 )
@@ -26,15 +28,68 @@ const (
 	UpdateDescription
 	UpdateSubject
 	UpdateType
+	UpdateStatus
 )
 
-var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType, UpdateAssignee, UpdateDescription}
+var patchableUpdates = []UpdateOption{UpdateSubject, UpdateType, UpdateAssignee, UpdateDescription, UpdateStatus}
 
 var patchMap = map[UpdateOption]func(patch, workPackage *dtos.WorkPackageDto, input string) (string, error){
 	UpdateAssignee:    assigneePatch,
 	UpdateDescription: descriptionPatch,
 	UpdateType:        typePatch,
 	UpdateSubject:     subjectPatch,
+	UpdateStatus:      statusPatch,
+}
+
+func DryRunUpdate(id string, options map[UpdateOption]string) (*models.WorkPackageUpdatePlan, error) {
+	workPackage, err := fetch(id)
+	if err != nil {
+		return nil, err
+	}
+
+	plan := &models.WorkPackageUpdatePlan{
+		Valid:          true,
+		Operation:      "update",
+		WorkPackageID:  id,
+		Subject:        options[UpdateSubject],
+		Status:         options[UpdateStatus],
+		Action:         options[UpdateCustomAction],
+		Attach:         options[UpdateAttachment],
+		ResolvedFields: map[string]models.ResolvedField{},
+	}
+
+	if description, ok := options[UpdateDescription]; ok {
+		plan.Description = &description
+	}
+
+	if assignee, ok := options[UpdateAssignee]; ok {
+		plan.Assignee = assignee
+	}
+
+	if value, ok := options[UpdateStatus]; ok {
+		resolvedStatus, err := resolveStatus(value)
+		if err != nil {
+			return nil, err
+		}
+
+		plan.Status = resolvedStatus.Name
+	}
+
+	if value, ok := options[UpdateType]; ok {
+		types, err := availableTypes(workPackage.Links.Project)
+		if err != nil {
+			return nil, err
+		}
+
+		foundType := findType(value, types)
+		if foundType == nil {
+			return nil, fmt.Errorf("no unique available type from input %q found for work package %s", value, id)
+		}
+
+		plan.Type = foundType.Name
+	}
+
+	return plan, nil
 }
 
 func Update(id string, options map[UpdateOption]string) (*models.WorkPackage, error) {
@@ -219,4 +274,33 @@ func assigneePatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) 
 
 	patch.Links.Assignee = &dtos.LinkDto{Href: paths.User(userId)}
 	return fmt.Sprintf("Assignee -> %s", input), nil
+}
+
+func statusPatch(patch, _ *dtos.WorkPackageDto, input string) (string, error) {
+	resolvedStatus, err := resolveStatus(input)
+	if err != nil {
+		return "", err
+	}
+
+	if patch.Links == nil {
+		patch.Links = &dtos.WorkPackageLinksDto{}
+	}
+
+	patch.Links.Status = &dtos.LinkDto{Href: paths.StatusById(resolvedStatus.Id)}
+	return fmt.Sprintf("Status -> %s", resolvedStatus.Name), nil
+}
+
+func resolveStatus(input string) (*models.Status, error) {
+	statuses, err := status.All()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, candidate := range statuses {
+		if strings.EqualFold(candidate.Name, input) {
+			return candidate, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no status named %q found", input)
 }

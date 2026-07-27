@@ -46,6 +46,10 @@ func Status() string {
 	return Root() + "/statuses"
 }
 
+func StatusById(id uint64) string {
+	return fmt.Sprintf("%s/%d", Status(), id)
+}
+
 func TimeEntries() string {
 	return Root() + "/time_entries"
 }

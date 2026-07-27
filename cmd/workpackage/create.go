@@ -20,6 +20,8 @@ var createOpenInBrowser bool
 var createTypeFlag string
 var createAssigneeFlag uint64
 var createDescriptionFlag string
+var createParentID uint64
+var createDryRun bool
 
 var createCmd = &cobra.Command{
 	Use:   "create [subject]",
@@ -38,6 +40,20 @@ func createWorkPackage(cmd *cobra.Command, args []string) error {
 	if err := projects.ValidateIdentifier(createProjectId); err != nil {
 		printer.ErrorText(fmt.Sprintf("--project: %s", err.Error()))
 		return openerrors.ErrHandled
+	}
+
+	if createDryRun {
+		if createOpenInBrowser {
+			printer.ErrorText("cannot use --dry-run together with --open")
+			return openerrors.ErrHandled
+		}
+		plan, err := work_packages.DryRunCreate(createProjectId, createOptions(cmd, subject))
+		if err != nil {
+			printer.Error(err)
+			return openerrors.ErrHandled
+		}
+		printer.WorkPackageCreatePlan(plan)
+		return nil
 	}
 
 	workPackage, err := work_packages.Create(createProjectId, createOptions(cmd, subject))
@@ -70,6 +86,9 @@ func createOptions(cmd *cobra.Command, subject string) map[work_packages.CreateO
 	}
 	if cmd.Flags().Changed("description") {
 		options[work_packages.CreateDescription] = createDescriptionFlag
+	}
+	if createParentID > 0 {
+		options[work_packages.CreateParent] = strconv.FormatUint(createParentID, 10)
 	}
 	return options
 }

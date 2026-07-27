@@ -22,6 +22,7 @@ const (
 	CreateType
 	CreateAssignee
 	CreateDescription
+	CreateParent
 )
 
 var createMap = map[CreateOption]func(projectId string, workPackage *dtos.WorkPackageDto, input string) error{
@@ -29,6 +30,7 @@ var createMap = map[CreateOption]func(projectId string, workPackage *dtos.WorkPa
 	CreateType:        typeCreate,
 	CreateAssignee:    assigneeCreate,
 	CreateDescription: descriptionCreate,
+	CreateParent:      parentCreate,
 }
 
 func subjectCreate(_ string, workPackage *dtos.WorkPackageDto, input string) error {
@@ -81,6 +83,66 @@ func assigneeCreate(_ string, workPackage *dtos.WorkPackageDto, input string) er
 func descriptionCreate(_ string, workPackage *dtos.WorkPackageDto, input string) error {
 	workPackage.Description = &dtos.LongTextDto{Format: "markdown", Raw: input}
 	return nil
+}
+
+func parentCreate(_ string, workPackage *dtos.WorkPackageDto, input string) error {
+	parentID, err := strconv.ParseUint(input, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid work package id %q: must be a number", input)
+	}
+
+	if workPackage.Links == nil {
+		workPackage.Links = &dtos.WorkPackageLinksDto{}
+	}
+
+	workPackage.Links.Parent = &dtos.LinkDto{Href: paths.WorkPackage(strconv.FormatUint(parentID, 10))}
+	return nil
+}
+
+func DryRunCreate(projectId string, options map[CreateOption]string) (*models.WorkPackageCreatePlan, error) {
+	plan := &models.WorkPackageCreatePlan{
+		Valid:     true,
+		Operation: "create",
+		ProjectID: projectId,
+	}
+
+	for _, option := range []CreateOption{CreateSubject, CreateParent, CreateDescription, CreateAssignee} {
+		value, ok := options[option]
+		if !ok {
+			continue
+		}
+
+		switch option {
+		case CreateSubject:
+			plan.WorkPackage.Subject = value
+		case CreateParent:
+			parentID, err := strconv.ParseUint(value, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("invalid work package id %q: must be a number", value)
+			}
+			plan.ParentID = &parentID
+		case CreateDescription:
+			plan.WorkPackage.Description = value
+		case CreateAssignee:
+			plan.WorkPackage.Assignee = value
+		}
+	}
+
+	if value, ok := options[CreateType]; ok {
+		types, err := availableTypes(&dtos.LinkDto{Href: paths.Project(projectId)})
+		if err != nil {
+			return nil, err
+		}
+
+		foundType := findType(value, types)
+		if foundType == nil {
+			return nil, fmt.Errorf("no unique available type from input %q found for project %s", value, projectId)
+		}
+
+		plan.WorkPackage.Type = foundType.Name
+	}
+
+	return plan, nil
 }
 
 func Create(projectId string, options map[CreateOption]string) (*models.WorkPackage, error) {

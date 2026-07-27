@@ -45,6 +45,18 @@ func init() {
 		"",
 		"Description of the work package (markdown)",
 	)
+	createCmd.Flags().Uint64Var(
+		&createParentID,
+		"parent",
+		0,
+		"ID of the parent work package",
+	)
+	createCmd.Flags().BoolVar(
+		&createDryRun,
+		"dry-run",
+		false,
+		"Validate and show the resulting plan without creating the work package",
+	)
 
 	updateCmd.Flags().StringVarP(
 		&updateActionFlag,
@@ -84,6 +96,24 @@ func init() {
 		"",
 		"Change the work package type",
 	)
+	updateCmd.Flags().StringVar(
+		&updateStatusFlag,
+		"status",
+		"",
+		"Change the status of the work package by name",
+	)
+	updateCmd.Flags().StringArrayVar(
+		&updateSetFlags,
+		"set",
+		nil,
+		"Set a field by label or API name, e.g. --set \"Story points=5\"",
+	)
+	updateCmd.Flags().BoolVar(
+		&updateDryRun,
+		"dry-run",
+		false,
+		"Validate and show the resulting plan without applying changes",
+	)
 
 	inspectCmd.Flags().BoolVarP(
 		&inspectOpenInBrowser,
@@ -97,6 +127,12 @@ func init() {
 		"types",
 		false,
 		"List the available types on the work package.",
+	)
+	inspectCmd.Flags().BoolVar(
+		&inspectWithChildren,
+		"children",
+		false,
+		"Include direct children and full field details in the output",
 	)
 
 	searchCmd.Flags().StringVarP(

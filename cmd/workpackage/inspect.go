@@ -14,6 +14,7 @@ import (
 
 var inspectOpenInBrowser bool
 var inspectListAvailableTypes bool
+var inspectWithChildren bool
 
 var inspectCmd = &cobra.Command{
 	Use:   "inspect [id]",
@@ -32,6 +33,20 @@ func inspectWorkPackage(_ *cobra.Command, args []string) error {
 	if err := work_packages.ValidateIdentifier(id); err != nil {
 		printer.ErrorText(err.Error())
 		return openerrors.ErrHandled
+	}
+
+	if inspectWithChildren {
+		if inspectOpenInBrowser || inspectListAvailableTypes {
+			printer.ErrorText("cannot use --children together with --open or --types")
+			return openerrors.ErrHandled
+		}
+		payload, err := work_packages.InspectWithChildren(id)
+		if err != nil {
+			printer.Error(err)
+			return openerrors.ErrHandled
+		}
+		printer.WorkPackageDetails(payload)
+		return nil
 	}
 
 	if inspectHasListingFlag() {
