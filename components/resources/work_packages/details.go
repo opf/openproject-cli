@@ -1,6 +1,8 @@
 package work_packages
 
 import (
+	"strconv"
+
 	"github.com/opf/openproject-cli/components/parser"
 	"github.com/opf/openproject-cli/components/paths"
 	"github.com/opf/openproject-cli/components/requests"
@@ -31,7 +33,7 @@ func InspectWithChildren(id string) (*models.WorkPackageInspectPayload, error) {
 		return nil, err
 	}
 
-	children, err := children(id)
+	children, err := children(strconv.FormatUint(payload.WorkPackage.ID, 10))
 	if err != nil {
 		return nil, err
 	}

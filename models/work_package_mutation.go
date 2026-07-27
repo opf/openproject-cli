@@ -4,6 +4,7 @@ type WorkPackageDraft struct {
 	Subject     string `json:"subject"`
 	Type        string `json:"type"`
 	Description string `json:"description"`
+	Assignee    string `json:"assignee,omitempty"`
 }
 
 type WorkPackageCreatePlan struct {

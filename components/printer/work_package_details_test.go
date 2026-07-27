@@ -124,7 +124,7 @@ func TestWorkPackageUpdatePlan_Json_EmitsResolvedFields(t *testing.T) {
 
 	plan := &models.WorkPackageUpdatePlan{
 		Valid:         true,
-		Operation:     "update_fields",
+		Operation:     "update",
 		WorkPackageID: "74316",
 		ResolvedFields: map[string]models.ResolvedField{
 			"Story points": {APIField: "customField130", Value: float64(5)},

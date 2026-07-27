@@ -31,12 +31,3 @@ type WorkPackageInspectPayload struct {
 	WorkPackage WorkPackageDetails   `json:"work_package"`
 	Children    []WorkPackageSummary `json:"children"`
 }
-
-type ErrorPayload struct {
-	Error ErrorDetails `json:"error"`
-}
-
-type ErrorDetails struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}

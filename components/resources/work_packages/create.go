@@ -106,7 +106,7 @@ func DryRunCreate(projectId string, options map[CreateOption]string) (*models.Wo
 		ProjectID: projectId,
 	}
 
-	for _, option := range []CreateOption{CreateSubject, CreateParent, CreateDescription} {
+	for _, option := range []CreateOption{CreateSubject, CreateParent, CreateDescription, CreateAssignee} {
 		value, ok := options[option]
 		if !ok {
 			continue
@@ -123,6 +123,8 @@ func DryRunCreate(projectId string, options map[CreateOption]string) (*models.Wo
 			plan.ParentID = &parentID
 		case CreateDescription:
 			plan.WorkPackage.Description = value
+		case CreateAssignee:
+			plan.WorkPackage.Assignee = value
 		}
 	}
 

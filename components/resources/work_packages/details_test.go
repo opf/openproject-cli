@@ -107,6 +107,72 @@ func TestInspectWithChildren(t *testing.T) {
 	}
 }
 
+func TestInspectWithChildrenUsesNumericIdForParentFilter(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/api/v3/work_packages/PROJ-9":
+			_, _ = io.WriteString(w, `{
+				"id": 74316,
+				"subject": "Expand op CLI to support scripted work package workflows",
+				"description": {"raw": "Body"},
+				"_embedded": {
+					"project": {
+						"id": 1482,
+						"identifier": "cli",
+						"name": "CLI"
+					}
+				},
+				"_links": {
+					"self": {"href": "/api/v3/work_packages/74316"},
+					"project": {"href": "/api/v3/projects/1482", "title": "CLI"},
+					"schema": {"href": "/api/v3/work_packages/schemas/1482-6"},
+					"status": {"href": "/api/v3/statuses/1", "title": "new"},
+					"type": {"href": "/api/v3/types/6", "title": "Feature"},
+					"assignee": {"href": null, "title": ""}
+				}
+			}`)
+		case r.URL.Path == "/api/v3/work_packages/schemas/1482-6":
+			_, _ = io.WriteString(w, `{}`)
+		case r.URL.Path == "/api/v3/work_packages":
+			if !strings.Contains(r.URL.RawQuery, "74316") {
+				t.Fatalf("expected parent filter to use numeric id 74316: %s", r.URL.RawQuery)
+			}
+			if strings.Contains(r.URL.RawQuery, "PROJ-9") {
+				t.Fatalf("expected parent filter to not use semantic id PROJ-9: %s", r.URL.RawQuery)
+			}
+			_, _ = io.WriteString(w, `{
+				"_embedded": {
+					"elements": []
+				},
+				"_type": "Collection",
+				"total": 0,
+				"count": 0,
+				"pageSize": -1,
+				"offset": 1
+			}`)
+		default:
+			t.Fatalf("unexpected path: %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+
+	host, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	requests.Init(host, "token", false)
+
+	payload, err := work_packages.InspectWithChildren("PROJ-9")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if payload.WorkPackage.ID != 74316 {
+		t.Fatalf("expected work package id 74316, got %d", payload.WorkPackage.ID)
+	}
+}
+
 func TestInspectDoesNotQueryChildren(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {

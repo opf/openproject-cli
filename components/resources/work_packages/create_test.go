@@ -96,6 +96,7 @@ func TestDryRunCreateIncludesParentAndDescription(t *testing.T) {
 		work_packages.CreateSubject:     "Build reusable skill",
 		work_packages.CreateParent:      "74316",
 		work_packages.CreateDescription: "Body",
+		work_packages.CreateAssignee:    "42",
 	})
 	if err != nil {
 		t.Fatalf("DryRunCreate returned error: %v", err)
@@ -115,6 +116,9 @@ func TestDryRunCreateIncludesParentAndDescription(t *testing.T) {
 	}
 	if plan.WorkPackage.Description != "Body" {
 		t.Errorf("Description = %q, want %q", plan.WorkPackage.Description, "Body")
+	}
+	if plan.WorkPackage.Assignee != "42" {
+		t.Errorf("Assignee = %q, want %q", plan.WorkPackage.Assignee, "42")
 	}
 }
 
