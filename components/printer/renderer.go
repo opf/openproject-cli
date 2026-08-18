@@ -18,6 +18,7 @@ type Renderer interface {
 	Types([]*models.Type)
 	Status(*models.Status)
 	StatusList([]*models.Status)
+	Versions([]*models.Version)
 	TimeEntryList([]*models.TimeEntry)
 	TimeEntry(*models.TimeEntry)
 	Notification(*models.Notification)

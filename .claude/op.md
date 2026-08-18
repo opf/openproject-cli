@@ -77,7 +77,7 @@ op work-package list -s open                      # Filter: open / closed / <id>
 op work-package list -s '!<id>'                   # Exclude a status (prefix with !)
 op work-package list -a me                        # Filter by assignee (me or user ID)
 op work-package list -t <type-id>                 # Filter by type (comma-separated IDs, ! prefix to exclude)
-op work-package list -v <version-id>              # Filter by version
+op work-package list -v <version-id>              # Filter by version (see: op version list --project <project>)
 op work-package list --not-version <id>           # Exclude a version
 op work-package list --parent-id <wp-id>          # Direct children of a work package
 op work-package list --include-sub-projects       # Include sub-project work packages
@@ -126,6 +126,12 @@ op time-entry create \
 ```bash
 op budget list -p <project-id-or-slug>            # Budgets for a project
 op budget inspect <id>                            # Full details of a budget
+```
+
+## Versions
+
+```bash
+op version list --project <project-id-or-slug>   # List a project's versions (IDs for -v/--not-version)
 ```
 
 ## Projects
