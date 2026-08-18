@@ -17,6 +17,7 @@ import (
 	"github.com/opf/openproject-cli/cmd/status"
 	"github.com/opf/openproject-cli/cmd/timeentry"
 	"github.com/opf/openproject-cli/cmd/user"
+	"github.com/opf/openproject-cli/cmd/version"
 	"github.com/opf/openproject-cli/cmd/workpackage"
 	"github.com/opf/openproject-cli/cmd/wptype"
 	"github.com/opf/openproject-cli/components/configuration"
@@ -196,6 +197,7 @@ func init() {
 		status.RootCmd,
 		notification.RootCmd,
 		git.RootCmd,
+		version.RootCmd,
 	)
 
 	rootCmd.InitDefaultCompletionCmd()

@@ -136,6 +136,18 @@ func (r *JsonRenderer) StatusList(statuses []*models.Status) {
 	printJson(out)
 }
 
+func (r *JsonRenderer) Versions(versions []*models.Version) {
+	type item struct {
+		Id   uint64 `json:"id"`
+		Name string `json:"name"`
+	}
+	out := make([]item, len(versions))
+	for i, v := range versions {
+		out[i] = item{v.Id, v.Name}
+	}
+	printJson(out)
+}
+
 func (r *JsonRenderer) TimeEntry(t *models.TimeEntry) {
 	printJson(struct {
 		Id          uint64  `json:"id"`

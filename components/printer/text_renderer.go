@@ -98,6 +98,16 @@ func (r *TextRenderer) StatusList(statuses []*models.Status) {
 	}
 }
 
+func (r *TextRenderer) Versions(versions []*models.Version) {
+	var maxIdLength = 0
+	for _, v := range versions {
+		maxIdLength = common.Max(maxIdLength, idLength(v.Id))
+	}
+	for _, v := range versions {
+		printVersion(v, maxIdLength)
+	}
+}
+
 func (r *TextRenderer) TimeEntry(t *models.TimeEntry) {
 	printTimeEntry(t, idLength(t.Id), len(t.Activity), len(t.Project))
 }
@@ -204,6 +214,12 @@ func printStatus(s *models.Status, maxIdLength int) {
 		parts = append(parts, fmt.Sprintf("(%s)", Yellow("default")))
 	}
 	activePrinter.Println(strings.Join(parts, " "))
+}
+
+func printVersion(v *models.Version, maxIdLength int) {
+	diff := maxIdLength - idLength(v.Id)
+	idStr := fmt.Sprintf("%s#%d", indent(diff), v.Id)
+	activePrinter.Println(strings.Join([]string{Red(idStr), Cyan(v.Name)}, " "))
 }
 
 func printCustomAction(a *models.CustomAction) {
